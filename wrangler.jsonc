@@ -12,7 +12,7 @@
   "d1_databases": [{
     "binding": "DB",
     "database_name": "archerbox-db",
-    "database_id": "00000000-0000-4000-8000-000000000000",
+    "database_id": "22fefeb4-7afd-4b0d-a7a1-85703905d1d5",
     "migrations_dir": "drizzle"
   }]
 }
