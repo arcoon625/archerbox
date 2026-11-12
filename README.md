@@ -3,7 +3,8 @@
 A browser arcade with 21 bundled games, 3D avatars, friends, multiplayer, fantasy leagues, and shared leaderboards.
 
 Source: https://github.com/arcoon625/archerbox
-Planned custom domain: https://archer-box.com
+Live temporary address: https://archerbox.archerbox.workers.dev
+Custom domain being connected: https://archer-box.com
 
 ## How it works
 
@@ -48,15 +49,15 @@ Use the Free Workers plan and D1. Paid services are not required for initial set
 
 1. Sign in at https://dash.cloudflare.com (create the account yourself if necessary).
 2. In this folder run `npx wrangler login` and approve the requested access in your browser.
-3. Run `npx wrangler d1 create archerbox-db`. Copy its `database_id` into the `DB` entry in `wrangler.jsonc`, replacing the placeholder. The database ID is configuration, not a password.
+3. This checkout already points to the production `archerbox-db`. Do not create another database when updating the existing site. For a new account/fork, run `npx wrangler d1 create archerbox-db` and replace `database_id` in `wrangler.jsonc` with its returned ID. The ID is configuration, not a password.
 4. Run `npm run deploy`. This applies the SQL migrations to D1 before deploying the Worker and its static files.
 5. Open the `workers.dev` address printed by Wrangler. Test two browsers with different profiles and friend codes, and verify a score persists after reloading.
 
 Future manual updates use `npm run deploy` from a clean, tested checkout. Never put API tokens, environment secrets, cookies, or local database files in Git.
 
-### Optional automatic deployment from GitHub
+### Automatic deployment from GitHub
 
-In Cloudflare open **Workers & Pages → archerbox → Settings → Builds**, connect `arcoon625/archerbox`, and select branch `main`. Authorize the GitHub connection yourself if prompted. Set:
+Cloudflare Builds is connected to `arcoon625/archerbox` on branch `main`. Pushing a commit runs checks, applies any new D1 migrations, and publishes the Worker. Configuration:
 
 - Root directory: repository root
 - Build command: `npm run check`
