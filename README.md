@@ -6,6 +6,20 @@ Source: https://github.com/arcoon625/archerbox
 Live temporary address: https://archerbox.archerbox.workers.dev
 Custom domains: https://archer-box.com and https://www.archer-box.com
 
+## Publish a change
+
+You can tell Codex: **“Make this change and put it live on archer-box.com.”** The project instructions in `AGENTS.md` make checking, pushing to GitHub, and verifying deployment the default workflow.
+
+For a manual update, review your changes, then run this from the repository folder:
+
+```sh
+npm run ship -- "Describe what changed"
+```
+
+This checks the games and backend, builds the Worker, commits all non-ignored changes, pushes to GitHub, and waits for Cloudflare to deploy that exact commit. It prints the live site link after deployment succeeds. It requires Node.js, Git, and the GitHub CLI (`gh`) signed into the repository owner’s account; Cloudflare's saved connection handles deployment.
+
+Use `main` for publishing. Other branches do not update the live site. If publishing stops, read the message; your current live deployment stays available unless the deployment itself succeeded. The command never force pushes or automatically resolves conflicting changes.
+
 ## How it works
 
 - `public/`: HTML, CSS, JavaScript, Three.js, artwork, sounds, and games. Static files are served directly by Cloudflare.
