@@ -1,0 +1,11 @@
+# Bakery Rush
+
+A solo 3D customer-order cooking game at `#play/bakery-rush`. Sugar & Sunshine has six recipes, twelve pantry ingredients, four toppings, six named customers, and three five-order days. Players can choose any day and either Cozy (unlimited customer patience) or Rush Hour (95, 87, or 79 seconds per customer). Best coin totals are saved by day and mode in browser storage. No Friends multiplayer or server storage is used.
+
+Each order runs through ingredient selection, six whisk actions, a timed oven, topping selection, and serving. The recipe book highlights the current recipe and pauses the game. Recipes are simplified game rules: one scoop of each listed ingredient. Incorrect ingredients explain missing and extra items. Early bakes can go back in without losing baking progress. Cozy has a six-second golden baking window; Rush has 2.6 seconds. Slightly overdone treats earn less, burned batches can be restarted, and incorrect toppings can be replaced before serving. Resetting a batch does not refill Rush patience. Coins are earned once per served order, with a bonus for perfect orders. Every five orders produce a day summary and a next-day option.
+
+Mouse/touch buttons control everything. Space performs the current action when the canvas is focused, B opens/closes the recipe book, and Escape pauses. Reading the book, opening pause, switching tabs, or hiding the page stops the oven and patience clocks. Resume, restart day, and menu actions are available. On phones, the ticket sits above the 3D scene and the pantry/workbench occupies a scrollable lower panel.
+
+`rules.js` is independent of rendering. `scene.js` generates the bakery, food, customers, shelves, mixing bowl and oven using the shared Three.js runtime. `game.js` binds the state machine to the interface. The catalog cover is captured from the rendered game, not separate concept art.
+
+Validation: `node --test tests/bakery.test.mjs tests/bundle.test.mjs`. Tests complete all 30 orders across three days and two modes, covering every recipe, scoring, duplicate-serve prevention, wrong ingredients/toppings, underbaking, overbaking, burning, retrying, Cozy patience, Rush timeouts, and frozen final results. Desktop and 390px phone layouts and a complete order-to-next-customer flow were checked in the in-app browser.

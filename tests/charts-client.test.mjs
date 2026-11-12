@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {createTracker} from '../public/charts/client.js';
+const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)},requests=[],timers=[];
+let owner='archer0001',offline=false,forbidden=false;
+const fetcher=async(path,options)=>{const body=options.body?JSON.parse(options.body):null;requests.push({path,body,owner});if(path==='/api/social/profile')return Response.json({profile:{code:owner}});if(offline)throw Error('offline');if(path==='/api/charts/play')return Response.json({session:owner+'-session'});if(forbidden||!body.session.startsWith(owner))return Response.json({error:'Account changed'},{status:403});return Response.json({ok:true,added:1})};
+const make=()=>createTracker({fetcher,storage,setTimer:fn=>{timers.push(fn);return timers.length},clearTimer:()=>{}});
+let tracker=make();await tracker.play('neon-clash');await tracker.record({game:'neon-clash',event:'elimination',run:'test',progress:2});await tracker.refresh();
+assert.equal(requests.some(r=>r.path==='/api/charts/progress'&&r.body.progress===2),true);
+assert.equal(JSON.parse(saved.get('archerbox-chart-outbox-v1:archer0001')).length,0);
+const length=requests.length;await tracker.record({game:'neon-clash',event:'elimination',run:'x',progress:-1});await tracker.record({game:'fake',event:'elimination',run:'x',progress:1});assert.equal(requests.length,length);
+offline=true;await tracker.record({game:'neon-clash',event:'elimination',run:'offline',progress:3});await tracker.record({game:'neon-clash',event:'elimination',run:'offline',progress:5});await tracker.refresh();
+let queue=JSON.parse(saved.get('archerbox-chart-outbox-v1:archer0001'));assert.equal(queue.length,1);assert.equal(queue[0].progress,5);
+tracker.stop();tracker=make();offline=false;await tracker.refresh();assert.equal(JSON.parse(saved.get('archerbox-chart-outbox-v1:archer0001')).length,0);
+// A different signed-in account never inherits the previous account's unsent results.
+offline=true;await tracker.record({game:'touchdown-rush',event:'touchdown',run:'pending-owner-a',progress:1});await tracker.refresh();assert.equal(JSON.parse(saved.get('archerbox-chart-outbox-v1:archer0001')).length,1);
+owner='nova000001';offline=false;await tracker.refresh();await tracker.play('touchdown-rush');
+assert.equal(requests.some(r=>r.owner===owner&&r.path==='/api/charts/progress'&&r.body.run==='pending-owner-a'),false);
+assert.equal(JSON.parse(saved.get('archerbox-chart-outbox-v1:archer0001')).length,1);
+tracker.stop();
+console.log('Chart client passed: achievement validation, online sync, offline retry, maximum progress outbox, reload persistence and account isolation.');

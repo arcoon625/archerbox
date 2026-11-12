@@ -1,0 +1,63 @@
+{
+  "3930270": {
+    "name": "Blake Brandel",
+    "color": "#fabaaa",
+    "source": "https://a.espncdn.com/i/headshots/nfl/players/full/3930270.png",
+    "note": "Reviewed visible cheek patch; adjusted for portrait position or beard, hair, and clipped highlights.",
+    "sample": [
+      243,
+      177,
+      261,
+      196
+    ]
+  },
+  "4431533": {
+    "name": "Gabriel Rubio",
+    "color": "#ffc7c5",
+    "source": "https://a.espncdn.com/i/headshots/nfl/players/full/4431533.png",
+    "note": "Reviewed visible cheek patch; adjusted for portrait position or beard, hair, and clipped highlights.",
+    "sample": [
+      244,
+      176,
+      260,
+      195
+    ]
+  },
+  "4431615": {
+    "name": "Tyleik Williams",
+    "color": "#b57659",
+    "source": "https://a.espncdn.com/i/headshots/nfl/players/full/4431615.png",
+    "note": "Reviewed visible cheek patch; adjusted for portrait position or beard, hair, and clipped highlights.",
+    "sample": [
+      244,
+      273,
+      260,
+      291
+    ]
+  },
+  "3040151": {
+    "name": "George Kittle",
+    "color": "#d89d7f",
+    "source": "https://a.espncdn.com/i/headshots/nfl/players/full/3040151.png",
+    "note": "Reviewed visible cheek patch; adjusted for portrait position or beard, hair, and clipped highlights.",
+    "sample": [
+      243,
+      151,
+      259,
+      169
+    ]
+  },
+  "5344782": {
+    "name": "Jack Strand",
+    "color": "#d8a89b",
+    "source": "https://www.atlantafalcons.com/team/players-roster/jack-strand/",
+    "note": "Reviewed visible cheek patch; adjusted for portrait position or beard, hair, and clipped highlights.",
+    "sample": [
+      173,
+      187,
+      191,
+      204
+    ],
+    "photoSource": "https://static.clubs.nfl.com/image/upload/falcons/qaakypq3wrk2nhsqiszr.jpg"
+  }
+}

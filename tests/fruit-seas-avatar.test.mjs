@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import * as THREE from '../public/vendor/three.module.js';
+import {createPlayer} from '../public/games/fruit-seas/player.js';
+import {DEFAULT_LOOK,STORAGE_KEY,readSavedLook,saveWardrobe} from '../public/avatar/catalog.js';
+const rig=()=>{const root=new THREE.Group(),arms=[new THREE.Group(),new THREE.Group()],legs=[new THREE.Group(),new THREE.Group()],hold=new THREE.Group(),weapon=new THREE.Group();root.add(...arms,...legs);arms[1].add(hold);hold.rotation.x=1.7;hold.add(weapon);return {root,arms,legs,hold,weapon,weaponId:'flintlock'};};
+let saved=null,built=0,animated=0,disposed=[];
+const build=(look,options)=>{built++;assert.equal(options.pets,true);const model=rig();model.root.userData={arms:model.arms,legs:model.legs,look,animate(){animated++;}};return model.root;};
+const base=rig(),player=createPlayer(base,{readLook:()=>saved,build,dispose:old=>{assert(!old.getObjectById(player.weapon.id),'outfit disposal must not dispose the equipped weapon');disposed.push(old);}});
+assert.equal(player.avatar,null);assert(base.root.visible);assert.equal(player.hold,base.hold);assert.equal(built,0);assert.equal(player.refresh(),false);
+saved={...DEFAULT_LOOK,head:'head-04',face:'face-02',shirt:'shirt-03',pet:'pet-01'};
+assert(player.refresh());assert.equal(built,1);assert(!base.root.visible);assert.deepEqual(player.root.userData.avatarLook,saved);assert.equal(player.hold.parent,player.avatar.userData.arms[1]);assert.equal(player.weapon.parent,player.hold);assert.equal(player.weaponId,'flintlock');assert.equal(player.hold.rotation.x,1.7);player.animate(1,true);assert.equal(animated,1);
+assert(!player.refresh(),'the same outfit must not rebuild each frame');saved={...saved};assert(!player.refresh(),'equivalent saved objects must not rebuild');
+const old=player.avatar;saved={...saved,head:'head-07',skin:'#79523f',pet:null};assert(player.refresh());assert.equal(disposed[0],old);assert.equal(player.weapon.parent,player.hold);assert.equal(built,2);assert.equal(player.weaponId,'flintlock');assert.equal(player.arms,player.avatar.userData.arms);
+saved=null;assert(player.refresh());assert.equal(player.avatar,null);assert(base.root.visible);assert.equal(player.weapon.parent,base.hold);assert.equal(player.arms,base.arms);assert.equal(disposed.length,2);assert(!player.refresh());
+const memory=new Map(),storage={getItem:key=>memory.get(key),setItem:(key,value)=>memory.set(key,value)};
+assert(saveWardrobe({...DEFAULT_LOOK,pet:'pet-01'},[],storage));const restored=createPlayer(rig(),{readLook:()=>readSavedLook(storage),build,dispose(){}});assert(restored.avatar);assert.equal(restored.root.userData.avatarLook.pet,'pet-01');memory.set(STORAGE_KEY,'broken');assert(restored.refresh());assert.equal(restored.avatar,null,'a broken wardrobe save falls back safely');
+// Use the real shared model as well as the small rig above.
+const context=new Proxy({}, {get(t,p){return t[p]??(()=>{});},set(t,p,v){t[p]=v;return true;}});globalThis.document={createElement(){return{width:256,height:256,getContext:()=>context};}};
+const actualLook={...DEFAULT_LOOK,head:'head-02',face:'face-01',shirt:'shirt-04',bottom:'bottom-04',shoes:'shoes-04',pet:'pet-01',skin:'#a26b4a',expression:'wink'};
+const actual=createPlayer(rig(),{readLook:()=>actualLook});assert(actual.avatar);assert.deepEqual(actual.avatar.userData.look,actualLook);assert(actual.avatar.userData.pet);actual.animate(1,true);assert(actual.legs.some(l=>l.rotation.x!==0));assert.equal(actual.weapon.parent,actual.hold);actual.dispose();
+console.log('Fruit Seas avatar passed: saved clothes/accessories/skin/pet, no-save fallback, live outfit refresh, animation, unchanged equipment, safe disposal and real model loading.');
