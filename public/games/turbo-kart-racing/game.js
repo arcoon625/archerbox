@@ -47,6 +47,7 @@ function minimap(){const ctx=mapCtx;ctx.clearRect(0,0,180,150);const points=Arra
 function hud(){const ranked=order(racers);$('position').textContent=ranked.indexOf(player)+1;$('lap').textContent=progress(player,track);$('speed').textContent=Math.round(player.speed*5);$('timer').textContent=formatTime(time);$('boostBar').style.width=player.boost+'%';$('leaderboard').innerHTML=ranked.map((r,i)=>`<div class="${r===player?'you':''}"><b>${i+1}. ${safeText(r.name)}</b><span>${r.finished?'FINISH':r===player?'YOU':r.human?'FRIEND':'CPU'}</span></div>`).join('');minimap()}
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.075);last=now;
  if(online){
+  online.frame(now);
   if(networkTargets){for(let i=0;i<racers.length;i++){const r=racers[i],target=networkTargets[i];if(!target)continue;const blend=Math.min(1,dt*13);for(const k of ['s','lane','heading','speed','air','vy','boost'])r[k]+=(target[k]-r[k])*blend;for(const k of ['finished','time','steering','drifting','padBoost'])r[k]=target[k];}}
   if(networkRoom?.status==='countdown'){$('countdown').textContent=Math.max(1,Math.ceil((networkRoom.startAt-networkRoom.now-(performance.now()-lastSnapshotAt))/1000));}
   if(networkRoom&&performance.now()-lastSnapshotAt>3000&&state!=='menu')$('notice').textContent='RECONNECTING…';
