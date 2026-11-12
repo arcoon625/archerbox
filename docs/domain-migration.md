@@ -6,11 +6,11 @@ Assigned nameservers (saved at Squarespace):
 - jessica.ns.cloudflare.com
 - viddy.ns.cloudflare.com
 
-Squarespace DNSSEC was disabled with owner approval before nameserver replacement. Re-enable DNSSEC through Cloudflare and publish its DS record at Squarespace after activation.
+Squarespace DNSSEC was disabled with owner approval before nameserver replacement. Cloudflare DNSSEC was enabled and its DS record was saved at Squarespace: key tag 2371, algorithm 13, digest type 2, digest 04CA94B5F4AA96A94374A01BD4E0C4AC629F65A05E45AF0326D0A7CAA8AEFF76. Verification follows DNS propagation.
 
 ## Previous Squarespace website defaults
 
-These are public DNS configuration values, recorded before replacement with Worker-managed domains:
+These public DNS values were removed with owner approval and replaced with the Worker-managed archer-box.com and www.archer-box.com domains:
 
 | Type | Name | Value |
 | --- | --- | --- |

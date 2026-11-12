@@ -4,7 +4,7 @@ A browser arcade with 21 bundled games, 3D avatars, friends, multiplayer, fantas
 
 Source: https://github.com/arcoon625/archerbox
 Live temporary address: https://archerbox.archerbox.workers.dev
-Custom domain being connected: https://archer-box.com
+Custom domains: https://archer-box.com and https://www.archer-box.com
 
 ## How it works
 
