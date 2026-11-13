@@ -18,8 +18,14 @@ async function trending(db,t){
  const games=METRICS.map((m,order)=>{const row=rows.find(r=>r.game===m.game);return {game:m.game,players:row?.players||0,previous:row?.previous||0,order,daily:Array.from({length:7},(_,i)=>days.find(d=>d.game===m.game&&d.day===start+i*DAY)?.players||0)}}).sort((a,b)=>b.players-a.players||a.order-b.order).map(({order,...g})=>g);
  return {asOf:t,start,end:end+DAY,games};
 }
-async function checkRoom(db,id,game,run,progress){
+async function checkRoom(db,id,game,run,progress,getRoomScore){
  if(!run.startsWith('room:'))return;
+ if(getRoomScore){
+  const live=await getRoomScore(id,run.slice(5));
+  if(live.game!==game)fail('That match is for another game.');
+  if(game==='neon-clash'&&progress>live.kills)fail('Those kills are not in this match yet.');
+  return;
+ }
  const row=await db.prepare('SELECT host,guest,data FROM social_rooms WHERE id=?').bind(run.slice(5)).first();
  if(!row||(row.host!==id&&row.guest!==id))fail('That match does not belong to you.',403);
  const room=JSON.parse(row.data);if((room.game||'turbo-kart-racing')!==game)fail('That match is for another game.');
@@ -28,13 +34,13 @@ async function checkRoom(db,id,game,run,progress){
   if(!actor||progress>actor.kills)fail('Those kills are not in this match yet.');
  }
 }
-async function progress(db,id,body,t){
+async function progress(db,id,body,t,getRoomScore){
  const {game,event,run,progress:incoming,session}=body,rule=scoreEvent(game,event,incoming);
  if(!rule||!validRun(run)||typeof session!=='string'||session.length>80)fail('Choose a valid achievement.');
  const active=await db.prepare('SELECT * FROM chart_sessions WHERE id=? AND user_id=? AND game=?').bind(session,id,game).first();
  if(!active)fail('Open this game to start tracking.',403);
  if(t-active.started>12*60*60*1000)fail('Start a fresh tracking session.',410);
- await checkRoom(db,id,game,run,incoming);
+ await checkRoom(db,id,game,run,incoming,getRoomScore);
  const keys=[id,game,run,event],old=await db.prepare('SELECT progress FROM chart_progress WHERE user_id=? AND game=? AND run=? AND event=?').bind(...keys).first();
  if(incoming<=(old?.progress||0))return {ok:true,added:0};
  // Generous sanity limits for browser-reported solo results. Friend Rivals kills also use the saved match above.
@@ -53,7 +59,7 @@ async function progress(db,id,body,t){
  if(incoming<=(latest?.progress||0))return {ok:true,added:0};
  fail('Your results are catching up. They will retry shortly.',429);
 }
-export async function handleCharts(request,db,{now=()=>Date.now()}={}){
+export async function handleCharts(request,db,{now=()=>Date.now(),getRoomScore}={}){
  try{
   if(!db)fail('Charts are starting up. Try again shortly.',503);
   const url=new URL(request.url),path=url.pathname.replace(/^\/api\/charts\/?/,''),method=request.method,id=request.headers.get('oai-authenticated-user-id'),t=now();
@@ -84,7 +90,7 @@ export async function handleCharts(request,db,{now=()=>Date.now()}={}){
     db.prepare('INSERT OR IGNORE INTO chart_plays (user_id,game,day,created) VALUES (?,?,?,?)').bind(id,body.game,Math.floor(t/DAY)*DAY,t)
    ]);return json({session,game:body.game});
   }
-  if(path==='progress')return json(await progress(db,id,body,t));
+  if(path==='progress')return json(await progress(db,id,body,t,getRoomScore));
   fail('This chart could not be found.',404);
  }catch(error){const status=error.status||(error.message==='Choose a valid time period.'?400:500);if(status===500)console.error('Charts API:',error);return json({error:status===500?'Charts could not connect. Please try again.':error.message},status)}
 }

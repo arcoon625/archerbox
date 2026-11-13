@@ -1,6 +1,7 @@
 import {handleSocial} from '../server/social.js';
 import {handleFantasy} from '../server/fantasy.js';
 import {handleCharts} from '../server/charts.js';
+export {MatchRoom} from './match-room.js';
 
 const COOKIE = 'archerbox_session';
 const LIFETIME = 365 * 24 * 60 * 60;
@@ -46,7 +47,20 @@ export default {
       const headers = new Headers(request.headers);
       for (const name of [...headers.keys()]) if (name.startsWith('oai-authenticated-user-')) headers.delete(name);
       if (identity.id) headers.set('oai-authenticated-user-id', identity.id);
-      const result = await handler(new Request(request, {headers}), env.DB);
+      const match = url.pathname.match(/^\/api\/social\/room\/([a-f0-9-]{36})(?:\/(?:connect|score))?$/);
+      if (match && env.MATCH_ROOMS) {
+        if (!identity.id) return json({error:'Open your player profile first.'},401);
+        const room=env.MATCH_ROOMS.get(env.MATCH_ROOMS.idFromName(match[1]));
+        // Preserve the WebSocket upgrade response; it cannot be reconstructed.
+        return room.fetch(new Request(request,{headers}));
+      }
+      const getRoomScore=env.MATCH_ROOMS?async(user,roomId)=>{
+        const room=env.MATCH_ROOMS.get(env.MATCH_ROOMS.idFromName(roomId));
+        const result=await room.fetch(new Request(new URL('/api/social/room/'+roomId+'/score',url),{headers:{'oai-authenticated-user-id':user}}));
+        if(!result.ok)throw Object.assign(new Error('That match does not belong to you.'),{status:result.status});
+        return result.json();
+      }:undefined;
+      const result = await handler(new Request(request, {headers}), env.DB,{getRoomScore});
       const response = new Response(result.body, result);
       response.headers.set('Cache-Control','private, no-store');
       response.headers.set('X-Content-Type-Options','nosniff');

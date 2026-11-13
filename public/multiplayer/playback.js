@@ -4,7 +4,7 @@ const fields=['x','y','z','yaw','s','lane','depth','heading','air'];
 const identity=(a,i)=>a.serverId??a.id??i;
 const state=a=>[a.alive,a.found,a.hidden,a.finished].join('|');
 const angle=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
-export function createPlayback({delay=120,maxExtrapolation=120}={}){
+export function createPlayback({delay=60,maxExtrapolation=100}={}){
  let frames=[],current=null,active=false;
  function receive(snapshot,now,status){
   if(!snapshot)return;

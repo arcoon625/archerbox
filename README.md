@@ -24,6 +24,7 @@ Use `main` for publishing. Other branches do not update the live site. If publis
 
 - `public/`: HTML, CSS, JavaScript, Three.js, artwork, sounds, and games. Static files are served directly by Cloudflare.
 - `worker/index.js`: standalone Cloudflare Worker that routes requests to the existing game APIs.
+- `worker/match-room.js`: a SQLite-backed Durable Object per live friend match, with authenticated WebSockets and 20 updates per second. Movement runs in memory, with durable checkpoints and periodic D1 saves instead of database requests for every key press. HTTP fallback supports connections which block WebSockets.
 - `server/`: server-owned game rules, friends, fantasy leagues, and leaderboards.
 - `drizzle/`: ordered SQL migrations that create the D1 database tables.
 - `tests/`: game rules and backend tests. `scripts/` contains optional asset/data maintenance tools.

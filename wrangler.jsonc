@@ -30,5 +30,21 @@
       "pattern": "www.archer-box.com",
       "custom_domain": true
     }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MATCH_ROOMS",
+        "class_name": "MatchRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "live-matches-v1",
+      "new_sqlite_classes": [
+        "MatchRoom"
+      ]
+    }
   ]
 }

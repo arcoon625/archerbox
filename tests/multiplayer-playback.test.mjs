@@ -3,7 +3,7 @@ import {createPlayback} from '../public/multiplayer/playback.js';
 import {createPollLoop} from '../public/multiplayer/poll-loop.js';
 
 // Reproduce the stop/start bug with packets every 120 ms and a 60 Hz display.
-const playback=createPlayback(),positions=[];
+const playback=createPlayback({delay:120,maxExtrapolation:120}),positions=[];
 let current;
 for(let t=0;t<=1200;t+=20){
  if(t%120===0){current={actors:[{x:t/100,z:0,y:0,yaw:0,alive:true}]};playback.receive(current,t,'playing');}
@@ -13,7 +13,7 @@ for(let i=8;i<positions.length;i++)assert(Math.abs(positions[i]-positions[i-1]-.
 playback.frame(10000);const bounded=current.actors[0].x;playback.frame(11000);assert.equal(current.actors[0].x,bounded,'do not keep moving forever after a disconnect');
 
 // Packet timing jitter must not cause reverse movement or giant corrections.
-const jitter=createPlayback();let next=0,display,previous=-Infinity;
+const jitter=createPlayback({delay:120,maxExtrapolation:120});let next=0,display,previous=-Infinity;
 for(let now=0;now<1600;now+=10){
  if(now>=next){display={actors:[{x:now/200,y:0,z:0,alive:true}]};jitter.receive(display,now,'playing');next=now+(now%3===0?150:100);}
  jitter.frame(now);
@@ -21,15 +21,15 @@ for(let now=0;now<1600;now+=10){
 }
 
 // Equal nicknames still belong to different actors; do not merge their poses.
-const sameNames=createPlayback();sameNames.receive({actors:[{name:'Archer',x:0},{name:'Archer',x:10}]},0,'playing');
+const sameNames=createPlayback({delay:120,maxExtrapolation:120});sameNames.receive({actors:[{name:'Archer',x:0},{name:'Archer',x:10}]},0,'playing');
 const names={actors:[{name:'Archer',x:1},{name:'Archer',x:11}]};sameNames.receive(names,120,'playing');sameNames.frame(180);assert.equal(names.actors[0].x,.5);assert.equal(names.actors[1].x,10.5);
 
 // Snap intentional teleports, hidden players and completed matches immediately.
-const snap=createPlayback();snap.receive({actors:[{x:0,z:0,alive:true,hidden:null}]},0,'playing');
+const snap=createPlayback({delay:120,maxExtrapolation:120});snap.receive({actors:[{x:0,z:0,alive:true,hidden:null}]},0,'playing');
 const hidden={actors:[{x:0,z:0,alive:true,hidden:-1}]};snap.receive(hidden,120,'playing');snap.frame(180);assert.equal(hidden.actors[0].x,0);
 const teleported={actors:[{x:50,z:0,alive:true,hidden:-1}]};snap.receive(teleported,240,'playing');snap.frame(300);assert.equal(teleported.actors[0].x,50);
 const done={actors:[{x:60,z:0,alive:false}]};snap.receive(done,360,'finished');snap.frame(400);assert.equal(done.actors[0].x,60);
-const rotation=createPlayback();rotation.receive({actors:[{x:0,yaw:Math.PI-.1}]},0,'playing');const turn={actors:[{x:0,yaw:-Math.PI+.1}]};rotation.receive(turn,120,'playing');rotation.frame(180);assert(Math.abs(turn.actors[0].yaw-Math.PI)<1e-9,'turn across the angle boundary by the short route');
+const rotation=createPlayback({delay:120,maxExtrapolation:120});rotation.receive({actors:[{x:0,yaw:Math.PI-.1}]},0,'playing');const turn={actors:[{x:0,yaw:-Math.PI+.1}]};rotation.receive(turn,120,'playing');rotation.frame(180);assert(Math.abs(turn.actors[0].yaw-Math.PI)<1e-9,'turn across the angle boundary by the short route');
 
 // A delayed request must never overlap another request, and input changes must
 // be sent promptly after its reply rather than waiting for a polling interval.
