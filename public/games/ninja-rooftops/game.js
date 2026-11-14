@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('ninja-rooftops');
 import * as THREE from '../../vendor/three.module.js';
 import {COURSES,OUTFITS,createGame,tick,roofX,grappleTarget,respawn,medal,clamp} from './rules.js?v=ninja2';

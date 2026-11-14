@@ -1,6 +1,6 @@
 # Archerbox
 
-A browser arcade with 21 bundled games, 3D avatars, friends, multiplayer, fantasy leagues, and shared leaderboards.
+A browser arcade with 21 bundled games, 3D avatars, friends, multiplayer, fantasy leagues, player levels, and shared leaderboards.
 
 Source: https://github.com/arcoon625/archerbox
 Live temporary address: https://archerbox.archerbox.workers.dev
@@ -36,6 +36,12 @@ This copy does not require React, Next.js, Vinext, Sites, or a separate always-o
 There are no passwords or ChatGPT accounts. The Friends client creates a browser profile on first connection. A cryptographically random session token is kept in an HttpOnly, SameSite=Strict cookie (Secure on HTTPS). Only its SHA-256 hash is stored in D1. Incoming identity headers are discarded; the Worker supplies the verified player ID to existing APIs.
 
 The browser profile lasts up to one year. Clearing cookies, changing browsers, changing website domains, or expiration creates a new identity. There is no account recovery or cross-device login. Use an arcade nickname rather than personal information. Existing Sites database records and browser saves are not automatically migrated; this deployment starts with a new D1 database. Browser-local favorites and avatars remain local.
+
+## Player levels
+
+All 21 games award lifetime XP for completed achievements. The lobby and profile show the player's level, title, and progress to the next level. The first level-up needs 100 XP; each following level needs 50 more XP than the previous one. The profile includes a per-game XP guide.
+
+XP is calculated on the server from the same deduplicated achievements used by leaderboards, so previously recorded results count and retries do not create extra XP. Local coin balances and avatar purchases do not affect XP. Levels belong to the browser profile described above.
 
 ## Run on your computer
 

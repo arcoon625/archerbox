@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('alpine-rush');
 import * as THREE from '../../vendor/three.module.js';
 import {TRAILS,OUTFITS,createRace,tick,sample,rampLift,order,nextGate,recover,clamp} from './rules.js?v=ski8';

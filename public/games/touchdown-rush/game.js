@@ -1,5 +1,5 @@
 import {createFrameRecovery} from '../../game-errors.js?v=recovery1';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('touchdown-rush');
 import {setupBroadcast} from './broadcast-ui.js?v=studio3';
 import {playerTraits,traitStrengths,traitWeaknesses,TRAITS_CHECKED} from './traits.js?v=realism2026';

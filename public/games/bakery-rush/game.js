@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('bakery-rush');
 import {INGREDIENTS,TOPPINGS,RECIPES,DAYS,batchLabel,createGame,order,selectIngredient,mix,bake,takeOut,decorate,serve,freshBatch,nextOrder,tick,windowSize,clamp} from './rules.js?v=quantities1';
 import {makeBakery} from './scene.js?v=quantities1';

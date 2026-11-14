@@ -1,7 +1,7 @@
 import * as T from '../../vendor/three.module.js';
 import {SAVE_KEY,DAY_SECONDS,NIGHT_SECONDS,CHEST_DAYS,HIKE_UNLOCK,FIRE_MAX,SPECIES,CAMP_GOALS,BERRIES,bearDanger,nearestFood,harvestFood,nearestBerries,forage,cookFood,eatMeal,WEAPONS,CANS,SHOP,BASE,TREES,ROCKS,CHEST,CHEST_LOOT,MOUNTAINS,groundHeight,canHike,nearFire,nearestWood,nearestTree,collectWood,fuelFire,toggleAxe,chestCount,nearChest,rollChest,keepChestPrize,freshGame,restoreGame,restart,tick,interact,nearestCan,canShop,buyWeapon,equip,weapon,attack,clamp,distance,notice} from './rules.js?v=wildlife1';
 import {makeWorld} from './scene.js?v=wildlife1';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('bearwatch'),$=id=>document.getElementById(id);
 const clock=t=>{const s=Math.max(0,Math.ceil(t));return Math.floor(s/60).toString().padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
 const art=id=>{const common='viewBox="0 0 160 90" fill="none" stroke-linecap="round" stroke-linejoin="round"';const shapes={

@@ -2,7 +2,7 @@ import * as THREE from '../../vendor/three.module.js';
 import {ISLANDS,DISASTERS,createGame,tick,nextRound,terrainHeight,tornadoPosition,goalFor,shelter,clamp} from './rules.js';
 import {makeWorld,makeSurvivor,dispose} from './scene.js';
 import {steer,stickTurn} from '../laser-maze/controls.js?v=turn1';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('disaster-island'),$=id=>document.getElementById(id),format=t=>Math.floor(Math.ceil(t)/60)+':'+String(Math.ceil(t)%60).padStart(2,'0'),escape=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function boot(){
  const cover=new URLSearchParams(location.search).get('cover')==='1';if(cover)document.body.classList.add('cover');const renderer=new THREE.WebGLRenderer({canvas:$('world'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.4));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;

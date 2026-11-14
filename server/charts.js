@@ -1,3 +1,4 @@
+import {playerLevels} from './player-levels.js';
 import {DAY,METRICS,metricFor,periodStart,scoreEvent,validRun} from '../public/charts/rules.js';
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie','X-Content-Type-Options':'nosniff'}});
@@ -64,6 +65,11 @@ export async function handleCharts(request,db,{now=()=>Date.now(),getRoomScore}=
   if(!db)fail('Charts are starting up. Try again shortly.',503);
   const url=new URL(request.url),path=url.pathname.replace(/^\/api\/charts\/?/,''),method=request.method,id=request.headers.get('oai-authenticated-user-id'),t=now();
   if(method==='GET'){
+   if(path==='player'){
+    if(!id)fail('Open your player profile to see your level.',401);
+    if(!await db.prepare('SELECT id FROM social_profiles WHERE id=?').bind(id).first())fail('Set up your arcade profile first.',428);
+    return json(await playerLevels(db,id,t));
+   }
    if(path==='trending')return json(await trending(db,t));
    if(path==='leaderboard'){
     const game=url.searchParams.get('game'),period=url.searchParams.get('period')||'all-time';

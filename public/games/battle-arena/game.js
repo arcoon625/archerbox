@@ -1,7 +1,7 @@
 import * as THREE from '../../vendor/three.module.js';
 import {ARENAS,WEAPONS,MODES,createGame,tick,nextRound,nearestEnemy,weaponOf,angle,clamp,distance} from './rules.js?v=battle2';
 import {makeArena,makeFighter,makeViewLoadout,environment,dispose} from './scene.js?v=human1';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('battle-arena'),$=id=>document.getElementById(id),safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icons={sword:'M12 3 15 7 14 17 10 17 9 7Z M7 18H17M12 18V24M9 25H15',axe:'M11 4V25 M12 7Q20 2 24 6L22 16Q17 14 12 14',hammer:'M12 9V25 M5 3H20V11H5Z M7 4V10M18 4V10',spear:'M12 10V26 M12 1 17 9 12 13 7 9Z',katana:'M8 24 10 17 M7 16 13 19 M10 17Q21 10 23 2Q23 11 13 19',dual:'M6 23V16M3 16H9 M5 15 4 5 7 2 9 5 8 15Z M19 23V16M16 16H22 M18 15 17 5 20 2 22 5 21 15Z'};
 function boot(){

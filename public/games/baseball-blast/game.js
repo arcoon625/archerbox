@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('baseball-blast');
 import * as THREE from '../../vendor/three.module.js';
 import {DIFFICULTIES,PITCHES,createGame,step,swing,releaseValue,ballPosition,clamp} from './rules.js';

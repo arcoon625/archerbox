@@ -3,7 +3,7 @@ import {GOAL,NAMES,createGame,tick,aimTarget,restoreRecord,recordRun,clamp} from
 import {makeWorld,makePerson,makePoop} from './scene.js';
 import {steer,stickTurn} from '../laser-maze/controls.js?v=turn1';
 import {capturePointer} from '../snowball-showdown/controls.js?v=aim2';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const $=id=>document.getElementById(id),coinRun=createCoinRun('poop-panic'),KEY='archerbox-poop-panic-v1',format=t=>Math.floor(t/60)+':'+String(Math.floor(t)%60).padStart(2,'0');
 function boot(){
  const cover=new URLSearchParams(location.search).get('cover')==='1';if(cover)document.body.classList.add('cover');const renderer=new THREE.WebGLRenderer({canvas:$('world'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.03;

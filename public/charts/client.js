@@ -1,6 +1,6 @@
 import {metricFor,scoreEvent,validRun} from './rules.js?v=charts1';
 // Scores use the signed-in arcade profile, never a name or identity supplied by a game.
-export function createTracker({fetcher=globalThis.fetch,storage=globalThis.localStorage,setTimer=globalThis.setTimeout,clearTimer=globalThis.clearTimeout}={}){
+export function createTracker({fetcher=globalThis.fetch,storage=globalThis.localStorage,setTimer=globalThis.setTimeout,clearTimer=globalThis.clearTimeout,onSynced=()=>{}}={}){
  let identity=null,profilePromise=null,queue=[],flushing=null,retry=null;const sessions=new Map();
  const key=code=>'archerbox-chart-outbox-v1:'+code;
  const read=k=>{try{return JSON.parse(storage?.getItem(k)||'null')}catch{return null}};
@@ -18,7 +18,7 @@ export function createTracker({fetcher=globalThis.fetch,storage=globalThis.local
   if(flushing)return flushing;
   flushing=(async()=>{await profile();const owner=identity;while(queue.length&&owner===identity){
    const item={...queue[0]};
-   try{await api('/api/charts/progress',{...item,session:await session(item.game)});if(owner!==identity)break;queue=queue.filter(e=>!(e.game===item.game&&e.run===item.run&&e.event===item.event&&e.progress<=item.progress));save()}
+   try{const result=await api('/api/charts/progress',{...item,session:await session(item.game)});if(owner!==identity)break;if(result.added>0)try{onSynced()}catch{}queue=queue.filter(e=>!(e.game===item.game&&e.run===item.run&&e.event===item.event&&e.progress<=item.progress));save()}
    catch(e){if(e.status===410){sessions.delete(item.game);later();break}if(e.status===401||e.status===403||e.status===428){profilePromise=null;sessions.clear();later();break}if(e.status===400||e.status===404||e.status===413){queue=queue.filter(q=>!(q.game===item.game&&q.run===item.run&&q.event===item.event&&q.progress<=item.progress));save();continue}later();break}
   }})();try{await flushing}catch{later()}finally{flushing=null}
  }
@@ -30,7 +30,7 @@ export function createTracker({fetcher=globalThis.fetch,storage=globalThis.local
  };
 }
 let tracker;
-function browserTracker(){if(typeof window==='undefined')return null;try{return tracker??=createTracker()}catch{return null}}
+function browserTracker(){if(typeof window==='undefined')return null;try{return tracker??=createTracker({onSynced:()=>{window.dispatchEvent(new Event('archerbox:xp-sync'));if(window.parent!==window)window.parent.postMessage({type:'archerbox:xp-sync'},location.origin)}})}catch{return null}}
 export const recordPlay=game=>browserTracker()?.play(game);
 export const recordProgress=data=>browserTracker()?.record(data);
 export const flushStats=()=>browserTracker()?.refresh().catch(()=>{});

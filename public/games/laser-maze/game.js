@@ -2,7 +2,7 @@ import * as THREE from '../../vendor/three.module.js';
 import {MISSIONS,CELL,createGame,tick,respawn,nearbySwitch,objective,pathTo,laserSegments,medal,clamp} from './rules.js';
 import {makeWorld} from './scene.js';
 import {steer,stickTurn} from './controls.js?v=turn1';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('laser-maze'),$=id=>document.getElementById(id),format=t=>Number.isFinite(t)?Math.floor(t/60)+':'+(t%60).toFixed(1).padStart(4,'0'):'—';
 function boot(){
  const cover=new URLSearchParams(location.search).get('cover')==='1';if(cover)document.body.classList.add('cover');

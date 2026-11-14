@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('color-rush');
 import {connectMatch,escapeText} from '../../multiplayer/client.js';
 let net=null,remoteStarted=false;

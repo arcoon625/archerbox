@@ -1,6 +1,6 @@
 import {SAVE_KEY,LEGACY_SAVE_KEY,ISLANDS,PLACES,WEAPONS,FRUITS,STAT_NAMES,questReward,fruitDamage,moveDescription,freshGame,restoreGame,snapshot,maxHP,step,nearestPlace,target,acceptQuest,claimQuest,spendStat,buyWeapon,equipWeapon,buyFruit,eatFruit,travel,usePower,attack} from './rules.js?v=seas2';
 import {createWorld} from './scene.js?v=scan2';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const $=id=>document.getElementById(id),coinRun=createCoinRun('fruit-seas');
 let g=freshGame(),savedText=null,storageOkay=true;
 try{savedText=localStorage.getItem(SAVE_KEY);g=restoreGame(JSON.parse(savedText||localStorage.getItem(LEGACY_SAVE_KEY)||'null'));}catch{storageOkay=false;}

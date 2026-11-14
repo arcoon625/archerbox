@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const coinRun=createCoinRun('creature-vault');
 import {ELEMENTS,RARITIES,CARDS,PACKS,cardById,rarityOf,freshCollection,restoreCollection,openPack,revealCard,revealAll,finishPack,craftCard,favoriteCard,showcaseCard,filterCards,stats} from './rules.js?v=vault2';
 const $=id=>document.getElementById(id),KEY='archerbox-creature-vault-v1',elementOf=c=>ELEMENTS.find(e=>e.id===c.element),num=n=>String(n).padStart(3,'0');

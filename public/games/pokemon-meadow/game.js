@@ -2,7 +2,7 @@ import {SAVE_KEY,SPECIES,STARTERS,TYPES,TRAINERS,SPAWNS,CENTER,region,species,MO
 import {freshGame,restoreGame,chooseStarter,walk,nearest,startBattle,act,maxHP,lead,opponent,heal,setLead,reserveToTeam,effectiveness,clamp} from './rules.js?v=meadow1';
 import {artUri} from './art.js?v=meadow1';
 import {createWorld} from './world.js?v=meadow1';
-import {createCoinRun} from '../../economy/wallet.js?v=charts1';
+import {createCoinRun} from '../../economy/wallet.js?v=levels1';
 const $=id=>document.getElementById(id),coinRun=createCoinRun('pokemon-meadow'),escape=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let g=freshGame(),savedText=null,storageOkay=true;
 try{savedText=localStorage.getItem(SAVE_KEY);g=restoreGame(JSON.parse(savedText||'null'));}catch{storageOkay=false;}
