@@ -1,7 +1,7 @@
 import {FRIEND_GAMES,friendGame} from './multiplayer/catalog.js';
 const $=id=>document.getElementById(id),escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function gameChoices(){const meta=friendGame($('friendGame').value);$('friendArena').innerHTML=meta.arenas.map((name,i)=>`<option value="${i}">${escape(name)}</option>`).join('');$('friendModeRow').hidden=meta.id!=='neon-clash';$('friendGameHelp').textContent=meta.detail;}
-let state=null,busy=false,polling=false,initialized=false,profile,openRace,currentRoom=null,lastInvite=null,needsProfileSave=false,onProfile,ignoredRooms=new Set();
+let state=null,busy=false,polling=false,profile,openRace,currentRoom=null,lastInvite=null,needsProfileSave=false,onProfile,ignoredRooms=new Set();
 export async function socialApi(path,body){
  const response=await fetch('/api/social/'+path,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
  let data;try{data=await response.json()}catch{throw new Error('Friends needs an online connection. Try again in a moment.')}
@@ -19,7 +19,7 @@ function render(){
  if(state.activeRoom&&!ignoredRooms.has(state.activeRoom)&&state.activeRoom!==currentRoom){currentRoom=state.activeRoom;openRace(state.activeRoom,state.activeGame);}
 }
 async function run(operation,success=''){if(busy)return;busy=true;$('friendsContent').setAttribute('aria-busy','true');try{const next=await operation();if(next.profile){state=next;render()}message(next.message||success)}catch(e){message(e.message,true);if(e.status===401)$('friendsSignIn').hidden=false}finally{busy=false;$('friendsContent').removeAttribute('aria-busy');}}
-async function connect(){if(polling||busy)return;polling=true;try{state=initialized?await socialApi('state'):await socialApi('profile',{...profile(),update:needsProfileSave});initialized=true;needsProfileSave=false;onProfile?.(state.profile);$('friendsSignIn').hidden=true;$('friendStatus').textContent='';render()}catch(e){message(e.message,true);if(e.status===401)$('friendsSignIn').hidden=false}finally{polling=false}}
+async function connect(){if(polling||busy)return;polling=true;try{state=needsProfileSave?await socialApi('profile',{...profile(),update:true}):await socialApi('state');needsProfileSave=false;onProfile?.(state.profile);$('friendsSignIn').hidden=true;$('friendStatus').textContent='';render()}catch(e){message(e.message,true);if(e.status===401)$('friendsSignIn').hidden=false}finally{polling=false}}
 async function respond(invite,accept){await run(()=>socialApi('respond',{invite,accept}),accept?'Joining your friend…':'Invite declined.');}
 async function sendInvite(friend){await run(()=>socialApi('invite',{friend,game:$('friendGame').value,track:Number($('friendArena').value),variant:$('friendMode').value}));}
 export function initFriends(options){
@@ -34,7 +34,7 @@ export function initFriends(options){
  $('toastAccept').onclick=()=>respond(lastInvite,true);$('toastDecline').onclick=()=>respond(lastInvite,false);
  $('friendRefresh').onclick=connect;
  document.addEventListener('archerbox:profile-open',connect);
- document.addEventListener('archerbox:profile-save',()=>{needsProfileSave=true;initialized=false;connect()});
+ document.addEventListener('archerbox:profile-save',()=>{needsProfileSave=true;connect()});
  document.addEventListener('archerbox:race-left',e=>{if(e.detail?.roomId)ignoredRooms.add(e.detail.roomId);currentRoom=null;});
  setInterval(()=>{if(!document.hidden)connect()},4000);connect();
 }

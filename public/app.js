@@ -1,14 +1,18 @@
+import {requirePlayer} from './onboarding/session.js?v=welcome1';
 import {initPlayerLevels} from './progression/ui.js?v=levels1';
-import {initCharts} from './charts/app.js?v=levels1';
+import {initCharts} from './charts/app.js?v=welcome1';
 import {createReloadNotice} from './game-errors.js?v=recovery1';
 import {coinButton,initCoinUI} from './economy/ui.js?v=seas2';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=league-size14';
-import {initFriends,socialApi} from './friends.js?v=multiplayer2';
+import {initFriends,socialApi} from './friends.js?v=welcome1';
 import {GAMES,CATEGORIES,findGames} from './catalog.js?v=seas2';
+const acceptedPlayer=await requirePlayer();
+window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
 const $=id=>document.getElementById(id),KEY='archerbox-lobby-v1',COLORS=['#c0f16b','#b9a2fb','#77d9dc','#f4ae81'];
 const reloadNotice=createReloadNotice({show:()=>{$('loadError').hidden=false;},hide:()=>{$('loadError').hidden=true;}});
 const validIds=new Set(GAMES.map(g=>g.id));let favorites=[],recent=[],profile={name:'Archer',color:COLORS[0]},view='discover',category='All games',query='',detailId=null,activeGame=null,frame=null,loadingTimer=null,profileColor=profile.color;
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'{}');favorites=[...new Set((Array.isArray(saved.favorites)?saved.favorites:[]).filter(id=>validIds.has(id)))];recent=[...new Set((Array.isArray(saved.recent)?saved.recent:[]).filter(id=>validIds.has(id)))].slice(0,5);if(typeof saved.profile?.name==='string'&&saved.profile.name.trim())profile.name=saved.profile.name.trim().slice(0,16);if(COLORS.includes(saved.profile?.color))profile.color=saved.profile.color}catch{}
+profile={name:acceptedPlayer.name,color:COLORS.includes(acceptedPlayer.color)?acceptedPlayer.color:COLORS[0]};profileColor=profile.color;
 const playerLevels=initPlayerLevels({games:GAMES,onProfile:()=>{$('profileButton').click();$('profileTab').click()}});
 const charts=initCharts({root:$('chartsPage'),games:GAMES,onPlay:launch,onNavigate:hash=>showCharts(hash)});
 function save(){try{localStorage.setItem(KEY,JSON.stringify({favorites,recent,profile}))}catch{}}

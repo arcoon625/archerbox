@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createTracker} from '../public/charts/client.js';
 const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)},requests=[],timers=[];
 let owner='archer0001',offline=false,forbidden=false;
-const fetcher=async(path,options)=>{const body=options.body?JSON.parse(options.body):null;requests.push({path,body,owner});if(path==='/api/social/profile')return Response.json({profile:{code:owner}});if(offline)throw Error('offline');if(path==='/api/charts/play')return Response.json({session:owner+'-session'});if(forbidden||!body.session.startsWith(owner))return Response.json({error:'Account changed'},{status:403});return Response.json({ok:true,added:1})};
+const fetcher=async(path,options)=>{const body=options.body?JSON.parse(options.body):null;requests.push({path,body,owner});if(path==='/api/session')return Response.json({ready:true,profile:{code:owner}});if(offline)throw Error('offline');if(path==='/api/charts/play')return Response.json({session:owner+'-session'});if(forbidden||!body.session.startsWith(owner))return Response.json({error:'Account changed'},{status:403});return Response.json({ok:true,added:1})};
 const make=()=>createTracker({fetcher,storage,setTimer:fn=>{timers.push(fn);return timers.length},clearTimer:()=>{}});
 let tracker=make();await tracker.play('neon-clash');await tracker.record({game:'neon-clash',event:'elimination',run:'test',progress:2});await tracker.refresh();
 assert.equal(requests.some(r=>r.path==='/api/charts/progress'&&r.body.progress===2),true);

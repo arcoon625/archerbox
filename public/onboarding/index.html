@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Choose your username · Archerbox</title>
+<link rel="stylesheet" href="/onboarding/style.css?v=welcome1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23bdf167'/%3E%3Ctext x='8' y='25' font-size='26' font-weight='bold' fill='%23161c18'%3EA%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<main class="welcomeShell">
+  <div class="welcomeBrand" aria-label="Archerbox"><span>A</span><strong>archerbox<small>✦</small></strong></div>
+  <section class="welcomeCard" aria-labelledby="welcomeTitle">
+    <div class="welcomeArt" aria-hidden="true"><div class="welcomeGlow"></div><div class="welcomeCovers"><img src="/assets/turbo-real.jpg" alt=""><img src="/assets/neon-real.jpg" alt=""><img src="/assets/football-helmets.jpg" alt=""></div><div class="welcomeAvatar" id="nameAvatar">?</div><span class="welcomeSpark">✦</span></div>
+    <div class="welcomeContent">
+      <span class="welcomeEyebrow"><i></i> YOUR GAME UNIVERSE STARTS HERE</span>
+      <h1 id="welcomeTitle">Every player<br>needs a name.</h1>
+      <p>Choose your username to join Archerbox.<br>It’s how other players will know you.</p>
+      <form id="usernameForm" novalidate>
+        <label for="newUsername">YOUR USERNAME <span>REQUIRED</span></label>
+        <div class="usernameInput"><span aria-hidden="true">@</span><input id="newUsername" name="username" type="text" minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Choose a player name" aria-describedby="usernameHelp usernameError" required></div>
+        <p id="usernameHelp" class="usernameHelp">3–16 letters, numbers, or underscores. Pick a nickname rather than your full real name.</p>
+        <p id="usernameError" class="usernameError" role="alert" hidden></p>
+        <button id="saveUsername" type="submit" disabled>Save username &amp; play <span>↗</span></button>
+        <p id="usernameStatus" class="usernameStatus" role="status">Save your username to unlock the games.</p>
+      </form>
+      <noscript><p class="usernameError">Turn on JavaScript to choose your username and play. A username is required.</p></noscript>
+    </div>
+  </section>
+  <p class="welcomeFooter">21 GAMES TO EXPLORE <span>✦</span> ONE NAME TO MAKE YOURS</p>
+</main>
+<script type="module" src="/onboarding/app.js?v=welcome1"></script>
+</body>
+</html>

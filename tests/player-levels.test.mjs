@@ -35,7 +35,7 @@ test('server-owned XP credits saved achievements once, persists, and isolates br
     const response=await worker.fetch(new Request('https://arcade.test/api/'+path,{method:body?'POST':'GET',headers:{Origin:'https://arcade.test',...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{}),...headers},...(body?{body:JSON.stringify(body)}:{})}),env);
     return {status:response.status,cookie:response.headers.get('Set-Cookie')?.split(';')[0],cache:response.headers.get('Cache-Control'),...await response.json()};
   }
-  const first=await request('social/profile',{body:{name:'One',color:'#abcdef'}}),second=await request('social/profile',{body:{name:'Two'}});
+  const first=await request('session',{body:{username:'One',color:'#abcdef'}}),second=await request('session',{body:{username:'Two'}});
   const cookie=first.cookie,other=second.cookie;
   let state=await request('charts/player',{cookie});assert.equal(state.level,1);assert.equal(state.totalXP,0);assert.equal(state.achievements,0);assert.equal(state.gamesPlayed,0);assert.match(state.cache,/no-store/);
   assert.equal((await request('charts/player')).status,401);

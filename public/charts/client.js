@@ -9,7 +9,7 @@ export function createTracker({fetcher=globalThis.fetch,storage=globalThis.local
  function load(code){if(identity===code)return;identity=code;sessions.clear();const saved=read(key(code));queue=Array.isArray(saved)?saved.filter(e=>scoreEvent(e.game,e.event,e.progress)&&validRun(e.run)).slice(-200):[]}
  async function profile(){
   if(profilePromise)return profilePromise;
-  profilePromise=(async()=>{const local=read('archerbox-lobby-v1')?.profile||{};const data=await api('/api/social/profile',{name:typeof local.name==='string'?local.name:'Archer',color:typeof local.color==='string'?local.color:'#c0f16b'});const code=data.profile?.code;if(typeof code!=='string'||!/^[a-z0-9]{10}$/.test(code))throw Error('Profile is not ready.');load(code);return code})();
+  profilePromise=(async()=>{const data=await api('/api/session');if(!data.ready)throw Object.assign(Error('Choose your username before playing.'),{status:428});const code=data.profile?.code;if(typeof code!=='string'||!/^[a-z0-9]{10}$/.test(code))throw Error('Profile is not ready.');load(code);return code})();
   try{return await profilePromise}catch(e){profilePromise=null;throw e}
  }
  async function session(game){let pending=sessions.get(game);if(!pending){pending=api('/api/charts/play',{game}).then(d=>d.session);sessions.set(game,pending);pending.catch(()=>sessions.delete(game))}return pending}

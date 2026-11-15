@@ -1,3 +1,4 @@
+import {privateResponse,savedPlayer,registrationBody,gateDocument} from './onboarding.js';
 import {handleSocial} from '../server/social.js';
 import {handleFantasy} from '../server/fantasy.js';
 import {handleCharts} from '../server/charts.js';
@@ -33,20 +34,35 @@ export default {
     if (['/signin-with-chatgpt', '/signout-with-chatgpt'].includes(url.pathname)) {
       return Response.redirect(new URL('/#profile', url), 302);
     }
-    if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
+    if (!url.pathname.startsWith('/api/')) {
+      try {return await gateDocument(request,env,()=>browserIdentity(request,env.DB,false));}
+      catch(error){console.error('Player welcome:',error);return privateResponse(new Response('Archerbox could not check your player profile. Reload to try again.',{status:503}));}
+    }
     if (!['GET', 'POST'].includes(request.method)) return json({error:'Use GET or POST.'},405);
     if (request.method === 'POST' && request.headers.get('Origin') !== url.origin) return json({error:'Open Archerbox to make changes.'},403);
     if (!env.DB) return json({error:'The online database is not connected yet.'},503);
     const handler = url.pathname.startsWith('/api/social/') ? handleSocial
       : url.pathname.startsWith('/api/fantasy/') ? handleFantasy
       : url.pathname.startsWith('/api/charts/') ? handleCharts : null;
-    if (!handler) return json({error:'Unknown API route.'},404);
+    if (!handler && url.pathname!=='/api/session') return json({error:'Unknown API route.'},404);
     try {
-      const identity = await browserIdentity(request, env.DB, request.method === 'POST' && url.pathname === '/api/social/profile');
+      // Only an explicit username submission may create a new browser profile.
+      const registration=url.pathname==='/api/session'&&request.method==='POST'?await registrationBody(request):null;
+      const identity = await browserIdentity(request, env.DB, !!registration);
       // Never trust identity headers supplied by an internet visitor.
       const headers = new Headers(request.headers);
       for (const name of [...headers.keys()]) if (name.startsWith('oai-authenticated-user-')) headers.delete(name);
       if (identity.id) headers.set('oai-authenticated-user-id', identity.id);
+      if(url.pathname==='/api/session'){
+        if(!registration){const profile=await savedPlayer(env.DB,identity.id);return privateResponse(json({ready:!!profile,profile},200));}
+        const profileUrl=new URL('/api/social/profile',url);
+        const result=await handleSocial(new Request(profileUrl,{method:'POST',headers,body:JSON.stringify(registration)}),env.DB);
+        if(!result.ok)return privateResponse(result);
+        const data=await result.json(),response=privateResponse(json({ready:true,profile:data.profile},200));
+        if(identity.cookie)response.headers.append('Set-Cookie',identity.cookie);
+        return response;
+      }
+      if(url.pathname==='/api/social/profile'&&!await savedPlayer(env.DB,identity.id))return privateResponse(json({error:'Choose your username before playing.',needsUsername:true},428));
       const match = url.pathname.match(/^\/api\/social\/room\/([a-f0-9-]{36})(?:\/(?:connect|score))?$/);
       if (match && env.MATCH_ROOMS) {
         if (!identity.id) return json({error:'Open your player profile first.'},401);
@@ -67,8 +83,8 @@ export default {
       if (identity.cookie) response.headers.append('Set-Cookie', identity.cookie);
       return response;
     } catch (error) {
-      console.error('Archerbox API:', error);
-      return json({error:'Online features could not connect. Please try again.'},500);
+      if(!error.status)console.error('Archerbox API:', error);
+      return json({error:error.status?error.message:'Online features could not connect. Please try again.'},error.status||500);
     }
   }
 };

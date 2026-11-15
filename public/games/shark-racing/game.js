@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=levels1';
+import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
 const coinRun=createCoinRun('shark-racing');
 import {connectMatch,escapeText} from '../../multiplayer/client.js';
 let net=null,remoteStarted=false;

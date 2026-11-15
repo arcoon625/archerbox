@@ -23,7 +23,7 @@ Use `main` for publishing. Other branches do not update the live site. If publis
 ## How it works
 
 - `public/`: HTML, CSS, JavaScript, Three.js, artwork, sounds, and games. Static files are served directly by Cloudflare.
-- `worker/index.js`: standalone Cloudflare Worker that routes requests to the existing game APIs.
+- `worker/index.js`: standalone Cloudflare Worker that gates game pages on saved usernames and routes requests to the existing game APIs. HTML is served with private, no-store caching; static images and scripts keep their normal asset caching.
 - `worker/match-room.js`: a SQLite-backed Durable Object per live friend match, with authenticated WebSockets and 20 updates per second. Movement runs in memory, with durable checkpoints and periodic D1 saves instead of database requests for every key press. HTTP fallback supports connections which block WebSockets.
 - `server/`: server-owned game rules, friends, fantasy leagues, and leaderboards.
 - `drizzle/`: ordered SQL migrations that create the D1 database tables.
@@ -33,7 +33,7 @@ This copy does not require React, Next.js, Vinext, Sites, or a separate always-o
 
 ## Player profiles
 
-There are no passwords or ChatGPT accounts. The Friends client creates a browser profile on first connection. A cryptographically random session token is kept in an HttpOnly, SameSite=Strict cookie (Secure on HTTPS). Only its SHA-256 hash is stored in D1. Incoming identity headers are discarded; the Worker supplies the verified player ID to existing APIs.
+There are no passwords or ChatGPT accounts. New players must explicitly choose a username on the welcome screen before entering the lobby or a game. The server creates their browser profile only when they submit a valid username (3–16 letters, numbers, or underscores). Existing profiles keep their names and progress. HTML pages, including direct and extensionless game URLs, check the saved profile; local browser flags cannot skip setup. A cryptographically random session token is kept in an HttpOnly, SameSite=Strict cookie (Secure on HTTPS). Only its SHA-256 hash is stored in D1. Incoming identity headers are discarded; the Worker supplies the verified player ID to existing APIs.
 
 The browser profile lasts up to one year. Clearing cookies, changing browsers, changing website domains, or expiration creates a new identity. There is no account recovery or cross-device login. Use an arcade nickname rather than personal information. Existing Sites database records and browser saves are not automatically migrated; this deployment starts with a new D1 database. Browser-local favorites and avatars remain local.
 
