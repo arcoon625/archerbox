@@ -1,5 +1,5 @@
 import {createPlayback} from '../../multiplayer/playback.js';
-import {createMatchTransport} from '../../multiplayer/transport.js';
+import {createMatchTransport} from '../../multiplayer/transport.js?v=restart1';
 const roomId=new URLSearchParams(location.search).get('room');
 export function connectRace({onRoom,onError,input}){
  if(!roomId||!/^[a-f0-9-]{36}$/.test(roomId))return null;

@@ -1,6 +1,6 @@
 import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
 const coinRun=createCoinRun('turbo-kart-racing');
-import {connectRace} from './online.js?v=1';
+import {connectRace} from './online.js?v=restart1';
 import * as THREE from '../../vendor/three.module.js';
 import {tracks,karts,makeTrack,makeRacer,drive,cpuInput,order,progress,checkFinish,clamp,LAPS} from './race.js?v=easy1';
 import {buildWorld,makeEnvironment} from './world.js?v=real2';

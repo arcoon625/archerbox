@@ -1,6 +1,6 @@
 import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
 const coinRun=createCoinRun('neon-clash');
-import {connectMatch} from '../../multiplayer/client.js';
+import {connectMatch} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false,rivalSnapshot=null,networkOwnPos=null,lastNetworkEvent=0;const networkObjects=new Map();
 import {skins,applySkin,createSkinPreview} from './skins.js?v=1';
 import {jump,advanceVertical} from './physics.js?v=1';

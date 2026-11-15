@@ -2,7 +2,7 @@ import {createPollLoop} from './poll-loop.js';
 
 // Persistent authenticated connection shared by all six friend games.
 // HTTP is retained for networks which block WebSockets, not used per live frame.
-export function createMatchTransport({id,clientId,input,onRoom,onError=()=>{},WebSocketClass=globalThis.WebSocket,fetcher=globalThis.fetch,base=location.href}){
+export function createMatchTransport({id,clientId,input,onRoom,onError=()=>{},WebSocketClass=globalThis.WebSocket,fetcher=globalThis.fetch,base=location.href,playerKey=globalThis.archerboxRuntime?.playerKey}){
  let socket=null,closed=false,connected=false,sequence=Date.now()*1000,requestId=sequence,reconnect=null,heartbeat=null,watchdog=null,previous=null;
  const pending=new Map();
  const path='/api/social/room/'+id;
@@ -39,7 +39,7 @@ export function createMatchTransport({id,clientId,input,onRoom,onError=()=>{},We
  });
  function connect(){
   if(closed)return;
-  const url=new URL(path+'/connect',base);url.protocol=url.protocol==='https:'?'wss:':'ws:';url.searchParams.set('clientId',clientId);
+  const url=new URL(path+'/connect',base);url.protocol=url.protocol==='https:'?'wss:':'ws:';url.searchParams.set('clientId',clientId);if(playerKey)url.searchParams.set('playerKey',playerKey);
   let current;
   try{current=new WebSocketClass(url);socket=current;}catch{fallback.request();reconnect=setTimeout(connect,2000);return;}
   watchdog=setTimeout(()=>{if(!closed&&!connected)fallback.request();},1500);

@@ -1,3 +1,4 @@
+import {resetPlayer,resetConfirmation} from './reset-player.js';
 import {privateResponse,savedPlayer,registrationBody,gateDocument} from './onboarding.js';
 import {handleSocial} from '../server/social.js';
 import {handleFantasy} from '../server/fantasy.js';
@@ -13,15 +14,15 @@ const tokenHash = async token => Array.from(new Uint8Array(await crypto.subtle.d
 async function browserIdentity(request, db, create) {
   const token = cookieValue(request), now = Date.now();
   if (token && /^[a-f0-9]{64}$/.test(token)) {
-    const row = await db.prepare('SELECT user_id FROM browser_sessions WHERE token_hash=? AND expires>?').bind(await tokenHash(token), now).first();
-    if (row) return {id: row.user_id};
+    const row = await db.prepare('SELECT user_id,generation_guard,resetting FROM browser_sessions WHERE token_hash=? AND expires>?').bind(await tokenHash(token), now).first();
+    if (row) return {id:row.user_id,guard:row.generation_guard===1,resetting:row.resetting===1};
   }
   if (!create) return {};
   const fresh = Array.from(crypto.getRandomValues(new Uint8Array(32)), n => n.toString(16).padStart(2, '0')).join('');
   const id = crypto.randomUUID();
   await db.batch([
     db.prepare('DELETE FROM browser_sessions WHERE expires<=?').bind(now),
-    db.prepare('INSERT INTO browser_sessions (token_hash,user_id,expires) VALUES (?,?,?)').bind(await tokenHash(fresh), id, now + LIFETIME * 1000)
+    db.prepare('INSERT INTO browser_sessions (token_hash,user_id,expires,generation_guard) VALUES (?,?,?,?)').bind(await tokenHash(fresh),id,now+LIFETIME*1000,/(?:^|;\s*)archerbox_restart=1(?:;|$)/.test(request.headers.get('Cookie')||'')?1:0)
   ]);
   const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
   return {id, cookie: `${COOKIE}=${fresh}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${LIFETIME}${secure}`};
@@ -44,7 +45,7 @@ export default {
     const handler = url.pathname.startsWith('/api/social/') ? handleSocial
       : url.pathname.startsWith('/api/fantasy/') ? handleFantasy
       : url.pathname.startsWith('/api/charts/') ? handleCharts : null;
-    if (!handler && url.pathname!=='/api/session') return json({error:'Unknown API route.'},404);
+    if (!handler && !['/api/session','/api/session/reset'].includes(url.pathname)) return json({error:'Unknown API route.'},404);
     try {
       // Only an explicit username submission may create a new browser profile.
       const registration=url.pathname==='/api/session'&&request.method==='POST'?await registrationBody(request):null;
@@ -53,7 +54,23 @@ export default {
       const headers = new Headers(request.headers);
       for (const name of [...headers.keys()]) if (name.startsWith('oai-authenticated-user-')) headers.delete(name);
       if (identity.id) headers.set('oai-authenticated-user-id', identity.id);
+      const restarting=url.pathname==='/api/session/reset';
+      if(identity.guard&&url.pathname!=='/api/session'){
+        const player=await savedPlayer(env.DB,identity.id);
+        if(player&&(request.headers.get('X-Archerbox-Player')||(request.headers.get('Upgrade')?.toLowerCase()==='websocket'?url.searchParams.get('playerKey'):null))!==player.code)return privateResponse(json({error:'This page belongs to your previous player. Reload Archerbox.',reloadRequired:true},409));
+      }
+      if(restarting){
+        if(request.method!=='POST')return privateResponse(json({error:'Use POST to confirm a restart.'},405));
+        await resetConfirmation(request);
+        if(identity.id&&!await resetPlayer(env.DB,identity.id,env.MATCH_ROOMS))return privateResponse(json({reset:false,pending:true},200));
+        const response=privateResponse(json({reset:true},200)),secure=url.protocol==='https:'?'; Secure':'';
+        response.headers.append('Set-Cookie',`${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
+        response.headers.append('Set-Cookie',`archerbox_restart=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=${LIFETIME}${secure}`);
+        return response;
+      }
+      if(identity.resetting&&url.pathname!=='/api/session')return privateResponse(json({error:'Your player restart is in progress.',resetting:true},409));
       if(url.pathname==='/api/session'){
+        if(identity.resetting){if(registration)return privateResponse(json({error:'Finish your player restart first.',resetting:true},409));return privateResponse(json({ready:false,profile:null,resetting:true},200));}
         if(!registration){const profile=await savedPlayer(env.DB,identity.id);return privateResponse(json({ready:!!profile,profile},200));}
         const profileUrl=new URL('/api/social/profile',url);
         const result=await handleSocial(new Request(profileUrl,{method:'POST',headers,body:JSON.stringify(registration)}),env.DB);

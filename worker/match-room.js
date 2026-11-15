@@ -7,11 +7,12 @@ const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control
 // One live coordinator per match. Game ticks never wait for a remote database.
 export class MatchRoom {
  constructor(ctx,env){
-  this.ctx=ctx;this.env=env;this.room=null;this.sockets=new Map();this.timer=null;this.savedAt=0;this.databaseAt=0;this.saving=null;
-  this.initialized=ctx.blockConcurrencyWhile(async()=>{this.room=await ctx.storage.get('room')||null;});
+  this.ctx=ctx;this.env=env;this.room=null;this.sockets=new Map();this.timer=null;this.savedAt=0;this.databaseAt=0;this.saving=null;this.retired=false;
+  this.initialized=ctx.blockConcurrencyWhile(async()=>{this.room=await ctx.storage.get('room')||null;this.retired=!!(await ctx.storage.get('retired'));});
  }
  async load(id){
   await this.initialized;
+  if(this.retired)throw Object.assign(new Error('This match ended when a player restarted.'),{status:410});
   if(!this.room){
    this.loading??=(async()=>{const row=await this.env.DB.prepare('SELECT data FROM social_rooms WHERE id=?').bind(id).first();if(!row)throw Object.assign(new Error('This match could not be found.'),{status:404});this.room=JSON.parse(row.data);})();
    try{await this.loading}catch(error){this.loading=null;throw error;}
@@ -20,6 +21,7 @@ export class MatchRoom {
  }
  view(user,connection,ack){return {...publicRoom(this.room,user,connection),...(ack===undefined?{}:{ack}),transport:'live'};}
  async persist(force=false){
+  if(this.retired||!this.room)return;
   const now=Date.now();
   if(!force&&now-this.savedAt<1000)return;
   if(this.saving)return force?this.saving.then(()=>this.persist(true)):this.saving;
@@ -50,23 +52,38 @@ export class MatchRoom {
   }
  }
  start(){
-  if(this.timer||!this.sockets.size||terminal(this.room))return;
+  if(this.retired||!this.room||this.timer||!this.sockets.size||terminal(this.room))return;
   this.timer=setInterval(()=>{
    try{tickRoom(this.room,Date.now());this.broadcast();this.checkpoint(terminal(this.room));if(terminal(this.room)||!this.sockets.size)this.stop();}
    catch(error){console.error('Match tick failed:',error);}
   },50);
  }
  stop(){if(this.timer)clearInterval(this.timer);this.timer=null;}
- disconnect(socket){this.sockets.delete(socket);if(!this.sockets.size){this.stop();this.checkpoint(true);}}
+ disconnect(socket){this.sockets.delete(socket);if(this.retired)return;if(!this.sockets.size){this.stop();this.checkpoint(true);}}
  command(user,body,respond=true){
+  if(this.retired)throw Object.assign(new Error('This match has ended.'),{status:410});
   tickRoom(this.room,Date.now());
   const connection=applyRoomCommand(this.room,user,body,Date.now());
   this.checkpoint(terminal(this.room));
   return respond?this.view(user,connection,body.requestId):null;
  }
+ async forgetPlayer(id,user){
+  await this.initialized;if(this.retired)return;
+  const owner=await this.env.DB.prepare('SELECT host,guest FROM social_rooms WHERE id=?').bind(id).first();
+  if(!owner&&!this.room)return;
+  if(owner?owner.host!==user&&owner.guest!==user:!this.room?.players?.some(p=>p.id===user))throw Object.assign(new Error('This match belongs to other players.'),{status:403});
+  this.retired=true;this.stop();if(this.loading)try{await this.loading}catch{}if(this.saving)await this.saving;
+  for(const socket of this.sockets.keys())try{socket.close(1000,'A player restarted their profile.')}catch{}
+  this.sockets.clear();this.room=null;this.loading=null;
+  await this.ctx.storage.deleteAll();await this.ctx.storage.put('retired',true);
+ }
  async fetch(request){
   try{
-   const url=new URL(request.url),match=url.pathname.match(/^\/api\/social\/room\/([a-f0-9-]{36})(?:\/(?:connect|score))?$/),user=request.headers.get('oai-authenticated-user-id');
+   const url=new URL(request.url);
+   // This service-binding route is never routed from the public Worker.
+   const forgotten=url.pathname.match(/^\/_restart\/([a-f0-9-]{36})$/);
+   if(forgotten&&request.method==='POST'){const user=request.headers.get('oai-authenticated-user-id');if(!user)return json({error:'Player required.'},401);await this.forgetPlayer(forgotten[1],user);return json({forgotten:true});}
+   const match=url.pathname.match(/^\/api\/social\/room\/([a-f0-9-]{36})(?:\/(?:connect|score))?$/),user=request.headers.get('oai-authenticated-user-id');
    if(!match||!user)return json({error:'Open this match from your player profile.'},401);
    await this.load(match[1]);
    if(!this.room.players.some(p=>p.id===user))return json({error:'This match belongs to other players.'},403);

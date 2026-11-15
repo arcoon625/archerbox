@@ -1,3 +1,4 @@
+import {initRestart} from './reset/ui.js?v=restart1';
 import {requirePlayer} from './onboarding/session.js?v=welcome1';
 import {initPlayerLevels} from './progression/ui.js?v=levels1';
 import {initCharts} from './charts/app.js?v=welcome1';
@@ -70,3 +71,4 @@ initFriends({profile:()=>({name:profile.name,color:profile.color}),onProfile:nex
 
 function showFantasy({recordHistory=true}={}){charts.close();avatarEditor?.closeEditor();closeDialogs();removeGame();$('lobby').hidden=true;$('player').hidden=true;document.body.classList.add('playing');if(recordHistory)history.pushState({},'',location.pathname+location.search+'#fantasy');document.title='Fantasy Club · Archerbox';openFantasy({profile:()=>profile,onBack:()=>lobby(),onPlay:()=>launch('touchdown-rush')});}
 $('fantasyNav').onclick=()=>showFantasy();
+initRestart({mount:$('profileForm'),onStart:()=>{charts.close();closeFantasy();avatarEditor?.closeEditor();removeGame()}});

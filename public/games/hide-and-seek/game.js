@@ -1,6 +1,6 @@
 import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
 const coinRun=createCoinRun('hide-and-seek');
-import {connectMatch,escapeText} from '../../multiplayer/client.js';
+import {connectMatch,escapeText} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
 import {MAPS,createGame,tick,interact,ping,startSeeking,nearestSpot,distance,visible} from './rules.js?v=multiplayer1';

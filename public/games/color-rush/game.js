@@ -1,6 +1,6 @@
 import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
 const coinRun=createCoinRun('color-rush');
-import {connectMatch,escapeText} from '../../multiplayer/client.js';
+import {connectMatch,escapeText} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
 import {COLORS,MODES,createGame,step,clamp,supported} from './rules.js?v=multiplayer1';

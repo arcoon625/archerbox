@@ -37,6 +37,12 @@ There are no passwords or ChatGPT accounts. New players must explicitly choose a
 
 The browser profile lasts up to one year. Clearing cookies, changing browsers, changing website domains, or expiration creates a new identity. There is no account recovery or cross-device login. Use an arcade nickname rather than personal information. Existing Sites database records and browser saves are not automatically migrated; this deployment starts with a new D1 database. Browser-local favorites and avatars remain local.
 
+## Restart all progress
+
+In Profile, **Restart all progress** opens an **Are you sure?** confirmation. Cancel leaves the player unchanged. Confirmation deletes the current player's username, friend code, XP and rankings, social connections, saved avatar and coin wallet, all game saves and settings, and fantasy memberships. Solo leagues are removed; shared leagues keep the other managers, transferring ownership and using an anonymous CPU replacement where needed to finish an active season. Live rooms are stopped and their saved checkpoints erased.
+
+The restart removes all sessions for that player and clears this origin's local/session storage, Cache Storage, and any enumerated IndexedDB databases. Only an anonymous save-generation marker remains. New pages scope their saves to that generation and bind requests to the new player; stale tabs cannot restore the old profile's saves or send scores as the new player. An interrupted restart can be finished from the recovery screen before username setup resumes.
+
 ## Player levels
 
 All 21 games award lifetime XP for completed achievements. The lobby and profile show the player's level, title, and progress to the next level. The first level-up needs 100 XP; each following level needs 50 more XP than the previous one. The profile includes a per-game XP guide.

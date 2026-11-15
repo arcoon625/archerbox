@@ -6,7 +6,7 @@ import {playerTraits,traitStrengths,traitWeaknesses,TRAITS_CHECKED} from './trai
 import {athleteProfile} from './athlete-detail.js?v=realism2026';
 import {gameRoster} from './classic.js?v=traits1';
 import {injuryTraining,isUnavailable} from './injuries.js?v=injuries1';
-import {connectMatch} from '../../multiplayer/client.js';
+import {connectMatch} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
 import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead} from './rules.js?v=creators1';

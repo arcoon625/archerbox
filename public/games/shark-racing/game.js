@@ -1,6 +1,6 @@
 import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
 const coinRun=createCoinRun('shark-racing');
-import {connectMatch,escapeText} from '../../multiplayer/client.js';
+import {connectMatch,escapeText} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
 import {TRACKS,SHARKS,LAPS,createRace,tick,sample,point,order,lap,nextGate,recover} from './rules.js?v=multiplayer1';

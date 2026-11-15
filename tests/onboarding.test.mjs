@@ -98,7 +98,7 @@ test('cached HTML cannot bypass the username gate with cache validators',async()
     const game=await call('/games/neon-clash/',{extra});assert.equal(game.status,303);
   }
   const registered=await call('/api/session',{body:{username:'CachePlayer'}}),cookie=registered.headers.get('Set-Cookie').split(';')[0];
-  const allowed=await call('/',{cookie,extra:{'If-None-Match':'old-lobby'}});assert.equal(allowed.status,304);assert.match(allowed.headers.get('Cache-Control'),/private, no-store/);
+  const allowed=await call('/',{cookie,extra:{'If-None-Match':'old-lobby'}});assert.equal(allowed.status,200);assert.match(allowed.headers.get('Cache-Control'),/private, no-store/);
   sqlite.close();
 });
 

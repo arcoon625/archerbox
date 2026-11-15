@@ -21,6 +21,19 @@ export async function registrationBody(request) {
   const choice=usernameChoice(body.username);if(choice.error)fail(choice.error);
   return {name:choice.name,color:'#c0f16b'};
 }
+export async function runtimeDocument(asset,request,env,profile){
+  if(asset.status===304){
+    const headers=new Headers(request.headers);
+    for(const name of ['If-None-Match','If-Modified-Since','Range'])headers.delete(name);
+    asset=await env.ASSETS.fetch(new Request(request,{method:'GET',headers,redirect:'follow'}));
+  }
+  const code=/^[a-z0-9]{10}$/i.test(profile?.code||'')?profile.code:'';
+  const markup='<meta name="archerbox-player-key" content="'+code+'"><script src="/player-runtime.js?v=restart1"></script>';
+  const html=(await asset.text()).replace(/<head(?:\s[^>]*)?>/i,match=>match+markup);
+  const headers=new Headers(asset.headers);
+  for(const name of ['Content-Length','Content-Encoding','ETag','Last-Modified'])headers.delete(name);
+  return privateResponse(new Response(html,{status:asset.status,headers}));
+}
 export async function gateDocument(request,env,getIdentity) {
   const asset=await env.ASSETS.fetch(request);
   let contentType=asset.headers.get('Content-Type');
@@ -37,9 +50,13 @@ export async function gateDocument(request,env,getIdentity) {
   // browser headers. Extensionless and URL-encoded game documents get the same gate.
   if(!env.DB)return privateResponse(new Response('Archerbox is reconnecting. Reload to choose your username and play.',{status:503}));
   const identity=await getIdentity(),profile=await savedPlayer(env.DB,identity.id),url=new URL(request.url);
+  if(identity.resetting||url.pathname.startsWith('/reset/recover')){
+    const recovery=await env.ASSETS.fetch(new Request(new URL('/reset/recover.html',url)));
+    return runtimeDocument(recovery,request,env,profile);
+  }
   if(profile){
     if(url.pathname.startsWith('/onboarding'))return privateResponse(Response.redirect(new URL('/',url),303));
-    return privateResponse(asset);
+    return runtimeDocument(asset,request,env,profile);
   }
   let path=url.pathname;try{path=decodeURIComponent(path)}catch{}
   const game=path.replace(/\/{2,}/g,'/').match(/^\/games\/([a-z0-9-]+)(?:\/|$)/)?.[1];
@@ -48,5 +65,5 @@ export async function gateDocument(request,env,getIdentity) {
     return privateResponse(Response.redirect(target,303));
   }
   const welcome=new URL('/onboarding/index.html',url);
-  return privateResponse(await env.ASSETS.fetch(new Request(welcome,{method:request.method==='HEAD'?'HEAD':'GET'})));
+  return runtimeDocument(await env.ASSETS.fetch(new Request(welcome,{method:request.method==='HEAD'?'HEAD':'GET'})),request,env,null);
 }

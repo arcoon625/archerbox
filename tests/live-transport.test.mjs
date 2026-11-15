@@ -9,9 +9,9 @@ test('live controls do not wait for an HTTP reply, acknowledge actions, and stop
   send(raw){this.sent.push(JSON.parse(raw));}
   close(){this.readyState=3;}
  }
- const transport=createMatchTransport({id:crypto.randomUUID(),clientId:crypto.randomUUID(),input:()=>({x}),onRoom:d=>messages.push(d),onError:e=>errors.push(e),WebSocketClass:Socket,fetcher:async()=>{http++;throw Error('Should not need HTTP');},base:'https://arcade.test'});
+ const transport=createMatchTransport({id:crypto.randomUUID(),clientId:crypto.randomUUID(),input:()=>({x}),onRoom:d=>messages.push(d),onError:e=>errors.push(e),WebSocketClass:Socket,fetcher:async()=>{http++;throw Error('Should not need HTTP');},base:'https://arcade.test',playerKey:'testkey001'});
  try{
-  const socket=sockets[0];assert(socket.url.href.startsWith('wss://arcade.test/api/social/room/'));
+  const socket=sockets[0];assert(socket.url.href.startsWith('wss://arcade.test/api/social/room/'));assert.equal(socket.url.searchParams.get('playerKey'),'testkey001');
   socket.readyState=1;socket.onopen();x=1;transport.request();
   assert.equal(socket.sent.at(-1).input.x,1);assert.equal(http,0,'live input avoids HTTP and database round trips');
   transport.command({action:'event',event:'jump',eventSeq:1});const event=socket.sent.find(p=>p.event==='jump');assert(event.requestId);
