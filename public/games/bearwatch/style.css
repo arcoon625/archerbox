@@ -15,3 +15,75 @@
 .foodPanel{position:absolute;left:25px;top:260px;width:228px;background:#192d23ed;border:1px solid #9bad7a60;padding:13px 14px;z-index:3}.foodPanel header,.foodInventory{display:flex;justify-content:space-between;font-size:9px;letter-spacing:1px;align-items:center}.foodPanel header b{font-size:11px}.hungerTrack{height:4px;background:#48503a;margin:9px 0 12px}.hungerTrack i{display:block;height:100%;background:#b8ce87}.foodInventory{font-size:8px;color:#b3c49e}.foodInventory b{color:#f1e6c1;font-size:11px}.foodButtons{display:flex;gap:6px;margin-top:10px}.foodPanel button{background:#c5d09a;color:#243b2b;font-size:8px;font-weight:800;letter-spacing:.6px;padding:9px 5px;border:0;flex:1}.foodPanel button:disabled{opacity:.38}#huntButton{width:100%;margin-top:6px;background:#354d39;color:#dfdfbd}.foodPanel.hungry{border-color:#e4a36d}.foodPanel.hungry .hungerTrack i{background:#e4a36d}.chestAlert{top:440px}.campGoals{position:absolute;right:25px;top:380px;width:190px;background:#172b23e8;border:1px solid #a6b88660;z-index:3;padding:11px;color:#dce0ba}.campGoals summary{font-size:9px;font-weight:800;letter-spacing:1px;cursor:pointer}.campGoals summary small{display:block;font-size:6px;color:#a6b88e;margin-top:5px}.campGoals ul{list-style:none;margin:12px 0 0;padding:0}.campGoals li{display:grid;grid-template-columns:1fr auto;gap:5px;font-size:9px;margin:12px 0}.campGoals li small{grid-column:1 / -1;font-size:7px;color:#d6c38e}.campGoals li.complete{color:#acc98a}.phaseBadge small{max-width:120px}
 @media(max-width:760px){.firePanel{width:162px}.foodPanel{left:14px;top:218px;width:162px;padding:9px 10px}.foodPanel header,.foodInventory{font-size:7px}.foodPanel header b{font-size:9px}.foodPanel button{font-size:7px;padding:9px 3px}.hungerTrack{margin:7px 0 9px}.foodButtons{gap:4px;margin-top:8px}.campGoals{top:145px;right:14px;width:140px;padding:10px}.campGoals summary{font-size:8px}.campGoals summary small{font-size:5px}.campGoals li{font-size:8px}.chestAlert{top:383px;width:190px}.hikeHint{top:455px;width:90%;font-size:7px}.hotbar{grid-template-columns:repeat(5,30px);gap:3px}.hotbar button{width:30px;height:36px;font-size:17px}.hotbar small{font-size:6px}.loadout>small{max-width:165px}.phaseBadge{left:49%;max-width:113px}.phaseBadge small{font-size:5px}.mapPanel{bottom:310px}.toast{bottom:300px}.interaction{bottom:346px}body:has(#chestAlert:not([hidden])) .phaseWarning{top:70px}.firePanel small{font-size:6px}.phaseWarning{top:70px}}
 @media(max-width:760px){.compass{left:auto;right:14px;top:94px;width:145px;transform:none;text-align:center}.compass small{font-size:7px}}
+
+/* Thumb controls also work on wide touch screens and landscape phones. */
+.forestTitle{font-size:clamp(66px,8vw,108px);line-height:.95;letter-spacing:-2px;white-space:nowrap}
+.forestTitle>small{display:block;font:800 13px/1.5 Arial,sans-serif;letter-spacing:9px;margin-bottom:10px;color:#d2d5ad}
+.forestTitle>span{font:900 clamp(25px,3.8vw,46px)/1.1 Impact,'Arial Black',sans-serif;letter-spacing:3px;margin:10px 0 0}
+.mobileControls{pointer-events:none;user-select:none;-webkit-user-select:none;z-index:6}
+.movementPad,.touchActions{pointer-events:auto}
+.movementPad{display:grid;justify-items:center;gap:9px}
+.movementPad>small{font-size:8px;font-weight:800;letter-spacing:1.5px;color:#f0e8c8;text-shadow:0 1px 4px #000}
+.stick{position:relative;width:124px;height:124px;border:2px solid #e7ddb091;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#45604277 0 32%,#12291fc9 33% 100%);box-shadow:0 4px 20px #08140c66,inset 0 0 0 10px #f2e5ad09;touch-action:none}
+.stick i{position:relative;z-index:1;width:54px;height:54px;border:2px solid #f3edc9b8;border-radius:50%;background:radial-gradient(circle at 35% 28%,#e1e7bc,#829568);box-shadow:0 3px 9px #0006;pointer-events:none}
+.stick>span{position:absolute;top:4px;left:0;right:0;text-align:center;color:#e3ddbb99;font-size:17px;pointer-events:none}
+.stick.active{border-color:#f4e8ad;background-color:#63804b66}
+.lookHint{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:7px;font-weight:800;letter-spacing:1.3px;white-space:nowrap;color:#eee4c1cc;text-shadow:0 1px 4px #000}
+.touchActions{width:150px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.touchActions button{height:52px;border:1px solid #e3dbaf8c;border-radius:12px;background:#1a3029e8;color:#f5edce;font-size:10px;font-weight:800;letter-spacing:.5px;touch-action:none}
+.touchActions button:active,.touchActions button[aria-pressed=true]{background:#687b45;color:#fff7d8}
+#touchAttack{background:#715336ed;border-color:#f4ce92aa}
+.touchHelp{font-size:12px;line-height:1.7;color:#c5d2af}
+@media (max-width:760px),(any-pointer:coarse),(max-height:540px) and (max-width:1000px){
+ .mobileControls{display:flex;position:absolute;left:max(18px,env(safe-area-inset-left));right:max(18px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));justify-content:space-between;align-items:center}
+ .hudBottom{bottom:calc(184px + env(safe-area-inset-bottom));left:18px;right:18px}
+ .controlsNote{display:none}
+}
+@media (max-width:430px){
+ .forestTitle{font-size:clamp(55px,16vw,68px)}
+ .forestTitle>small{font-size:11px;letter-spacing:7px}
+ .forestTitle>span{font-size:28px;letter-spacing:2px}
+ .mobileControls{left:16px;right:16px}
+ .touchActions{width:140px;gap:7px}
+ .lookHint{bottom:-12px;font-size:6px}
+}
+@media (max-height:540px) and (max-width:1000px){
+ .hudTop{top:12px;left:14px;right:14px;gap:8px}
+ .dayBlock{min-width:108px;padding:8px 10px}
+ .dayBlock strong{font-size:18px;margin-top:4px}
+ .dayBlock small{font-size:6px;letter-spacing:1px}
+ .progressTrack{margin-top:6px}
+ .phaseBadge{padding:7px 12px;gap:8px}
+ .phaseBadge strong{font-size:21px}
+ .phaseBadge>span{font-size:24px}
+ .diamond{padding:5px 10px 15px;min-width:65px}
+ .diamond strong{font-size:18px}
+ .diamond>span{font-size:19px}
+ .square{height:36px;min-width:34px}
+ .mobileControls{bottom:max(12px,env(safe-area-inset-bottom))}
+ .stick{width:104px;height:104px}
+ .stick i{width:46px;height:46px}
+ .movementPad{gap:4px}
+ .touchActions button{height:44px}
+ .mapPanel,.campGoals,.compass,.firePanel small,.foodInventory,.hungerTrack{display:none}
+ .firePanel{top:88px;left:14px;width:156px;padding:7px 9px}
+ .firePanel .fuelTrack{margin:5px 0}
+ .foodPanel{left:auto;right:14px;top:88px;width:156px;padding:7px 9px}
+ .foodButtons{margin-top:5px;gap:4px}
+ .foodPanel button{padding:7px 3px}
+ #huntButton{margin-top:4px}
+ .hudBottom{bottom:16px;left:50%;right:auto;transform:translateX(-50%);gap:10px}
+ .vitals{width:94px;padding:8px}
+ .vitals>div:first-child,.staminaLabel{font-size:6px}
+ .staminaLabel{margin-top:8px}
+ .loadout{min-width:0}
+ .hotbar{display:grid;grid-template-columns:repeat(5,27px);gap:3px}
+ .hotbar button{width:27px;height:28px;font-size:15px}
+ .loadout>small{font-size:6px;max-width:150px}
+ .toast{bottom:126px;font-size:9px}
+ .interaction{bottom:165px}
+ .chestAlert{top:92px;left:50%;transform:translateX(-50%);width:210px;padding:7px}
+ .hikeHint{top:204px;font-size:7px}
+ .lookHint{bottom:105px}
+ .phaseWarning,body:has(#chestAlert:not([hidden])) .phaseWarning{top:65px;font-size:7px;padding:5px}
+}

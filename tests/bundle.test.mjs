@@ -35,6 +35,7 @@ assert.equal(findGames({query:'jurassic'})[0].id,'jurassic-island');
 assert.equal(findGames({query:'poop'})[0].id,'poop-panic');
 
 assert.equal(findGames({query:'bear'})[0].id,'bearwatch');
+assert.equal(findGames({query:'survive 100 days'})[0].name,'Survive 100 Days in a Forest');
 
 assert.equal(findGames({query:'pokemon'})[0].id,'pokemon-meadow');
 

@@ -3,7 +3,7 @@ export const REWARDS=[
  ['fruit-seas','Fruit Seas','quest','Pirate quest','Complete a five-enemy island quest and collect your reward from its captain.'],
  ['pokemon-meadow','Pokémon: Meadow Quest','discovery','New Pokémon','Catch or evolve a Pokémon species for the first time.'],
  ['pokemon-meadow','Pokémon: Meadow Quest','badge','Trainer badge','Earn a badge or Champion Star for the first time.'],
- ['bearwatch','Bearwatch: 100 Nights','survive','Night survived','Survive a full night in Pine Hollow. Earn 5 in-game diamonds, too.'],
+ ['bearwatch','Survive 100 Days in a Forest','survive','Night survived','Survive a full night in Pine Hollow. Earn 5 in-game diamonds, too.'],
  ['poop-panic','Poop Panic','knockout','Poop Panic knockout','Knock out a CPU with a poop blast during a real run.'],
  ['jurassic-island','Jurassic Island','mission','Park mission completed','Finish a dinosaur park mission and check in at ranger base.'],
  ['snowball-showdown','Snowball Showdown','round-win','Snowball round won','Win a round with your Glacier snowball team.'],

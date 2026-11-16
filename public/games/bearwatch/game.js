@@ -1,4 +1,5 @@
 import * as T from '../../vendor/three.module.js';
+import {bindJoystick} from './touch-controls.js?v=forest1';
 import {SAVE_KEY,DAY_SECONDS,NIGHT_SECONDS,CHEST_DAYS,HIKE_UNLOCK,FIRE_MAX,SPECIES,CAMP_GOALS,BERRIES,bearDanger,nearestFood,harvestFood,nearestBerries,forage,cookFood,eatMeal,WEAPONS,CANS,SHOP,BASE,TREES,ROCKS,CHEST,CHEST_LOOT,MOUNTAINS,groundHeight,canHike,nearFire,nearestWood,nearestTree,collectWood,fuelFire,toggleAxe,chestCount,nearChest,rollChest,keepChestPrize,freshGame,restoreGame,restart,tick,interact,nearestCan,canShop,buyWeapon,equip,weapon,attack,clamp,distance,notice} from './rules.js?v=wildlife1';
 import {makeWorld} from './scene.js?v=wildlife1';
 import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
@@ -31,7 +32,7 @@ function boot(){
  }
  function tone(kind){if(!sound||cover)return;try{audio??=new(window.AudioContext||window.webkitAudioContext)();audio.resume();const now=audio.currentTime,o=audio.createOscillator(),gain=audio.createGain(),hz={dawn:620,night:135,hit:92,swing:250,hide:340,buy:850,growl:65,win:1000}[kind]||440;o.type=['growl','night'].includes(kind)?'triangle':'sine';o.frequency.setValueAtTime(hz,now);o.frequency.exponentialRampToValueAtTime(hz*(kind==='dawn'||kind==='buy'||kind==='win'?1.6:.65),now+.34);gain.gain.setValueAtTime(kind==='growl'?.04:.028,now);gain.gain.exponentialRampToValueAtTime(.001,now+.4);o.connect(gain);gain.connect(audio.destination);o.start();o.stop(now+.41);}catch{}}
  function soundUI(){$('sound').textContent=sound?'SOUND ON':'SOUND OFF';$('sound').setAttribute('aria-pressed',sound);}
- function resetInput(){keys={};touch={x:0,z:0,sprint:false};queuedJump=false;look=null;$('stick').firstElementChild.style.transform='';$('touchSprint').setAttribute('aria-pressed','false');}
+ function resetInput(){keys={};touch={x:0,z:0,sprint:false};queuedJump=false;look=null;movementJoystick.reset();$('mobileControls').hidden=true;$('touchSprint').setAttribute('aria-pressed','false');}
  function releaseMouse(){if(document.pointerLockElement===canvas)document.exitPointerLock?.();}
  function menuCamera(){
   camera.fov=cover?58:innerWidth<761?57:48;
@@ -63,6 +64,7 @@ function boot(){
   c.save();c.translate(toX(g.player.x),toY(g.player.z));c.rotate(-yaw);c.fillStyle='#fff3cf';c.beginPath();c.moveTo(0,-5);c.lineTo(3.5,4);c.lineTo(0,2);c.lineTo(-3.5,4);c.closePath();c.fill();c.restore();
  }
  function hud(){
+  $('mobileControls').hidden=mode!=='playing';
   const p=g.player,night=g.phase==='night',remaining=(night?NIGHT_SECONDS:DAY_SECONDS)-g.elapsed;
   $('day').innerHTML=(night?'NIGHT ':'DAY ')+String(Math.min(100,g.survived+1)).padStart(2,'0')+' <span>/ 100</span>';$('progress').style.width=g.survived+'%';$('phaseName').textContent=night?(g.survived===0?'FIRST NIGHT SAFE':'STAY HIDDEN'):'DAYLIGHT';$('phaseIcon').textContent=night?'☾':'☀';$('phaseBadge').classList.toggle('night',night);$('timer').textContent=clock(remaining);$('diamonds').textContent=g.diamonds;
   $('healthText').textContent=Math.ceil(p.health);$('healthBar').style.width=p.health+'%';$('staminaBar').style.width=p.stamina+'%';$('healthBar').style.background=p.health<40?'#f3a47d':'#c7d798';$('toast').textContent=g.eventTime>0?g.event:'';
@@ -164,17 +166,16 @@ function boot(){
   if(mode!=='playing')return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;
   if(e.code==='Space')queuedJump=true;if(e.code==='KeyX')axe();if(e.code==='KeyR')cook();if(e.code==='KeyV')eat();if(e.code==='KeyH'){equip(g,'hunting-rifle');loadout();save();}if(e.code==='KeyE')hide();if(e.code==='KeyB')openShop();if(e.code==='KeyC')openChest();if(e.code==='KeyF')flashlight=!flashlight;if(e.code==='KeyM')toggleMap();if(/^Digit[0-9]$/.test(e.code)){equip(g,WEAPONS[(+e.code.at(-1)+9)%10].id);loadout();save();}
  });window.addEventListener('keyup',e=>keys[e.code]=false);
- canvas.oncontextmenu=e=>e.preventDefault();canvas.onpointerdown=e=>{if(mode!=='playing')return;canvas.focus();canvas.setPointerCapture(e.pointerId);look={id:e.pointerId,x:e.clientX,y:e.clientY,moved:0,button:e.button};};
+ canvas.oncontextmenu=e=>e.preventDefault();canvas.onpointerdown=e=>{if(mode!=='playing'||look)return;canvas.focus();canvas.setPointerCapture(e.pointerId);look={id:e.pointerId,x:e.clientX,y:e.clientY,moved:0,button:e.button};};
  canvas.onpointermove=e=>{if(mode!=='playing'||look?.id!==e.pointerId||document.pointerLockElement===canvas)return;const dx=e.clientX-look.x,dy=e.clientY-look.y;look.moved+=Math.abs(dx)+Math.abs(dy);yaw-=dx*.0045;pitch=clamp(pitch-dy*.0036,-1.15,1.15);look.x=e.clientX;look.y=e.clientY;};
- canvas.onpointerup=e=>{if(look?.id===e.pointerId&&look.moved<7&&look.button===0)strike();look=null;};canvas.onpointercancel=()=>look=null;
+ canvas.onpointerup=e=>{if(look?.id!==e.pointerId)return;if(look.moved<7&&look.button===0)strike();look=null;};canvas.onpointercancel=canvas.onlostpointercapture=e=>{if(look?.id===e.pointerId)look=null;};
  canvas.ondblclick=()=>{if(mode==='playing')try{canvas.requestPointerLock?.()?.catch?.(()=>{});}catch{}};
  document.addEventListener('mousemove',e=>{if(mode==='playing'&&document.pointerLockElement===canvas){yaw-=e.movementX*.003;pitch=clamp(pitch-e.movementY*.003,-1.15,1.15);}});
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();graphicsLost=true;pause();});canvas.addEventListener('webglcontextrestored',()=>{graphicsLost=false;last=performance.now();$('resume').disabled=false;if(mode==='paused'){$('overlayLabel').textContent='GRAPHICS RESTORED';$('overlayText').textContent='Your expedition is ready. Continue when you are.';}});
- const stick=$('stick');function moveStick(e){const b=stick.getBoundingClientRect(),x=(e.clientX-b.left-b.width/2)/34,z=(e.clientY-b.top-b.height/2)/34,n=Math.max(1,Math.hypot(x,z));touch.x=x/n;touch.z=z/n;stick.firstElementChild.style.transform='translate('+touch.x*25+'px,'+touch.z*25+'px)';}
- stick.onpointerdown=e=>{e.preventDefault();stick.setPointerCapture(e.pointerId);moveStick(e);};stick.onpointermove=e=>{if(stick.hasPointerCapture(e.pointerId))moveStick(e);};stick.onpointerup=stick.onpointercancel=()=>{touch.x=touch.z=0;stick.firstElementChild.style.transform='';};
- $('touchSprint').onclick=()=>{touch.sprint=!touch.sprint;$('touchSprint').setAttribute('aria-pressed',touch.sprint);};$('touchHide').onclick=hide;$('touchAttack').onclick=strike;$('touchJump').onclick=()=>queuedJump=true;
+ const movementJoystick=bindJoystick($('stick'),{enabled:()=>mode==='playing',onMove:(x,z)=>{touch.x=x;touch.z=z;}});
+ $('touchSprint').onclick=()=>{if(mode!=='playing')return;touch.sprint=!touch.sprint;$('touchSprint').setAttribute('aria-pressed',touch.sprint);};$('touchHide').onclick=hide;$('touchAttack').onclick=strike;$('touchJump').onclick=()=>{if(mode==='playing')queuedJump=true;};
  window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',()=>{if(mode==='playing')save();});
- window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;if(mode==='menu')menuCamera();else follow();});
+ window.addEventListener('resize',()=>{resetInput();if(mode==='playing')hud();renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;if(mode==='menu')menuCamera();else follow();});
  refreshMenu();soundUI();menuCamera();loadout();claimCoins();requestAnimationFrame(frame);
 }
 try{boot();}catch(error){console.error(error);$('error').hidden=false;$('error').textContent='The forest could not load. Try a browser with 3D graphics enabled. Your saved expedition has not been deleted.';}
