@@ -53,7 +53,8 @@ assert.equal(passPosition(open.g.ball,0).y,1.65);assert(Math.abs(passPosition(op
 
 // Both friends receive the same outcome with their own actor/team IDs and stats.
 for(const team of [0,1])for(const scenario of ['ground','breakup','pick']){
- let room=makeRoom(crypto.randomUUID(),{id:'a',name:'Archer'},{id:'b',name:'Nova'},0,10000,'touchdown-rush');readyPlayer(room,'a',{difficulty:'pro'},10000);readyPlayer(room,'b',{},10000);room.players.forEach(p=>{p.seen=room.startAt;p.input=safeInput({},room.game);});tickRoom(room,room.startAt);
+ let room=makeRoom(crypto.randomUUID(),{id:'a',name:'Archer'},{id:'b',name:'Nova'},0,10000,'touchdown-rush');readyPlayer(room,'a',{difficulty:'pro'},10000);readyPlayer(room,'b',{},10000);room.match.weather={kind:'clear',windX:0,windZ:0}; // Isolate baseline mechanics from random weather.
+ room.players.forEach(p=>{p.seen=room.startAt;p.input=safeInput({},room.game);});tickRoom(room,room.startAt);
  flight(team,scenario,room.match,()=>{const selected=room.match.selected;event(room,1-team,'target',{target:5},room.updatedAt);assert.equal(room.match.selected,selected,'opponents cannot change your pass target');event(room,team,'action',{},room.updatedAt);});
  for(let i=0;i<20&&room.match.phase==='flight';i++){const now=room.updatedAt+100;room.players.forEach(p=>p.seen=now);tickRoom(room,now);room=JSON.parse(encodeRoom(room));}
  const own=publicRoom(room,team?'b':'a').match,other=publicRoom(room,team?'a':'b').match;

@@ -1,3 +1,5 @@
+import {rollWeather} from '../public/games/touchdown-rush/weather.js';
+import {seededRandom} from '../public/games/touchdown-rush/seasons.js';
 import {normalizeFootballConfig,resolveTeam,rosterForTeam} from '../public/games/touchdown-rush/creator-data.js';
 import {gameRoster} from '../public/games/touchdown-rush/classic.js';
 import {makeRoom as makeKartRoom,tickRoom as tickKartRoom,readyPlayer as readyKart,safeInput as kartInput,publicRoom as kartPublic} from './racing.js';
@@ -23,7 +25,7 @@ export function readyPlayer(room,user,raw,now){if(isKart(room)){readyKart(room,u
  if(room.game==='touchdown-rush'){
   if(a.config.team===b.config.team){b.config.team=TEAMS.find(t=>t.id!==a.config.team).id;b.config.customTeam=null;b.config.createdPlayers=[];b.config.numbers=null;}
   const data={teams:[a.config.customTeam,b.config.customTeam].filter(Boolean),players:[...(a.config.createdPlayers||[]),...(b.config.createdPlayers||[])]},teams=[a,b].map(p=>resolveTeam(p.config.team,data)),rosters=[a,b].map((p,i)=>rosterForTeam(teams[i],data,p.config.classicHill));
-  const g=football.createGame(['rookie','pro','allstar'].includes(a.config.difficulty)?a.config.difficulty:'pro',{teamNames:teams.map(t=>t.name),teamRosters:rosters,offenseNumbers:[a.config.numbers||rosters[0].offense.map(p=>p.number),b.config.numbers||rosters[1].offense.map(p=>p.number)],injuries:a.config.injuries,injurySeed:room.seed,playerTraits:a.config.playerTraits});g.homeTeamId=room.players[a.config.homeSide===1?1:0].config.team;g.multiplayer=true;g.statsByTeam=[g.stats,{passes:0,tackles:0,touchdowns:0}];football.lineup(g);room.match=g;
+  const g=football.createGame(['rookie','pro','allstar'].includes(a.config.difficulty)?a.config.difficulty:'pro',{teamNames:teams.map(t=>t.name),teamRosters:rosters,offenseNumbers:[a.config.numbers||rosters[0].offense.map(p=>p.number),b.config.numbers||rosters[1].offense.map(p=>p.number)],injuries:a.config.injuries,injurySeed:room.seed,weather:rollWeather(seededRandom(room.seed)),playerTraits:a.config.playerTraits});g.homeTeamId=room.players[a.config.homeSide===1?1:0].config.team;g.multiplayer=true;g.statsByTeam=[g.stats,{passes:0,tackles:0,touchdowns:0}];football.lineup(g);room.match=g;
  }
  if(room.game==='neon-clash')room.match=createRivals(room);
  room.startAt=now+4000;room.updatedAt=now;room.status='countdown';

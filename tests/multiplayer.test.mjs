@@ -8,6 +8,8 @@ const start=100000,roundtrip=r=>JSON.parse(encodeRoom(r));
 function room(game,track=0,a={},b={},variant='versus'){
  const r=makeRoom(crypto.randomUUID(),{id:'a',name:'Archer',color:'#abcdef'},{id:'b',name:'Nova',color:'#fedcba'},track,start,game,variant);
  readyPlayer(r,'a',a,start);assert.equal(r.status,'waiting');readyPlayer(r,'b',b,start);assert.equal(r.status,'countdown');
+ // Baseline mechanics use clear skies; weather effects have their own coverage.
+ if(game==='touchdown-rush')r.match.weather={kind:'clear',windX:0,windZ:0};
  for(const p of r.players){p.connection=p.id;p.seen=r.startAt;p.input=safeInput({},game);}tickRoom(r,r.startAt);return roundtrip(r);
 }
 function advance(r,seconds,inputs=[{},{}]){

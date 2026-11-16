@@ -6,7 +6,7 @@ import {createReloadNotice} from './game-errors.js?v=recovery1';
 import {coinButton,initCoinUI} from './economy/ui.js?v=forest1';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=league-size14';
 import {initFriends,socialApi} from './friends.js?v=welcome1';
-import {GAMES,CATEGORIES,findGames} from './catalog.js?v=forest1';
+import {GAMES,CATEGORIES,findGames} from './catalog.js?v=seasons1';
 const acceptedPlayer=await requirePlayer();
 window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
 const $=id=>document.getElementById(id),KEY='archerbox-lobby-v1',COLORS=['#c0f16b','#b9a2fb','#77d9dc','#f4ae81'];

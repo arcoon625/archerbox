@@ -1,6 +1,7 @@
 import {playerTraits,NEUTRAL_TRAITS,speedFactor,accuracyFactor,tackleFactor,catchReach,dropsPass,finishYards} from './traits.js?v=realism2026';
 import {initMedical,startMedicalPlay,completeMedicalPlay,substituteUnit} from './injuries.js?v=injuries1';
 import {teamRoster} from './rosters.js?v=injuries1';
+import {normalizeWeather,rainSpread} from './weather.js?v=seasons1';
 import {specialTeamUnit} from './personnel.js?v=specialists1';
 import {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane} from './playbook.js?v=runlanes1';
 export {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey} from './playbook.js?v=runlanes1';
@@ -25,7 +26,7 @@ export function createGame(difficulty='pro',options={}){
  const names=Array(TEAM_SIZE*2).fill('');
  if(!DIFFICULTIES[difficulty])difficulty='pro';
  const g={difficulty,actors:names.map((name,i)=>({id:i,name,team:i<TEAM_SIZE?0:1,x:0,z:0,vx:0,vz:0,yaw:0,moving:0,stamina:100,juke:0,cooldown:0,role:''})),offense:0,line:30,goal:20,down:1,scores:[0,0],clock:180,phase:'ready',phaseTime:0,playTime:0,play:'deep',carrier:0,control:0,selected:1,ball:null,passResult:null,passSequence:0,event:'YOUR BALL',detail:'Pick a play. Gain 10 yards for a first down.',stats:{passes:0,passAttempts:0,incompletions:0,interceptions:0,interceptionsThrown:0,tackles:0,touchdowns:0},ended:false};
- g.teamNames=options.teamNames||['Dallas Cowboys','Kansas City Chiefs'];g.teamRosters=options.teamRosters||[teamRoster('dallas-cowboys'),teamRoster('kansas-city-chiefs')];g.offenseNumbers=options.offenseNumbers||[null,null];g.playerTraits=options.playerTraits!==false;initMedical(g,options);lineup(g);return g;
+ g.weather=normalizeWeather(options.weather);g.teamNames=options.teamNames||['Dallas Cowboys','Kansas City Chiefs'];g.teamRosters=options.teamRosters||[teamRoster('dallas-cowboys'),teamRoster('kansas-city-chiefs')];g.offenseNumbers=options.offenseNumbers||[null,null];g.playerTraits=options.playerTraits!==false;initMedical(g,options);lineup(g);return g;
 }
 function setIdentity(g,a,plan,unit){
  const p=plan.player;Object.assign(a,{role:plan.role,name:p.name,shortName:p.shortName,playerId:p.id,position:plan.specialRole||p.position,depthSlot:plan.depthSlot,specialRole:plan.specialRole||null,unit,jerseyNumber:plan.number,backupFor:plan.backupFor||null,customProfile:p.customProfile||null,traits:g.playerTraits===false?{...NEUTRAL_TRAITS}:(p.customTraits||playerTraits(p.id,p.position))});
@@ -94,7 +95,7 @@ export function beginPlaceKick(g,kind='fieldGoal'){
 export function aimPlaceKick(g,aim,power){if(g.phase!=='placekick-aim')return false;g.placeKick.aim=clamp(Number.isFinite(aim)?aim:g.placeKick.aim,-1,1);g.placeKick.power=clamp(Number.isFinite(power)?power:g.placeKick.power,.15,1);return true;}
 export function strikePlaceKick(g,aim=g.placeKick?.aim,power=g.placeKick?.power){
  if(g.phase!=='placekick-aim'||g.ended)return false;aimPlaceKick(g,aim,power);const p=g.placeKick;
- g.ball={kind:p.kind,placeKick:true,from:{...p.from},goalZ:p.goalZ,...kickVelocity(p.direction,p.aim,p.power),elapsed:-.32,x:p.from.x,y:.28,z:p.from.z};g.phase='placekick-flight';g.phaseTime=0;g.event='THE KICK IS UP!';g.detail=p.distance+' yards · Watch the ball clear the crossbar.';
+ g.ball={kind:p.kind,placeKick:true,from:{...p.from},goalZ:p.goalZ,...kickVelocity(p.direction,p.aim,p.power,g.weather),elapsed:-.32,x:p.from.x,y:.28,z:p.from.z};g.phase='placekick-flight';g.phaseTime=0;g.event='THE KICK IS UP!';g.detail=p.distance+' yards · Watch the ball clear the crossbar.';
  const stats=g.statsByTeam?.[g.offense]||(g.offense===0?g.stats:null);if(stats){const key=p.kind==='extraPoint'?'extraPointAttempts':'fieldGoalAttempts';stats[key]=(stats[key]||0)+1;}return true;
 }
 export function practicePlaceKicks(g){if(g.multiplayer)return false;g.practiceKicks=true;g.offense=0;g.line=-28;g.goal=-38;lineup(g);return beginPlaceKick(g);}
@@ -148,7 +149,7 @@ export function throwPass(g,target=g.selected){
  const a=g.actors[g.carrier],r=g.actors[target],d=direction(g.offense),duration=clamp(.65+distance(a,r)*.02,.8,1.35),routeSpeed=(g.offense===0?7.2:DIFFICULTIES[g.difficulty].cpuRunnerSpeed)*speedFactor(r);
  const lead=routePoint(g.play,target%TEAM_SIZE,g.playTime+duration,routeSpeed);
  const idealTo=lead?{x:lead.x,z:clamp(g.line+d*lead.depth,-54,54)}:{x:r.x,z:clamp(r.z+d*routeSpeed*duration,-54,54)},read=passRead(g,target),moving=clamp((a.moving||0)/DIFFICULTIES[g.difficulty].playerSpeed,0,1),range=clamp((distance(a,idealTo)-28)/25,0,1);
- g.passSequence=(g.passSequence||0)+1;const seed=g.passSequence*11+g.down*13,spread=(read.pressure*8+moving*2.1+range*3.2)*accuracyFactor(a)+Math.max(0,75-(a.traits?.accuracy??75))*.035*(.35+range);
+ g.passSequence=(g.passSequence||0)+1;const seed=g.passSequence*11+g.down*13,spread=rainSpread(g.weather,(read.pressure*8+moving*2.1+range*3.2)*accuracyFactor(a)+Math.max(0,75-(a.traits?.accuracy??75))*.035*(.35+range));
  const to={x:idealTo.x+Math.sin(seed*3.71+1.2)*spread,z:idealTo.z+Math.cos(seed*5.13+.7)*spread*.6*d};
  g.ball={kind:'pass',id:g.passSequence,fromTeam:g.offense,from:{x:a.x,z:a.z},idealTo,to,pressure:read.pressure,spread,arc:clamp(1.2+distance(a,to)*.11,1.7,6.5),target,elapsed:0,duration,x:a.x,y:1.65,z:a.z};
  addStat(g,g.offense,'passAttempts');g.passResult=null;g.phase='flight';g.phaseTime=0;g.event='BALL IN THE AIR';g.detail=read.pressure>.3?'PRESSURE! This throw may be off target.':read.risk==='RISKY'?'Risky throw — watch the defender in the passing lane!':'Watch your receiver make the catch.';return true;
