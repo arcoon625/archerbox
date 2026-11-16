@@ -16,7 +16,8 @@ athletes.set(CLASSIC_HILL.id,CLASSIC_HILL);
 for(const p of athletes.values()){
  const a=playerAppearance(p.id);assert(a.matched,`${p.name} has a sourced appearance`);assert.match(a.skinTone,/^#[0-9a-f]{6}$/i);assert(a.source.endsWith('/'+p.id+'.png')||a.source==='https://www.atlantafalcons.com/team/players-roster/jack-strand/');
 }
-assert.equal(Object.keys(PLAYER_SKIN_TONES).length,athletes.size);
+// Keep past players' portraits available for saved games after roster changes.
+assert(Object.keys(PLAYER_SKIN_TONES).length>=athletes.size);
 assert.equal(playerAppearance('missing').skinTone,DEFAULT_SKIN_TONE);
 assert.equal(playerAppearance(null).matched,false);
 

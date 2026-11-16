@@ -2984,12 +2984,14 @@ export const ROSTERS = {
   "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/depthcharts",
   "rosterSource": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster",
   "sourcePage": "https://www.espn.com/nfl/team/depth/_/name/lv",
+  "quarterbackChecked": "2026-11-15",
+  "quarterbackSource": "https://www.raiders.com/news/fernando-mendoza-named-raiders-starting-quarterback",
   "offense": [
    {
-    "id": "14880",
-    "name": "Kirk Cousins",
-    "shortName": "K. Cousins",
-    "number": 8,
+    "id": "4837248",
+    "name": "Fernando Mendoza",
+    "shortName": "F. Mendoza",
+    "number": 15,
     "position": "QB",
     "depthSlot": "qb"
    },
