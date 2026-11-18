@@ -1,3 +1,4 @@
+import {friendRequests,requestFriend,answerFriendRequest,cancelFriendRequest} from './friend-requests.js';
 import {makeRoom,tickRoom,readyPlayer,safeInput,publicRoom,validGame,event,encodeRoom} from './matches.js';
 import {recordFantasyResult} from './fantasy.js';
 const alphabet='23456789abcdefghjkmnpqrstuvwxyz';
@@ -17,7 +18,7 @@ async function ensureProfile(db,id,body){
  const differences=Array.from({length:10},(_,i)=>`(substr(code,${i+1},1) != substr(?,${i+1},1))`).join('+');
  for(let tries=0;tries<30;tries++){
   const code=randomCode(),near=await db.prepare(`SELECT id FROM social_profiles WHERE (${differences})<3 LIMIT 1`).bind(...Array(10).fill(code)).first();if(near)continue;
-  try{const inserted=await db.prepare(`INSERT INTO social_profiles (id,code,name,color,seen,created) SELECT ?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM social_profiles WHERE (${differences})<3)`).bind(id,code,name,color,t,t,...Array(10).fill(code)).run();if(!inserted.meta.changes)continue;return {id,code,name,color,seen:t};}catch(error){p=await getProfile(db,id);if(p)return p;if(!String(error).includes('UNIQUE'))throw error;}
+  try{const inserted=await db.prepare(`INSERT INTO social_profiles (id,code,name,color,seen,created,public_id) SELECT ?,?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM social_profiles WHERE (${differences})<3)`).bind(id,code,name,color,t,t,crypto.randomUUID().replaceAll('-',''),...Array(10).fill(code)).run();if(!inserted.meta.changes)continue;return {id,code,name,color,seen:t};}catch(error){p=await getProfile(db,id);if(p)return p;if(!String(error).includes('UNIQUE'))throw error;}
  }
  fail('Could not make a new code. Please try again.',503);
 }
@@ -29,7 +30,7 @@ async function socialState(db,id){
  const outgoing=(await db.prepare("SELECT i.id,i.status,i.expires,i.track,i.game,p.name FROM social_invites i JOIN social_profiles p ON p.id=i.recipient WHERE i.sender=? AND i.created>? ORDER BY i.created DESC LIMIT 10").bind(id,t-300000).all()).results;
  const rooms=(await db.prepare('SELECT id,data FROM social_rooms WHERE (host=? OR guest=?) AND updated>? ORDER BY updated DESC LIMIT 5').bind(id,id,t-900000).all()).results;
  const active=rooms.find(r=>!['left','finished'].includes(JSON.parse(r.data).status));
- return {profile:{name:profile.name,color:profile.color,code:profile.code},friends:friends.map(f=>({id:f.id,name:f.name,color:f.color,online:t-f.seen<16000})),incoming,outgoing:outgoing.map(i=>({...i,status:i.status==='pending'&&i.expires<=t?'expired':i.status})),activeRoom:active?.id||null,activeGame:active?JSON.parse(active.data).game||'turbo-kart-racing':null};
+ return {profile:{name:profile.name,color:profile.color,code:profile.code},friends:friends.map(f=>({id:f.id,name:f.name,color:f.color,online:t-f.seen<16000})),friendRequests:await friendRequests(db,id),incoming,outgoing:outgoing.map(i=>({...i,status:i.status==='pending'&&i.expires<=t?'expired':i.status})),activeRoom:active?.id||null,activeGame:active?JSON.parse(active.data).game||'turbo-kart-racing':null};
 }
 async function editRoom(db,id,user,connection,edit){
  for(let retry=0;retry<5;retry++){
@@ -55,13 +56,17 @@ export async function handleSocial(request,db){
   if(path[0]==='profile'&&method==='POST'){await ensureProfile(db,id,body);return json(await socialState(db,id));}
   const me=await getProfile(db,id);if(!me)fail('Save your profile to turn on Friends.',428);
   if(path[0]==='state'&&method==='GET'){await db.prepare('UPDATE social_profiles SET seen=? WHERE id=?').bind(now(),id).run();return json(await socialState(db,id));}
+  if(method==='POST'&&['friend-request','friend-response','friend-cancel'].includes(path[0])){
+   const message=path[0]==='friend-request'?await requestFriend(db,id,body.playerId):path[0]==='friend-response'?await answerFriendRequest(db,id,body.request,body.accept):await cancelFriendRequest(db,id,body.request);
+   return json({message,...await socialState(db,id)});
+  }
   if(path[0]==='add'&&method==='POST'){
    const code=typeof body.code==='string'?body.code.trim().toLowerCase():'';if(!/^[a-z0-9]{10}$/.test(code))fail('Enter the 10 letters and numbers from your friend’s code.');
    const friend=await db.prepare('SELECT * FROM social_profiles WHERE code=?').bind(code).first();if(!friend)fail('No player has that code. Check it and try again.',404);if(friend.id===id)fail('That is your code! Ask your friend for theirs.');
-   const [a,b]=pair(id,friend.id);await db.prepare('INSERT OR IGNORE INTO social_friends (a,b,created) VALUES (?,?,?)').bind(a,b,now()).run();return json({message:'You and '+friend.name+' are now friends!',...await socialState(db,id)});
+   const [a,b]=pair(id,friend.id);await db.batch([db.prepare('INSERT OR IGNORE INTO social_friends (a,b,created) VALUES (?,?,?)').bind(a,b,now()),db.prepare("UPDATE social_friend_requests SET status='accepted',updated=? WHERE a=? AND b=? AND status='pending'").bind(now(),a,b)]);return json({message:'You and '+friend.name+' are now friends!',...await socialState(db,id)});
   }
   if(path[0]==='remove'&&method==='POST'){
-   const other=String(body.friend||'');await db.batch([db.prepare('DELETE FROM social_friends WHERE a=? AND b=?').bind(...pair(id,other)),db.prepare("UPDATE social_invites SET status='cancelled' WHERE status='pending' AND ((sender=? AND recipient=?) OR (sender=? AND recipient=?))").bind(id,other,other,id)]);return json(await socialState(db,id));
+   const other=String(body.friend||'');await db.batch([db.prepare("UPDATE social_friend_requests SET status='cancelled',updated=? WHERE a=? AND b=?").bind(now(),...pair(id,other)),db.prepare('DELETE FROM social_friends WHERE a=? AND b=?').bind(...pair(id,other)),db.prepare("UPDATE social_invites SET status='cancelled' WHERE status='pending' AND ((sender=? AND recipient=?) OR (sender=? AND recipient=?))").bind(id,other,other,id)]);return json(await socialState(db,id));
   }
   if(path[0]==='invite'&&method==='POST'){
    const other=String(body.friend||'');if(!await areFriends(db,id,other))fail('Add this player as a friend first.',403);

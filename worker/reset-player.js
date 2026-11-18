@@ -68,7 +68,7 @@ export async function resetPlayer(db,user,rooms){
   const statements=[];
   if(fantasy)statements.push(db.prepare('DELETE FROM fantasy_results WHERE player_id=?').bind(fantasy.public_id));
   for(const table of ['chart_scores','chart_progress','chart_plays','chart_sessions','fantasy_players','browser_sessions'])statements.push(db.prepare(`DELETE FROM ${table} WHERE user_id=?`).bind(user));
-  statements.push(db.prepare('DELETE FROM social_friends WHERE a=? OR b=?').bind(user,user),db.prepare('DELETE FROM social_invites WHERE sender=? OR recipient=?').bind(user,user),db.prepare('DELETE FROM social_rooms WHERE host=? OR guest=?').bind(user,user),db.prepare('DELETE FROM social_profiles WHERE id=?').bind(user));
+  statements.push(db.prepare('DELETE FROM social_friend_requests WHERE sender=? OR recipient=?').bind(user,user),db.prepare('DELETE FROM social_friends WHERE a=? OR b=?').bind(user,user),db.prepare('DELETE FROM social_invites WHERE sender=? OR recipient=?').bind(user,user),db.prepare('DELETE FROM social_rooms WHERE host=? OR guest=?').bind(user,user),db.prepare('DELETE FROM social_profiles WHERE id=?').bind(user));
   await db.batch(statements);
   return true;
 }

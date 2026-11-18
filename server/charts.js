@@ -6,10 +6,13 @@ const previousProgress='COALESCE((SELECT progress FROM chart_progress WHERE user
 const boardCTE=`WITH totals AS (SELECT s.user_id,SUM(s.points) AS score,MAX(s.created) AS reached FROM chart_scores s WHERE s.game=? AND s.created>=? GROUP BY s.user_id), ranked AS (SELECT user_id,score,ROW_NUMBER() OVER (ORDER BY score DESC,reached ASC,user_id ASC) AS rank FROM totals WHERE score>0)`;
 async function leaderboard(db,game,period,id,t){
  const start=periodStart(period,t),args=[game,start];
- const rows=(await db.prepare(`${boardCTE} SELECT r.rank,r.score,p.name,p.color,r.user_id=? AS you FROM ranked r JOIN social_profiles p ON p.id=r.user_id ORDER BY r.rank LIMIT 50`).bind(...args,id||'').all()).results;
+ const rows=(await db.prepare(`${boardCTE} SELECT r.rank,r.score,p.name,p.color,p.public_id,r.user_id,r.user_id=? AS you FROM ranked r JOIN social_profiles p ON p.id=r.user_id ORDER BY r.rank LIMIT 50`).bind(...args,id||'').all()).results;
  const total=await db.prepare(`${boardCTE} SELECT COUNT(*) AS count FROM ranked`).bind(...args).first();
- const own=id?await db.prepare(`${boardCTE} SELECT r.rank,r.score,p.name,p.color,1 AS you FROM ranked r JOIN social_profiles p ON p.id=r.user_id WHERE r.user_id=?`).bind(...args,id).first():null;
- const clean=r=>r?{rank:r.rank,score:r.score,name:r.name,color:/^#[a-f0-9]{6}$/i.test(r.color)?r.color:'#c0f16b',you:!!r.you}:null;
+ const own=id?await db.prepare(`${boardCTE} SELECT r.rank,r.score,p.name,p.color,p.public_id,r.user_id,1 AS you FROM ranked r JOIN social_profiles p ON p.id=r.user_id WHERE r.user_id=?`).bind(...args,id).first():null;
+ const friends=id?(await db.prepare('SELECT a,b FROM social_friends WHERE a=? OR b=?').bind(id,id).all()).results:[];
+ const requests=id?(await db.prepare("SELECT id,sender,recipient FROM social_friend_requests WHERE (sender=? OR recipient=?) AND status='pending'").bind(id,id).all()).results:[];
+ const relationship=r=>{if(r.you)return {friendship:'self'};if(friends.some(f=>f.a===r.user_id||f.b===r.user_id))return {friendship:'friends'};const request=requests.find(q=>q.sender===r.user_id||q.recipient===r.user_id);return request?{friendship:request.sender===id?'outgoing':'incoming',friendRequestId:request.id}:{friendship:'none'}};
+ const clean=r=>r?{rank:r.rank,score:r.score,name:r.name,color:/^#[a-f0-9]{6}$/i.test(r.color)?r.color:'#c0f16b',you:!!r.you,playerId:r.public_id||null,...relationship(r)}:null;
  return {game,period,metric:metricFor(game).label,start,asOf:t,totalPlayers:total.count,signedIn:!!id,entries:rows.map(clean),yourEntry:clean(own)};
 }
 async function trending(db,t){

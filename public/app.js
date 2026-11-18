@@ -1,11 +1,11 @@
 import {initRestart} from './reset/ui.js?v=restart1';
 import {requirePlayer} from './onboarding/session.js?v=welcome1';
 import {initPlayerLevels} from './progression/ui.js?v=levels1';
-import {initCharts} from './charts/app.js?v=welcome1';
+import {initCharts} from './charts/app.js?v=requests1';
 import {createReloadNotice} from './game-errors.js?v=recovery1';
 import {coinButton,initCoinUI} from './economy/ui.js?v=forest1';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=league-size14';
-import {initFriends,socialApi} from './friends.js?v=welcome1';
+import {initFriends,socialApi} from './friends.js?v=requests1';
 import {GAMES,CATEGORIES,findGames} from './catalog.js?v=seasons1';
 const acceptedPlayer=await requirePlayer();
 window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
