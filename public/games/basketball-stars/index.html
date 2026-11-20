@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basketball Stars · Archerbox</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header><a href="../../index.html">← Archerbox</a><h1>Basketball Stars</h1><button id="pause" type="button" disabled>Pause</button></header>
+  <div class="scoreboard" aria-label="Scoreboard">
+    <div><span id="homeLabel">YOU</span><b id="homeScore">0</b></div>
+    <div class="clock"><span id="modeLabel">1v1</span><b id="clock">2:00</b></div>
+    <div><span id="awayLabel">CPU</span><b id="awayScore">0</b></div>
+  </div>
+  <div class="arena">
+    <canvas id="court" width="900" height="500" aria-label="Basketball half court. Use the arrow keys or movement buttons to move."></canvas>
+    <div class="meter" id="meter" hidden><span>RELEASE IN GREEN</span><div class="track"><div id="sweetSpot"></div><div id="needle"></div></div></div>
+  </div>
+  <p id="message" role="status">Choose a mode to hit the court.</p>
+  <div class="controls">
+    <div class="dpad" id="dpad" aria-label="Movement">
+      <button type="button" data-move="up" aria-label="Move up">↑</button>
+      <button type="button" data-move="left" aria-label="Move left">←</button>
+      <button type="button" data-move="down" aria-label="Move down">↓</button>
+      <button type="button" data-move="right" aria-label="Move right">→</button>
+    </div>
+    <div class="actions">
+      <button id="pass" type="button" hidden>Pass <kbd>E</kbd></button>
+      <button id="steal" type="button">Steal <kbd>Q</kbd></button>
+      <button id="shoot" type="button"><span id="shootLabel">Hold to shoot</span> <kbd>Space</kbd></button>
+    </div>
+  </div>
+  <p class="help" id="help">Move with WASD, arrows, or the court buttons. Hold Shoot, then release in the green zone.</p>
+</main>
+<dialog id="menu">
+  <h2 id="menuTitle">Pick your game</h2>
+  <p id="result" hidden></p>
+  <form id="setup">
+    <label for="mode">Mode</label>
+    <select id="mode"><option value="duel">1v1 · Solo showdown</option><option value="teams">3v3 · Team game</option><option value="contest">Three-point contest</option></select>
+    <label for="difficulty">Difficulty</label>
+    <select id="difficulty"><option value="rookie">Rookie</option><option value="pro">Pro</option></select>
+    <p id="modeHelp">Face a CPU opponent. First to 15, or lead when the clock runs out.</p>
+    <button class="primary" type="submit">Play basketball</button>
+  </form>
+</dialog>
+<dialog id="paused"><h2>Game paused</h2><button id="resume" class="primary" type="button">Resume</button><button id="changeMode" type="button">New game</button></dialog>
+<script type="module" src="../../bridge.js"></script>
+<script type="module" src="game.js"></script>
+</body>
+</html>

@@ -56,6 +56,6 @@ assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
  const noticeError=await transactWallet(w=>award(w,{game:'color-rush',event:'round',run:'notice-test',progress:1}),{...options,notify(){throw Error('UI unavailable')}});assert(noticeError.ok,'a notification error cannot reverse a saved transaction');
  const lots=await Promise.all(Array.from({length:30},(_,i)=>transactWallet(w=>award(w,{game:'baseball-blast',event:'home-run',run:'game-'+i,progress:1}),options)));assert(lots.every(r=>r.ok));assert.equal(readWallet(storage).balance,33,'concurrent game rewards are not lost');
 }
-// Catch missing entry-point wiring or syntax in any of the 21 shipped games.
+// Catch missing entry-point wiring or syntax in any of the 22 shipped games.
 for(const g of GAMES){const source=fs.readFileSync(new URL('../public/games/'+g.id+'/game.js',import.meta.url),'utf8');assert(source.includes(`createCoinRun('${g.id}')`));assert(source.includes('coinRun.counter(')||source.includes('coinRun.once(')||source.includes('coinRun.unique('));}
-console.log('Coins passed: all 21 games, real touchdown and bakery outcomes, discovery deduplication, replay protection, purchases, legacy outfits, storage failure and concurrent wallet updates.');
+console.log('Coins passed: all 22 games, real touchdown and bakery outcomes, discovery deduplication, replay protection, purchases, legacy outfits, storage failure and concurrent wallet updates.');

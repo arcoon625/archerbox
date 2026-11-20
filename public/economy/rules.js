@@ -11,6 +11,7 @@ export const REWARDS=[
  ['laser-maze','Laser Maze','finish','Maze escaped','Collect both keycards and reach the maze exit.'],
  ['battle-arena','Battle Arena','round-win','Battle round won','Win a duel round, team round, or survival wave.'],
  ['touchdown-rush','Touchdown Rush','touchdown','Touchdown','Score a touchdown with your team.'],
+ ['basketball-stars','Basketball Stars','basket','Basket made','Make a basket with your team or in the three-point contest.'],
  ['baseball-blast','Baseball Blast','home-run','Home run','Hit a home run.'],
  ['neon-clash','Rivals','elimination','Elimination','Eliminate an opponent yourself.'],
  ['turbo-kart-racing','Turbo Kart Racing','finish','Race finished','Cross the finish line after all three laps.'],

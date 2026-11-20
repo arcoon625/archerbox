@@ -5,6 +5,7 @@ export const XP_REWARDS = [
   ['jurassic-island','mission',50], ['snowball-showdown','round-win',60],
   ['disaster-island','survive',50], ['laser-maze','finish',75],
   ['battle-arena','round-win',40], ['touchdown-rush','touchdown',50],
+  ['basketball-stars','basket',15],
   ['baseball-blast','home-run',25], ['neon-clash','elimination',10],
   ['turbo-kart-racing','finish',75], ['shark-racing','finish',75],
   ['alpine-rush','finish',60], ['ninja-rooftops','finish',75],

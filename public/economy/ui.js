@@ -1,4 +1,4 @@
-import {REWARDS} from './rules.js?v=forest1';
+import {REWARDS} from './rules.js?v=basketball1';
 import {readWallet,subscribeWallet} from './wallet.js?v=seas2';
 let shop=()=>{};
 export const coinButton=()=>'<button class="coinWallet" data-coin-wallet aria-label="Archerbox coins and how to earn them"><span class="coinMark" aria-hidden="true">✦</span><b data-coin-balance>'+readWallet().balance.toLocaleString()+'</b><span class="coinWord">coins</span></button>';
