@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Basketball Stars · Archerbox</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=court3d1">
 </head>
 <body>
 <main>
@@ -15,7 +15,8 @@
     <div><span id="awayLabel">CPU</span><b id="awayScore">0</b></div>
   </div>
   <div class="arena">
-    <canvas id="court" width="900" height="500" aria-label="Basketball half court. Use the arrow keys or movement buttons to move."></canvas>
+    <canvas id="court" width="900" height="500" aria-label="3D basketball half court. Use the arrow keys or movement buttons to move."></canvas>
+    <canvas id="fallbackCourt" width="900" height="500" aria-label="Basketball half court in compatibility view" hidden></canvas>
     <div class="meter" id="meter" hidden><span>RELEASE IN GREEN</span><div class="track"><div id="sweetSpot"></div><div id="needle"></div></div></div>
   </div>
   <p id="message" role="status">Choose a mode to hit the court.</p>
@@ -48,6 +49,6 @@
 </dialog>
 <dialog id="paused"><h2>Game paused</h2><button id="resume" class="primary" type="button">Resume</button><button id="changeMode" type="button">New game</button></dialog>
 <script type="module" src="../../bridge.js"></script>
-<script type="module" src="game.js"></script>
+<script type="module" src="game.js?v=court3d1"></script>
 </body>
 </html>

@@ -60,7 +60,7 @@ test('an expired tie stays playable until the deciding basket',()=>{
   game.clock=.01;
   settle(game);
   assert(!game.finished);
-  assert(shoot(game,game.you,.72));
+  assert(shoot(game,game.you,.72,()=>0));
   settle(game);
   assert(game.finished);
 });

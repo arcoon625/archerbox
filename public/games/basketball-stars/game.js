@@ -1,16 +1,11 @@
 import {createCoinRun} from '../../economy/wallet.js?v=basketball1';
-import {newGame,tick,shoot,pass,steal} from './court.js';
-import {paintCourt,draw} from './art.js';
+import {newGame,tick,shoot,pass,steal} from './court.js?v=court3d1';
+import {createCourtView} from './view.js?v=court3d1';
 
 const $ = id => document.getElementById(id);
 const menu = $('menu');
 const paused = $('paused');
-const canvas = $('court');
-const context = canvas.getContext('2d');
-const background = document.createElement('canvas');
-background.width = canvas.width;
-background.height = canvas.height;
-paintCourt(background.getContext('2d'));
+const render = createCourtView($('court'),$('fallbackCourt'));
 
 const coinRun = createCoinRun('basketball-stars');
 const keys = new Set();
@@ -191,7 +186,7 @@ function frame(now) {
     if(game.finished) showResult();
     sync();
   }
-  draw(context,background,game,animationTime);
+  render(game,animationTime,!!charge);
   requestAnimationFrame(frame);
 }
 sync();

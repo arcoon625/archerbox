@@ -62,7 +62,7 @@ export function shoot(g,p,power,random=Math.random) {
   if (range>360) chance*=.37;
   if (covered) chance*=perfect ? .81:.56;
   const value = contest(g)?(g.attempts%3===2?2:1):range>=arc?3:2;
-  g.flight = {type:'shot',from:{x:p.x,y:p.y},to:hoop,elapsed:0,duration:.54+range/850,
+  g.flight = {type:'shot',shooter:p,from:{x:p.x,y:p.y},to:hoop,elapsed:0,duration:.54+range/850,
     hit:(perfect&&!covered&&range<=360)||random()<chance,team:p.team,value,grade,covered};
   if (p===g.you) g.message = grade+(covered?' · contested':'');
   g.owner = null;
