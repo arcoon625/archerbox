@@ -7,6 +7,7 @@ export const REWARDS=[
  ['poop-panic','Poop Panic','knockout','Poop Panic knockout','Knock out a CPU with a poop blast during a real run.',105],
  ['jurassic-island','Jurassic Island','mission','Park mission completed','Finish a dinosaur park mission and check in at ranger base.',18],
  ['snowball-showdown','Snowball Showdown','round-win','Snowball round won','Win a round with your Glacier snowball team.',45],
+ ['outpost-maze','Outpost Maze','finish','Outpost escaped','Find the access chip and reach the exit.',24],
  ['disaster-island','Disaster Island','survive','Disaster survived','Survive a full disaster round on the island.',24],
  ['laser-maze','Laser Maze','finish','Maze escaped','Collect both keycards and reach the maze exit.',30],
  ['battle-arena','Battle Arena','round-win','Battle round won','Win a duel round, team round, or survival wave.',54],

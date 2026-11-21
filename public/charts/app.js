@@ -1,5 +1,5 @@
 import {friendAction} from '../friends.js?v=requests1';
-import {PERIODS,metricFor} from './rules.js?v=basketball1';
+import {PERIODS,metricFor} from './rules.js?v=outpost1';
 import {flushStats} from './client.js?v=basketball1';
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>Number(n||0).toLocaleString();
@@ -7,7 +7,7 @@ const spark=values=>{const max=Math.max(1,...values),points=values.map((v,i)=>[i
 export function initCharts({root,games,onPlay,onNavigate}){
  let kind='trending',game='neon-clash',period='all-time',controller=null,generation=0,opened=false,timer=null,friendBusy=false,friendNotice='',friendError=false;
  const find=id=>games.find(g=>g.id===id),link=(id,p=period)=>'#leaderboards?game='+encodeURIComponent(id)+'&period='+p;
- function shell(){root.innerHTML=`<div class="chartsHeading"><div><small>THE ARCHERBOX CHARTS</small><h1>${kind==='trending'?'Find your next favorite.':'Make your mark.'}</h1><p>${kind==='trending'?'See what everyone is playing. Find out who’s climbing.':'Your games. Your achievements. Your place on the board.'}</p></div><button class="chartRefresh" data-chart-refresh aria-label="Refresh charts">↻ <span>Refresh</span></button></div><div class="chartTabs" aria-label="Charts pages"><button data-chart-nav="trending" ${kind==='trending'?'aria-current="page"':''}>↗ Trending</button><button data-chart-nav="leaderboards" ${kind==='leaderboards'?'aria-current="page"':''}>♜ Leaderboards</button><span>22 GAMES · ONE COMMUNITY</span></div><div id="chartContent" aria-live="polite" aria-busy="true"><div class="chartLoading">Loading the ${kind==='trending'?'charts':'leaderboard'}…</div></div><p class="chartFootnote">Real browser player profiles. New achievements count from this update onward. Online results appear when they sync.</p>`;
+ function shell(){root.innerHTML=`<div class="chartsHeading"><div><small>THE ARCHERBOX CHARTS</small><h1>${kind==='trending'?'Find your next favorite.':'Make your mark.'}</h1><p>${kind==='trending'?'See what everyone is playing. Find out who’s climbing.':'Your games. Your achievements. Your place on the board.'}</p></div><button class="chartRefresh" data-chart-refresh aria-label="Refresh charts">↻ <span>Refresh</span></button></div><div class="chartTabs" aria-label="Charts pages"><button data-chart-nav="trending" ${kind==='trending'?'aria-current="page"':''}>↗ Trending</button><button data-chart-nav="leaderboards" ${kind==='leaderboards'?'aria-current="page"':''}>♜ Leaderboards</button><span>23 GAMES · ONE COMMUNITY</span></div><div id="chartContent" aria-live="polite" aria-busy="true"><div class="chartLoading">Loading the ${kind==='trending'?'charts':'leaderboard'}…</div></div><p class="chartFootnote">Real browser player profiles. New achievements count from this update onward. Online results appear when they sync.</p>`;
  }
  function trends(data){
   const list=data.games.map(row=>({...row,meta:find(row.game)})).filter(r=>r.meta),top=list[0],active=list.filter(r=>r.players>0).length;

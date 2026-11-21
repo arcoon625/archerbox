@@ -58,7 +58,7 @@ assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
 }
 // Catch missing entry-point wiring or syntax in any of the 22 shipped games.
 for(const g of GAMES){const source=fs.readFileSync(new URL('../public/games/'+g.id+'/game.js',import.meta.url),'utf8');assert(source.includes(`createCoinRun('${g.id}')`));assert(source.includes('coinRun.counter(')||source.includes('coinRun.once(')||source.includes('coinRun.unique('));}
-console.log('Coins passed: all 22 games, real touchdown and bakery outcomes, discovery deduplication, replay protection, purchases, legacy outfits, storage failure and concurrent wallet updates.');
+console.log('Coins passed: all 23 games, real touchdown and bakery outcomes, discovery deduplication, replay protection, purchases, legacy outfits, storage failure and concurrent wallet updates.');
 
 // Old balances and owned avatar items survive the switch to rare milestones.
 {

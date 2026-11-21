@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Outpost Maze · Archerbox</title>
+<meta name="description" content="Find the access chip, get past patrolling soldiers, and reach the exit of three 3D mazes.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="world" aria-label="3D maze" tabindex="0"></canvas>
+<header class="hud" id="hud" hidden>
+ <div><small id="sector">DEPOT GATE</small><b id="objective">Find the access chip</b></div>
+ <div class="gearHud"><small>SHIELDS</small><b id="shields" aria-label="3 shields">◆ ◆ ◆</b></div>
+ <div class="creditHud"><small>MAZE CREDITS</small><b id="credits">$0</b></div>
+ <button id="pause" type="button" aria-label="Pause game">Ⅱ</button>
+</header>
+<div id="mapPanel" class="mapPanel" hidden><small>MAZE MAP</small><canvas id="map" aria-label="Map of walls, checkpoint, chip, and exit"></canvas><p><span>● You</span> · <span>■ Chip</span> · <span>■ Checkpoint</span> · <span>■ Exit</span></p></div>
+<p id="notice" role="status" hidden></p>
+<div id="controls" class="controls" hidden>
+ <div class="move" aria-label="Movement">
+  <button data-direction="up" aria-label="Move up">↑</button><button data-direction="left" aria-label="Move left">←</button>
+  <button data-direction="down" aria-label="Move down">↓</button><button data-direction="right" aria-label="Move right">→</button>
+ </div>
+ <div class="actions">
+  <div class="equipped" id="equipped">Pulse Tagger</div>
+  <div><button id="mapButton" type="button" aria-pressed="false">Map <kbd>M</kbd></button><button id="shopButton" type="button">Shop <kbd>E</kbd></button></div>
+  <div><button id="jump" type="button">Jump <kbd>Space</kbd></button><button id="tag" class="primary" type="button">Tag <kbd>J</kbd></button></div>
+ </div>
+</div>
+<main class="menu" id="menu">
+ <header><a href="../../index.html">← Archerbox</a><span id="menuCredits">$0 maze credits</span></header>
+ <section class="menuBody">
+  <div class="intro"><h1>Outpost<br><em>Maze</em></h1><p>Find the blue access chip and reach the green exit. Vault barricades, dodge patrolling soldiers, and collect credits for new gear.</p></div>
+  <div class="setup">
+   <h2>Choose a maze</h2>
+   <div id="levels" class="levels"></div>
+   <div class="menuActions"><button id="play" class="primary" type="button">Enter maze →</button><button id="menuShop" type="button">Gear shop</button></div>
+   <p class="instructions">WASD or arrows to move · Space to jump · J to tag · M for map</p>
+  </div>
+ </section>
+</main>
+<dialog id="shop" aria-labelledby="shopTitle">
+ <header><div><small>MAZE CREDITS <b id="shopCredits">$0</b></small><h2 id="shopTitle">Gear shop</h2></div><button id="closeShop" type="button" aria-label="Close gear shop">×</button></header>
+ <p>Spend credits collected inside Outpost Maze. Your gear carries over to every maze.</p>
+ <div id="gearRows" class="gearRows"></div>
+ <p id="shopStatus" role="status"></p>
+</dialog>
+<dialog id="pauseDialog" aria-labelledby="pauseTitle"><h2 id="pauseTitle">Maze paused</h2><p>Your checkpoint, access chip, and collected credits save as you go.</p><div class="menuActions"><button id="resume" class="primary" type="button">Resume</button><button id="leave" type="button">Maze selection</button></div></dialog>
+<dialog id="finish" aria-labelledby="finishTitle"><h2 id="finishTitle">Maze cleared!</h2><p id="finishSummary"></p><div class="menuActions"><button id="next" class="primary" type="button">Next maze →</button><button id="retry" type="button">Replay</button><button id="finishMenu" type="button">Maze selection</button></div></dialog>
+<script type="module" src="../../bridge.js"></script>
+<script type="module" src="game.js"></script>
+</body>
+</html>

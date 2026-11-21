@@ -1,4 +1,12 @@
 export const GAMES=[
+ {id:'outpost-maze',name:'Outpost Maze',category:'Adventure',format:'3D',accent:'#9aeecb',
+  image:'assets/outpost-maze.jpg',imageAlt:'A teal explorer navigating concrete maze walls and patrolling robot soldiers toward a green exit',
+  tag:'FIND THE CHIP. FIND A WAY OUT.',
+  summary:'Get past walls and patrolling soldiers. Collect credits for gear, then reach the green exit.',
+  description:'Explore three 3D mazes: Depot Gate, Signal Yard, and Citadel Core. Find the blue access chip and head to the green exit. Jump barricades, wait for electric floor pads to shut off, or stun robot soldiers with a colorful tagger. Checkpoints restore your shields and save your progress. Collect maze credits along the way and earn a bonus for reaching the exit. Buy the Bubble Blaster, Chill Blaster, or Spark Launcher at the entrance or a checkpoint. Your gear carries across all three mazes. Plays solo with keyboard or touch controls. Clear 24 mazes to earn an Archcoin.',
+  features:['Three 3D mazes','Patrolling robot soldiers','Maze credits & gear shop','Checkpoints and map'],
+  controls:[['WASD / ARROWS','Move and face a direction'],['SPACE','Jump a barricade'],['J','Tag a soldier you face'],['E','Shop at start or checkpoint'],['M','Toggle the map'],['ESC','Pause']],
+  label:'Maze adventure',emoji:'⬢'},
  {id:'basketball-stars',name:'Basketball Stars',category:'Sports',format:'Arcade',accent:'#ffb65e',
   image:'assets/basketball-stars.jpg',imageAlt:'Orange and teal jersey players competing on a hardwood basketball court',
   tag:'OWN THE COURT',summary:'Take on the CPU in 1v1 or 3v3, or beat your best in a three-point contest.',

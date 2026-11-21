@@ -3,6 +3,7 @@ export const XP_REWARDS = [
   ['fruit-seas','quest',50], ['pokemon-meadow','discovery',20],
   ['bearwatch','survive',100], ['poop-panic','knockout',10],
   ['jurassic-island','mission',50], ['snowball-showdown','round-win',60],
+  ['outpost-maze','finish',75],
   ['disaster-island','survive',50], ['laser-maze','finish',75],
   ['battle-arena','round-win',40], ['touchdown-rush','touchdown',50],
   ['basketball-stars','basket',15],

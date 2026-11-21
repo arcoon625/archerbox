@@ -7,7 +7,7 @@ import {METRICS} from '../public/charts/rules.js';
 import {XP_REWARDS,levelInfo,levelThreshold,xpFor} from '../public/progression/rules.js';
 import {createLevelClient} from '../public/progression/client.js';
 
-test('all 22 games award fitting XP and level thresholds stay exact',()=>{
+test('all 23 games award fitting XP and level thresholds stay exact',()=>{
   assert.deepEqual(new Set(XP_REWARDS.map(r=>r.game)),new Set(GAMES.map(g=>g.id)));
   assert.deepEqual(XP_REWARDS.map(r=>r.game+'/'+r.event).sort(),METRICS.flatMap(m=>Object.keys(m.events).map(e=>m.game+'/'+e)).sort());
   assert.equal(xpFor('neon-clash','elimination'),10);
