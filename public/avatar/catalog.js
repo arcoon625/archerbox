@@ -250,7 +250,9 @@ Chef Clogs|clogs|e4dfce|707d80|holes
 Garden Clogs|clogs|8ba47b|d9cd98|floral
 Spring Jump Shoes|springboots|7595a3|e1ba7b|spring
 Comet Trail Shoes|runners|8094b4|dfb889|comet
-Cloud Float Shoes|cloudshoes|e4e2d9|a9bace|cloud`,
+Cloud Float Shoes|cloudshoes|e4e2d9|a9bace|cloud
+Light-Up Sneakers|ledsneakers|26394c|78dcff|LED
+Retro Court High-Tops|retrohigh|a92d39|f0d7c0|retro basketball`,
 pet:`Pocket Raccoon|raccoon|869390|42575b|raccoon
 Tiny Great White|shark|789ba7|e1eae2|shark
 Baby Hammerhead|hammerhead|8aabb0|dce4d5|shark

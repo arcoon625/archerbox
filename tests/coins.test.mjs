@@ -11,7 +11,7 @@ function memoryStorage(){const data=new Map();return {getItem:key=>data.get(key)
 function serialLocks(){let queue=Promise.resolve();return {request(key,fn){const work=queue.then(fn);queue=work.catch(()=>{});return work}}}
 function tracker(game,storage=memoryStorage(),room=null){let serial=0;const options={storage,locks:serialLocks(),notify:()=>{}};const write=data=>transactWallet(wallet=>award(wallet,data),options);return {run:createCoinRun(game,{room,write,newId:()=>`test-${++serial}`}),storage,write,options}}
 assert.deepEqual([...new Set(REWARDS.map(r=>r.game))].sort(),GAMES.map(g=>g.id).sort());
-assert.equal(Object.keys(PRICES).length,24);assert.equal(ALL_ITEMS.filter(i=>!priceOf(i.id)).length,284);
+assert.equal(Object.keys(PRICES).length,24);assert.equal(ALL_ITEMS.filter(i=>!priceOf(i.id)).length,286);
 for(const [id,price] of Object.entries(PRICES)){assert(ALL_ITEMS.some(i=>i.id===id));assert([3,5,8,12].includes(price));}
 for(const c of CATEGORIES){assert.equal(ALL_ITEMS.filter(i=>i.category===c.id&&priceOf(i.id)).length,['back','neck'].includes(c.id)?0:4);assert(!priceOf(DEFAULT_LOOK[c.id]));}
 assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
