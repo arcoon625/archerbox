@@ -15,3 +15,7 @@
 #avatarStage{height:430px;background:radial-gradient(ellipse at 48% 32%,#f0ede5 0%,#d7ded9 57%,#b4c4ba 100%)}.avatarViews{position:absolute;top:37px;left:14px;display:flex;gap:3px;background:#f9f7edcc;border:1px solid #aebeb1;border-radius:18px;padding:3px}.avatarViews button{border:0;background:transparent;color:#52675a;font:inherit;font-size:9px;padding:6px 11px;border-radius:14px;cursor:pointer}.avatarViews button[aria-pressed=true]{background:#365b45;color:#fff9ec}.avatarViews button:focus-visible{outline:3px solid #4c714d;outline-offset:2px}@media(max-width:760px){#avatarStage{height:360px}}@media(max-width:520px){#avatarStage{height:380px}.avatarViews{top:37px}.avatarViews button{font-size:10px}}
 
 .avatarCredit{display:inline-block;margin-top:12px;color:#8fa98b;font-size:9px;text-underline-offset:3px}
+
+/* Keep the longer accessory labels readable when the wardrobe is narrow. */
+@media(min-width:1101px){#avatarCategories{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.avatarViews{flex-wrap:wrap;max-width:calc(100% - 28px)}

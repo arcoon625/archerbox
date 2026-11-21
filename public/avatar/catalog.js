@@ -1,4 +1,4 @@
-export const CATEGORIES=[{id:'head',name:'Headwear',icon:'⌂'},{id:'face',name:'Face',icon:'◉'},{id:'shirt',name:'Shirts',icon:'♜'},{id:'bottom',name:'Pants & shorts',icon:'Ⅱ'},{id:'shoes',name:'Shoes',icon:'↟'},{id:'pet',name:'Pets',icon:'✦'}];
+export const CATEGORIES=[{id:'head',name:'Headwear',icon:'⌂'},{id:'face',name:'Face',icon:'◉'},{id:'shirt',name:'Shirts',icon:'♜'},{id:'bottom',name:'Pants & shorts',icon:'Ⅱ'},{id:'shoes',name:'Shoes',icon:'↟'},{id:'pet',name:'Pets',icon:'✦'},{id:'back',name:'Back Gear',icon:'⟡'}];
 const rows={
 head:`Baseball Cap|cap|235f92|faf1dc|A
 Cozy Beanie|beanie|ce8248|f2d7a0|rib
@@ -299,13 +299,19 @@ Comet Sprite|comet|d4bd7e|91afb5|comet
 Crystal Golem|golem|a4c1c0|c3b2ce|crystal
 Mushroom Sprout|mushroom|b595a7|dcd1ad|spots
 Leaf Sprite|sprite|a4b88c|ded7a9|leaves
-Friendly Ghost|ghost|dae0d9|8fa0b5|ghost`
+Friendly Ghost|ghost|dae0d9|8fa0b5|ghost`,
+back:`Skyfeather Wings|feather|e7edf0|b3d3e6|layered feathers
+Aurora Crystal Wings|crystal|7770c4|67e9cf|iridescent
+Ember Dragon Wings|dragon|98463e|e08b46|dragon membrane
+Moon Rover Jetpack|jetpack|bfcbd4|83dffe|orbit
+Retro Rocket Jetpack|jetpack|a93e38|f1ca76|retro
+Neon Turbo Jetpack|jetpack|35515c|a9fa66|turbo`
 };
 export const ITEMS=Object.fromEntries(CATEGORIES.map(c=>[c.id,rows[c.id].split('\n').map((line,i)=>{const [name,kind,color,accent,pattern]=line.split('|');return {id:c.id+'-'+String(i+1).padStart(2,'0'),category:c.id,name,kind,color:'#'+color,accent:'#'+accent,pattern,index:i}})]));
 export const ALL_ITEMS=CATEGORIES.flatMap(c=>ITEMS[c.id]);
 const byId=new Map(ALL_ITEMS.map(i=>[i.id,i]));
 export const SKIN_TONES=['#f1d3b2','#e4b78c','#c78d62','#a26b4a','#79523f','#563d34','#c3d8cb','#b8c8e3'];
-export const DEFAULT_LOOK={head:'head-01',face:null,shirt:'shirt-01',bottom:'bottom-01',shoes:'shoes-01',pet:null,skin:SKIN_TONES[1],expression:'smile'};
+export const DEFAULT_LOOK={head:'head-01',face:null,shirt:'shirt-01',bottom:'bottom-01',shoes:'shoes-01',pet:null,back:null,skin:SKIN_TONES[1],expression:'smile'};
 export const EXPRESSIONS=['smile','grin','cool','wink','surprised','sleepy'];
 export const STORAGE_KEY='archerbox-avatar-v1';
 export function itemById(id){return byId.get(id)||null}
@@ -314,4 +320,4 @@ export function readSavedLook(storage){try{storage??=globalThis.localStorage;con
 export function readOutfits(storage){try{storage??=globalThis.localStorage;const saved=JSON.parse(storage.getItem(STORAGE_KEY)||'{}');return Array.isArray(saved.outfits)?saved.outfits.filter(o=>o&&typeof o.name==='string'&&o.look&&typeof o.look==='object').slice(0,12).map(o=>({name:o.name.trim().slice(0,24)||'My outfit',look:validateLook(o.look)})):[]}catch{return []}}
 export function saveWardrobe(look,outfits,storage){try{storage??=globalThis.localStorage;storage.setItem(STORAGE_KEY,JSON.stringify({look:validateLook(look),outfits:outfits.slice(0,12).map(o=>({name:String(o.name).trim().slice(0,24)||'My outfit',look:validateLook(o.look)}))}));return true}catch{return false}}
 export function findItems(category,query=''){const q=query.trim().toLowerCase();return(ITEMS[category]||[]).filter(i=>!q||(i.name+' '+i.kind+' '+i.pattern).toLowerCase().includes(q))}
-export function randomLook(random=Math.random){const l={...DEFAULT_LOOK};for(const c of CATEGORIES)l[c.id]=ITEMS[c.id][Math.min(49,Math.floor(random()*50))].id;l.skin=SKIN_TONES[Math.min(SKIN_TONES.length-1,Math.floor(random()*SKIN_TONES.length))];return l}
+export function randomLook(random=Math.random){const l={...DEFAULT_LOOK};for(const c of CATEGORIES){const items=ITEMS[c.id];l[c.id]=items[Math.min(items.length-1,Math.floor(random()*items.length))].id;}l.skin=SKIN_TONES[Math.min(SKIN_TONES.length-1,Math.floor(random()*SKIN_TONES.length))];return l}

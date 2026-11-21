@@ -1,6 +1,6 @@
 import * as THREE from '../../vendor/three.module.js';
-import {readSavedLook} from '../../avatar/catalog.js';
-import {buildAvatar,disposeAvatar} from '../../avatar/models.js?v=playful1';
+import {readSavedLook} from '../../avatar/catalog.js?v=backgear1';
+import {buildAvatar,disposeAvatar} from '../../avatar/models.js?v=backgear1';
 
 // Keep the combat rig and equipped weapon when the player's saved outfit changes.
 // The pirate body remains the fallback for players who have not saved an avatar.
