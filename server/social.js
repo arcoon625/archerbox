@@ -2,6 +2,7 @@ import {friendRequests,requestFriend,answerFriendRequest,cancelFriendRequest} fr
 import {makeRoom,tickRoom,readyPlayer,safeInput,publicRoom,validGame,event,encodeRoom} from './matches.js';
 import {recordFantasyResult} from './fantasy.js';
 import {validateLook} from '../public/avatar/catalog.js';
+import {friendChat} from './friend-chat.js';
 const alphabet='23456789abcdefghjkmnpqrstuvwxyz';
 const now=()=>Date.now(),pair=(a,b)=>[a,b].sort();
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
@@ -26,12 +27,15 @@ async function ensureProfile(db,id,body){
 async function areFriends(db,a,b){return db.prepare('SELECT a FROM social_friends WHERE a=? AND b=?').bind(...pair(a,b)).first();}
 async function socialState(db,id){
  const t=now(),profile=await getProfile(db,id);
- const friends=(await db.prepare('SELECT p.id,p.name,p.color,p.seen FROM social_friends f JOIN social_profiles p ON p.id=CASE WHEN f.a=? THEN f.b ELSE f.a END WHERE f.a=? OR f.b=? ORDER BY p.name').bind(id,id,id).all()).results;
+ const friends=(await db.prepare(`SELECT p.id,p.name,p.color,p.seen,
+  (SELECT COUNT(*) FROM social_chat_messages m WHERE m.a=f.a AND m.b=f.b AND m.sender=p.id AND m.read_at IS NULL) AS unread
+  FROM social_friends f JOIN social_profiles p ON p.id=CASE WHEN f.a=? THEN f.b ELSE f.a END
+  WHERE f.a=? OR f.b=? ORDER BY p.name`).bind(id,id,id).all()).results;
  const incoming=(await db.prepare("SELECT i.id,i.track,i.game,i.variant,i.expires,p.name,p.color FROM social_invites i JOIN social_profiles p ON p.id=i.sender WHERE i.recipient=? AND i.status='pending' AND i.expires>? ORDER BY i.created DESC").bind(id,t).all()).results;
  const outgoing=(await db.prepare("SELECT i.id,i.status,i.expires,i.track,i.game,p.name FROM social_invites i JOIN social_profiles p ON p.id=i.recipient WHERE i.sender=? AND i.created>? ORDER BY i.created DESC LIMIT 10").bind(id,t-300000).all()).results;
  const rooms=(await db.prepare('SELECT id,data FROM social_rooms WHERE (host=? OR guest=?) AND updated>? ORDER BY updated DESC LIMIT 5').bind(id,id,t-900000).all()).results;
  const active=rooms.find(r=>!['left','finished'].includes(JSON.parse(r.data).status));
- return {profile:{name:profile.name,color:profile.color,code:profile.code},friends:friends.map(f=>({id:f.id,name:f.name,color:f.color,online:t-f.seen<16000})),friendRequests:await friendRequests(db,id),incoming,outgoing:outgoing.map(i=>({...i,status:i.status==='pending'&&i.expires<=t?'expired':i.status})),activeRoom:active?.id||null,activeGame:active?JSON.parse(active.data).game||'turbo-kart-racing':null};
+ return {profile:{name:profile.name,color:profile.color,code:profile.code},friends:friends.map(f=>({id:f.id,name:f.name,color:f.color,online:t-f.seen<16000,unread:f.unread})),friendRequests:await friendRequests(db,id),incoming,outgoing:outgoing.map(i=>({...i,status:i.status==='pending'&&i.expires<=t?'expired':i.status})),activeRoom:active?.id||null,activeGame:active?JSON.parse(active.data).game||'turbo-kart-racing':null};
 }
 async function editRoom(db,id,user,connection,edit){
  for(let retry=0;retry<5;retry++){
@@ -56,6 +60,7 @@ export async function handleSocial(request,db){
   let body={};try{body=raw?JSON.parse(raw):{}}catch{fail('Invalid message.');}if(!body||typeof body!=='object'||Array.isArray(body))fail('Invalid message.');
   if(path[0]==='profile'&&method==='POST'){await ensureProfile(db,id,body);return json(await socialState(db,id));}
   const me=await getProfile(db,id);if(!me)fail('Save your profile to turn on Friends.',428);
+  if(path[0]==='chat'&&path.length===1)return json(await friendChat(db,id,method,url.searchParams,body));
   if(path[0]==='avatar'&&path.length===1){
    if(method==='POST'){
     if(!body.look||typeof body.look!=='object'||Array.isArray(body.look))fail('Save a look in Avatar Studio first.');

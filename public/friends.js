@@ -1,8 +1,12 @@
 import {FRIEND_GAMES,friendGame} from './multiplayer/catalog.js';
 import {CATEGORIES,itemById,readSavedLook,STORAGE_KEY} from './avatar/catalog.js?v=medal1';
+import {initFriendChat} from './friend-chat.js?v=chat1';
 const $=id=>document.getElementById(id),escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function gameChoices(){const meta=friendGame($('friendGame').value);$('friendArena').innerHTML=meta.arenas.map((name,i)=>`<option value="${i}">${escape(name)}</option>`).join('');$('friendModeRow').hidden=meta.id!=='neon-clash';$('friendGameHelp').textContent=meta.detail;}
 let state=null,busy=false,polling=false,profile,openRace,currentRoom=null,lastInvite=null,needsProfileSave=false,onProfile,ignoredRooms=new Set();
+let chat;
+const unreadLabel=count=>count+' unread '+(count===1?'message':'messages');
+const badgeText=count=>count>99?'99+':String(count);
 export async function socialApi(path,body){
  const response=await fetch('/api/social/'+path,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
  let data;try{data=await response.json()}catch{throw new Error('Friends needs an online connection. Try again in a moment.')}
@@ -69,6 +73,7 @@ let relationshipKey='',stateRevision=0;
 function applyState(next){
  const changed=JSON.stringify(state)!==JSON.stringify(next);state=next;stateRevision++;if(changed)render();
  if(viewedAvatar&&!state.friends.some(f=>f.id===viewedAvatar.id))$('friendAvatarDialog').close();
+ chat.refresh(state.friends);
  const key=JSON.stringify([state.friends.map(f=>f.id),state.friendRequests]);
  if(key!==relationshipKey){relationshipKey=key;document.dispatchEvent(new Event('archerbox:social-updated'));}
 }
@@ -80,10 +85,21 @@ export async function friendAction(path,body){
 }
 function render(){
  if(!state)return;
- $('yourFriendCode').textContent=state.profile.code;$('friendCount').textContent=state.friends.length;$('friendsList').innerHTML=state.friends.length?state.friends.map(f=>`<article class="friendRow"><button type="button" class="friendIdentity" data-friend-avatar="${escape(f.id)}" aria-label="View ${escape(f.name)}’s avatar"><span class="friendAvatar" style="--friend-color:${f.color}" aria-hidden="true">${escape(f.name.slice(0,2).toUpperCase())}</span><span class="friendIdentityText"><b>${escape(f.name)}</b><small class="${f.online?'online':''}">● ${f.online?'Online':'Offline'}</small><span>View avatar ↗</span></span></button><button type="button" data-invite="${escape(f.id)}">Invite to game ↗</button><button type="button" class="removeFriend" data-remove="${escape(f.id)}" aria-label="Remove ${escape(f.name)} from friends">×</button></article>`).join(''):'<p class="friendsEmpty">Your friends will appear here. Share your code or enter theirs!</p>';
+ const unread=state.friends.reduce((sum,friend)=>sum+(friend.unread||0),0);
+ for(const id of ['profileChatBadge','friendChatTabBadge']){
+  const badge=$(id);
+  badge.hidden=!unread;
+  badge.textContent=unread?badgeText(unread):'';
+  badge.setAttribute('aria-label',unreadLabel(unread));
+ }
+ $('yourFriendCode').textContent=state.profile.code;$('friendCount').textContent=state.friends.length;$('friendsList').innerHTML=state.friends.length?state.friends.map(f=>`<article class="friendRow"><button type="button" class="friendIdentity" data-friend-avatar="${escape(f.id)}" aria-label="View ${escape(f.name)}’s avatar"><span class="friendAvatar" style="--friend-color:${f.color}" aria-hidden="true">${escape(f.name.slice(0,2).toUpperCase())}</span><span class="friendIdentityText"><b>${escape(f.name)}</b><small class="${f.online?'online':''}">● ${f.online?'Online':'Offline'}</small><span>View avatar ↗</span></span></button><button type="button" class="friendChatButton" data-friend-chat="${escape(f.id)}" aria-label="Chat with ${escape(f.name)}${f.unread?', '+unreadLabel(f.unread):''}">Chat${f.unread?`<span class="friendChatBadge" aria-hidden="true">${badgeText(f.unread)}</span>`:''}</button><button type="button" data-invite="${escape(f.id)}">Invite to game ↗</button><button type="button" class="removeFriend" data-remove="${escape(f.id)}" aria-label="Remove ${escape(f.name)} from friends">×</button></article>`).join(''):'<p class="friendsEmpty">Your friends will appear here. Share your code or enter theirs!</p>';
  $('friendsList').querySelectorAll('[data-friend-avatar]').forEach(button=>button.onclick=()=>{
   const friend=state.friends.find(f=>f.id===button.dataset.friendAvatar);
   if(friend)void viewFriendAvatar(friend);
+ });
+ $('friendsList').querySelectorAll('[data-friend-chat]').forEach(button=>button.onclick=()=>{
+  const friend=state.friends.find(f=>f.id===button.dataset.friendChat);
+  if(friend)chat.open(friend);
  });
  $('friendsList').querySelectorAll('[data-invite]').forEach(b=>b.onclick=()=>sendInvite(b.dataset.invite));$('friendsList').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>run(()=>socialApi('remove',{friend:b.dataset.remove}),'Friend removed.'));
  const requests=state.friendRequests||{incoming:[],outgoing:[]};
@@ -107,6 +123,7 @@ async function connect(){if(polling||busy)return;polling=true;const before=state
 async function respond(invite,accept){await run(()=>socialApi('respond',{invite,accept}),accept?'Joining your friend…':'Invite declined.');}
 async function sendInvite(friend){await run(()=>socialApi('invite',{friend,game:$('friendGame').value,track:Number($('friendArena').value),variant:$('friendMode').value}));}
 export function initFriends(options){
+ chat=initFriendChat(socialApi,connect);
  $('friendGame').innerHTML=FRIEND_GAMES.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');$('friendGame').onchange=gameChoices;gameChoices();
  profile=options.profile;openRace=options.openRace;onProfile=options.onProfile;
  const avatarDialog=$('friendAvatarDialog');

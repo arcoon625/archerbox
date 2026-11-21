@@ -1,0 +1,120 @@
+.friendChatBadge {
+  display:inline-grid;
+  place-items:center;
+  min-width:19px;
+  min-height:19px;
+  margin-left:4px;
+  padding:2px 5px;
+  border-radius:12px;
+  background:#c0f16b;
+  color:#1b2914;
+  font-size:10px;
+  font-weight:800;
+  line-height:1;
+}
+.friendRow .friendChatButton {
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+  padding-inline:9px;
+  white-space:nowrap;
+}
+#friendChatDialog {
+  width:560px;
+  max-height:calc(100dvh - 22px);
+  padding:18px;
+  background:#1b2920;
+  overscroll-behavior:contain;
+}
+#friendChatDialog h2 {
+  margin:0 34px 14px 0;
+  overflow-wrap:anywhere;
+  font-size:23px;
+}
+#friendChatScroll {
+  height:clamp(105px,48dvh,390px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:14px;
+  border:1px solid #ffffff24;
+  border-radius:12px;
+  background:#142018;
+  scrollbar-gutter:stable;
+}
+#friendChatMessages {
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+#friendChatMessages li {
+  max-width:85%;
+  align-self:flex-start;
+  padding:9px 11px;
+  border:1px solid #ffffff1c;
+  border-radius:3px 12px 12px;
+  background:#2b3930;
+}
+#friendChatMessages .friendChatMine {
+  align-self:flex-end;
+  border-color:#a7ce685c;
+  border-radius:12px 3px 12px 12px;
+  background:#354929;
+}
+#friendChatMessages p {
+  margin:4px 0 0;
+  color:#f1f6ed;
+  font-size:14px;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.friendChatMeta,#friendChatEmpty,#friendChatStatus {
+  color:#b8c4b2;
+  font-size:12px;
+}
+#friendChatEmpty {text-align:center}
+#friendChatStatus {min-height:1.25em;margin:8px 0;color:#e0ccb1}
+#friendChatEarlier {
+  display:block;
+  margin:0 auto 13px;
+  padding:7px 11px;
+  border:1px solid #829d6a;
+  border-radius:7px;
+  background:#273a29;
+  color:#e9f3df;
+  font-size:12px;
+}
+#friendChatForm {display:flex;align-items:flex-end;gap:8px}
+#friendChatInput {
+  flex:1;
+  min-width:0;
+  max-height:100px;
+  resize:vertical;
+  padding:9px 10px;
+  border:1px solid #6b8364;
+  border-radius:8px;
+  background:#112017;
+  color:#f1f6ed;
+  font:inherit;
+  font-size:16px;
+}
+#friendChatInput::placeholder {color:#aab9a6}
+#friendChatSend {
+  min-height:42px;
+  padding:0 14px;
+  border:0;
+  border-radius:8px;
+  background:#c0f16b;
+  color:#142216;
+  font-weight:800;
+}
+#friendChatDialog button:disabled {opacity:.52;cursor:default}
+@media (max-width:520px) {
+  #friendChatDialog {padding:14px}
+  #friendChatScroll {padding:9px}
+  #friendChatMessages li {max-width:92%}
+  .friendRow .friendChatButton {padding-inline:6px}
+}

@@ -80,6 +80,73 @@ test('friends can see the latest saved catalog avatar and lose access when remov
  }finally{sqlite.close();}
 });
 
+test('chat is private to current friends and acknowledgments clear only received messages',async()=>{
+ const f=await fixture(),{a,b,c,sqlite}=f;
+ const thread=other=>'chat?friend='+encodeURIComponent(other.id);
+ const hi={friend:b.id,text:'<b>Race later?</b> 🏎️',nonce:crypto.randomUUID(),sender:c.id};
+ try{
+  assert.equal((await f.social(null,thread(b))).status,401);
+  assert.equal((await f.social(a,thread(b))).status,403);
+  assert.equal((await f.request(a,b)).status,200);
+  assert.equal((await f.social(a,'chat',hi)).status,403);
+  assert.equal((await f.social(a,thread(b))).status,403);
+  const request=(await f.state(b)).friendRequests.incoming[0].id;
+  assert.equal((await f.social(b,'friend-response',{request,accept:true})).status,200);
+  assert.deepEqual((await f.social(a,thread(b))).data,{messages:[],hasEarlier:false});
+  assert.equal((await f.social(a,'chat',hi,{origin:'https://elsewhere.test'})).status,403);
+  assert.equal((await f.social(a,'chat',{...hi,text:' '.repeat(5)})).status,400);
+  assert.equal((await f.social(a,'chat',{...hi,text:'x'.repeat(401)})).status,400);
+  const copies=await Promise.all([f.social(a,'chat',hi),f.social(a,'chat',hi)]);
+  for(const copy of copies)assert.equal(copy.status,200);
+  assert.deepEqual(copies[0].data,copies[1].data);
+  const sent=copies[0].data.message;
+  assert.equal(sent.mine,true);
+  assert.deepEqual((await f.social(b,thread(a))).data.messages,[{...sent,mine:false}]);
+  const reply=(await f.social(b,'chat',{friend:a.id,text:'Yep!',nonce:crypto.randomUUID()})).data.message;
+  assert.equal((await f.state(b)).friends[0].unread,1);
+  assert.equal((await f.state(a)).friends[0].unread,1);
+  const mark=await f.social(b,'chat',{friend:a.id,action:'read',through:reply.id});
+  assert.equal(mark.status,200);
+  assert.equal((await f.state(b)).friends[0].unread,0);
+  assert.equal((await f.state(a)).friends[0].unread,1);
+  assert.equal((await f.social(a,thread(b)+'&after='+sent.id)).data.messages[0].text,'Yep!');
+  assert.equal((await f.social(c,thread(a))).status,403);
+  assert.equal((await f.social(c,'chat',{...hi,friend:a.id})).status,403);
+  assert.equal((await f.social(a,'remove',{friend:b.id})).status,200);
+  assert.equal((await f.social(b,thread(a))).status,403);
+  assert.equal((await f.social(a,'chat',hi)).status,403);
+  assert.equal((await f.social(b,'chat',{friend:a.id,action:'read',through:reply.id})).status,403);
+ }finally{sqlite.close();}
+});
+
+test('chat history pages in order, limits repeated sends, and follows a profile reset',async()=>{
+ const f=await fixture(),{a,b,c,sqlite}=f;
+ const send=(from,to,text)=>f.social(from,'chat',{friend:to.id,text,nonce:crypto.randomUUID()});
+ try{
+  await f.social(a,'add',{code:b.code});
+  const [first,second]=[a.id,b.id].sort();
+  const row=sqlite.prepare('INSERT INTO social_chat_messages (a,b,sender,nonce,body,created) VALUES (?,?,?,?,?,?)');
+  for(let index=1;index<=45;index++)row.run(first,second,a.id,crypto.randomUUID(),'Message '+index,0);
+  const thread='chat?friend='+encodeURIComponent(a.id);
+  const latest=(await f.social(b,thread)).data;
+  assert.equal(latest.messages.length,40);
+  assert.equal(latest.messages[0].text,'Message 6');
+  assert.equal(latest.messages.at(-1).text,'Message 45');
+  assert.equal(latest.hasEarlier,true);
+  const older=(await f.social(b,thread+'&before='+latest.messages[0].id)).data;
+  assert.deepEqual(older.messages.map(m=>m.text),['Message 1','Message 2','Message 3','Message 4','Message 5']);
+  assert.equal(older.hasEarlier,false);
+  for(let index=0;index<24;index++)assert.equal((await send(a,b,'Fast message '+index)).status,200);
+  assert.equal((await send(a,b,'Too quick')).status,429);
+  await f.social(b,'add',{code:c.code});
+  assert.equal((await send(b,c,'Another conversation')).status,200);
+  const reset=await f.call('/api/session/reset',{user:a,body:{confirm:true}});
+  assert.equal(reset.data.reset,true);
+  assert.deepEqual(sqlite.prepare('SELECT body FROM social_chat_messages').all().map(m=>m.body),['Another conversation']);
+  assert.equal((await f.social(b,thread)).status,403);
+ }finally{sqlite.close();}
+});
+
 test('duplicate and crossed requests stay pending; decline, cancel and removal prevent stale accepts',async()=>{
  const f=await fixture(),{a,b,c,sqlite}=f;try{
   await Promise.all([f.request(a,b),f.request(b,a),f.request(a,b)]);
