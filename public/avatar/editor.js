@@ -2,7 +2,7 @@ import {readWallet,subscribeWallet,buyItem,priceOf,canWear} from '../economy/wal
 import {coinButton,bindCoinButtons,showCoinGuide} from '../economy/ui.js?v=coins1';
 import * as THREE from '../vendor/three.module.js';
 import {CATEGORIES,ITEMS,ALL_ITEMS,DEFAULT_LOOK,SKIN_TONES,EXPRESSIONS,findItems,itemById,validateLook,readSavedLook,readOutfits,saveWardrobe,randomLook} from './catalog.js?v=chain1';
-import {buildAvatar,itemPreview,disposeAvatar} from './models.js?v=chain1';
+import {buildAvatar,itemPreview,disposeAvatar} from './models.js?v=petdetail1';
 import {studioEnvironment} from './surfaces.js?v=scan2';
 const $=id=>document.getElementById(id),safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let initialized=false,opened=false,look=readSavedLook()||{...DEFAULT_LOOK},outfits=readOutfits(),category='head',query='',pose='idle',scene,camera,renderer,avatar,thumbRenderer,thumbScene,thumbCamera,rotation=.18,viewMode='full',drag=null,last=0,version=0,observer,onSaved=()=>{},onBack=()=>{};let wallet=readWallet(),shopFilter='all',pendingItem=null,buying=false;const thumbnails=new Map();let thumbnailQueue=[],processing=false;
