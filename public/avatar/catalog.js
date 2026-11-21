@@ -1,4 +1,4 @@
-export const CATEGORIES=[{id:'head',name:'Headwear',icon:'⌂'},{id:'face',name:'Face',icon:'◉'},{id:'shirt',name:'Shirts',icon:'♜'},{id:'bottom',name:'Pants & shorts',icon:'Ⅱ'},{id:'shoes',name:'Shoes',icon:'↟'},{id:'pet',name:'Pets',icon:'✦'},{id:'back',name:'Back Gear',icon:'⟡'}];
+export const CATEGORIES=[{id:'head',name:'Headwear',icon:'⌂'},{id:'face',name:'Face',icon:'◉'},{id:'shirt',name:'Shirts',icon:'♜'},{id:'bottom',name:'Pants & shorts',icon:'Ⅱ'},{id:'shoes',name:'Shoes',icon:'↟'},{id:'pet',name:'Pets',icon:'✦'},{id:'back',name:'Back Gear',icon:'⟡'},{id:'neck',name:'Neckwear',icon:'◇'}];
 const rows={
 head:`Baseball Cap|cap|235f92|faf1dc|A
 Cozy Beanie|beanie|ce8248|f2d7a0|rib
@@ -149,7 +149,8 @@ Camouflage Tee|tee|788167|b9b591|camo
 Glow Circuit Shirt|tee|384f59|72d6c3|circuit
 Comet Captain Coat|coat|596383|dfc880|comet
 Candy Cloud Hoodie|hoodie|cfa4bd|e7d1b4|cloud
-Golden Champion Jersey|jersey|d8b65c|584e50|1`,
+Golden Champion Jersey|jersey|d8b65c|584e50|1
+Classic Hoodie|hoodie|42464e|888b90|plain`,
 bottom:`Classic Blue Jeans|jeans|627e9d|cbbb96|denim
 Black Jeans|jeans|45535d|99a5aa|denim
 Ripped Skate Jeans|jeans|8195a5|d8cbae|ripped
@@ -305,13 +306,14 @@ Aurora Crystal Wings|crystal|7770c4|67e9cf|iridescent
 Ember Dragon Wings|dragon|98463e|e08b46|dragon membrane
 Moon Rover Jetpack|jetpack|bfcbd4|83dffe|orbit
 Retro Rocket Jetpack|jetpack|a93e38|f1ca76|retro
-Neon Turbo Jetpack|jetpack|35515c|a9fa66|turbo`
+Neon Turbo Jetpack|jetpack|35515c|a9fa66|turbo`,
+neck:`Gold Chain|chain|e9b950|c5903b|linked gold`
 };
 export const ITEMS=Object.fromEntries(CATEGORIES.map(c=>[c.id,rows[c.id].split('\n').map((line,i)=>{const [name,kind,color,accent,pattern]=line.split('|');return {id:c.id+'-'+String(i+1).padStart(2,'0'),category:c.id,name,kind,color:'#'+color,accent:'#'+accent,pattern,index:i}})]));
 export const ALL_ITEMS=CATEGORIES.flatMap(c=>ITEMS[c.id]);
 const byId=new Map(ALL_ITEMS.map(i=>[i.id,i]));
 export const SKIN_TONES=['#f1d3b2','#e4b78c','#c78d62','#a26b4a','#79523f','#563d34','#c3d8cb','#b8c8e3'];
-export const DEFAULT_LOOK={head:'head-01',face:null,shirt:'shirt-01',bottom:'bottom-01',shoes:'shoes-01',pet:null,back:null,skin:SKIN_TONES[1],expression:'smile'};
+export const DEFAULT_LOOK={head:'head-01',face:null,shirt:'shirt-01',bottom:'bottom-01',shoes:'shoes-01',pet:null,back:null,neck:null,skin:SKIN_TONES[1],expression:'smile'};
 export const EXPRESSIONS=['smile','grin','cool','wink','surprised','sleepy'];
 export const STORAGE_KEY='archerbox-avatar-v1';
 export function itemById(id){return byId.get(id)||null}
