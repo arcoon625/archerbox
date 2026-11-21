@@ -27,9 +27,9 @@ for(const mode of ['duel','teams','survival']){const g=createGame({mode,name:'Ar
 }
 {
  const {g,p,e}=duel();e.hp=1;beginAttack(g,p);hit(g,p,e);assert(!e.alive);tick(g,{},.01);assert.equal(g.phase,'round-end');assert.equal(g.stats.roundWins,1);assert.equal(g.stats.kos,1);assert.equal(g.score[0],1);
- const wallet=restoreWallet(null);const reward=()=>award(wallet,{game:'battle-arena',event:'round-win',run:'match',progress:g.stats.roundWins});assert.equal(reward().amount,1);assert.equal(reward().amount,0);
+ const wallet=restoreWallet(null);const reward=()=>award(wallet,{game:'battle-arena',event:'round-win',run:'match',progress:g.stats.roundWins});assert.equal(reward().amount,0);assert.equal(reward().amount,0);
  const before=JSON.stringify([g.actors,g.time,g.stats,g.result]);advance(g,3,{light:true,x:1});assert.equal(JSON.stringify([g.actors,g.time,g.stats,g.result]),before,'results freeze the simulation');
- assert(nextRound(g));assert.equal(g.round,2);assert(g.actors.every(a=>a.hp===100&&a.stamina===100));g.phase='combat';finishRound(g,0);assert.equal(g.phase,'finished');assert.equal(reward().amount,1);assert.equal(wallet.balance,2);assert(!nextRound(g));assert(!finishRound(g,0));assert.equal(g.stats.roundWins,2);
+ assert(nextRound(g));assert.equal(g.round,2);assert(g.actors.every(a=>a.hp===100&&a.stamina===100));g.phase='combat';finishRound(g,0);assert.equal(g.phase,'finished');assert.equal(reward().amount,0);assert.equal(wallet.milestones['battle-arena/round-win'],2);assert(!nextRound(g));assert(!finishRound(g,0));assert.equal(g.stats.roundWins,2);
  const loss=duel();finishRound(loss.g,1);assert.equal(loss.g.stats.roundWins,0);assert(!finishRound(loss.g,0));const draw=duel();finishRound(draw.g,null);assert(draw.g.result.draw);assert.equal(draw.g.stats.roundWins,0);assert.deepEqual(draw.g.score,[0,0]);
 }
 {

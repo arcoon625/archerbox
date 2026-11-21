@@ -76,5 +76,5 @@ test('friend matches share the server forecast and keep wind in world coordinate
 });
 test('resuming a season fixture cannot claim its already-earned touchdown coins again',()=>{
  const s=createSeason(TEAMS,'las-vegas-raiders',{seed:91}),id=currentFixture(s).id,w=restoreWallet(null),event={game:'touchdown-rush',event:'touchdown',run:'room:season:'+id,progress:2};
- assert.equal(award(w,event).amount,2);assert.equal(award(w,event).amount,0);assert.equal(award(w,{...event,progress:3}).amount,1);
+ assert.equal(award(w,event).amount,0);assert.equal(award(w,event).amount,0);assert.equal(award(w,{...event,progress:3}).amount,0);
 });

@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
+import {createCoinRun} from '../../economy/wallet.js?v=rarecoins1';
 const coinRun=createCoinRun('neon-clash');
 import {connectMatch} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false,rivalSnapshot=null,networkOwnPos=null,lastNetworkEvent=0;const networkObjects=new Map();

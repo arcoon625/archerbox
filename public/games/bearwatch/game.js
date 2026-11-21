@@ -1,8 +1,9 @@
 import * as T from '../../vendor/three.module.js';
 import {bindJoystick} from './touch-controls.js?v=forest1';
-import {SAVE_KEY,DAY_SECONDS,NIGHT_SECONDS,CHEST_DAYS,HIKE_UNLOCK,FIRE_MAX,SPECIES,CAMP_GOALS,BERRIES,bearDanger,nearestFood,harvestFood,nearestBerries,forage,cookFood,eatMeal,WEAPONS,CANS,SHOP,BASE,TREES,ROCKS,CHEST,CHEST_LOOT,MOUNTAINS,groundHeight,canHike,nearFire,nearestWood,nearestTree,collectWood,fuelFire,toggleAxe,chestCount,nearChest,rollChest,keepChestPrize,freshGame,restoreGame,restart,tick,interact,nearestCan,canShop,buyWeapon,equip,weapon,attack,clamp,distance,notice} from './rules.js?v=wildlife1';
+import {SAVE_KEY,DAY_SECONDS,NIGHT_SECONDS,CHEST_DAYS,HIKE_UNLOCK,FIRE_MAX,SPECIES,CAMP_GOALS,BERRIES,bearDanger,nearestFood,harvestFood,nearestBerries,forage,cookFood,eatMeal,WEAPONS,CANS,SHOP,BASE,TREES,ROCKS,CHEST,CHEST_LOOT,MOUNTAINS,groundHeight,canHike,nearFire,nearestWood,nearestTree,collectWood,fuelFire,toggleAxe,chestCount,nearChest,rollChest,keepChestPrize,freshGame,restoreGame,restart,tick,interact,nearestCan,canShop,buyWeapon,equip,weapon,attack,clamp,distance,notice} from './rules.js?v=rarecoins1';
 import {makeWorld} from './scene.js?v=wildlife1';
-import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
+import {forestCoinPrice,purchaseForestWeapon} from '../../economy/rules.js?v=rarecoins1';
+import {createCoinRun,readWallet,transactWallet,subscribeWallet} from '../../economy/wallet.js?v=rarecoins1';
 const coinRun=createCoinRun('bearwatch'),$=id=>document.getElementById(id);
 const clock=t=>{const s=Math.max(0,Math.ceil(t));return Math.floor(s/60).toString().padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
 const art=id=>{const common='viewBox="0 0 160 90" fill="none" stroke-linecap="round" stroke-linejoin="round"';const shapes={
@@ -18,13 +19,16 @@ function boot(){
  const cover=new URLSearchParams(location.search).get('cover')==='1';if(cover)document.body.classList.add('cover');
  let g,hasSave=false,storageOkay=true,lastSaveText=null;
  try{lastSaveText=localStorage.getItem(SAVE_KEY);const raw=JSON.parse(lastSaveText||'null');g=restoreGame(raw);hasSave=raw?.version===1;}catch{g=freshGame();storageOkay=false;}
- if(cover)g=freshGame();
+ if(cover)g=freshGame();else syncCoinGear();
+ function syncCoinGear(wallet=readWallet()){
+  for(const id of wallet.forestGear)if(!g.owned.includes(id))g.owned.push(id);
+ }
  const canvas=$('world'),renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.4));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
  const scene=new T.Scene(),camera=new T.PerspectiveCamera(72,innerWidth/innerHeight,.07,180);scene.add(camera);const world=makeWorld(scene,camera);
  let mode='menu',returnMode='menu',helpMode='menu',chestReturnMode='menu',keys={},touch={x:0,z:0,sprint:false},look=null,yaw=g.player.yaw,pitch=g.player.pitch,queuedJump=false,flashlight=true,mapVisible=true,graphicsLost=false,last=performance.now(),saveTime=0,hudTime=0,lastPhase=g.phase,lastEventId=0,loadoutKey='',sound=false,audio=null,claiming=false,rollInterval=null,rollTimeout=null,scareTime=0;
  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
  try{sound=localStorage.getItem('archerbox-bearwatch-sound')==='on';}catch{}
- function readLatest(){try{const text=localStorage.getItem(SAVE_KEY);if(text&&text!==lastSaveText){g=restoreGame(JSON.parse(text));lastSaveText=text;hasSave=true;yaw=g.player.yaw;pitch=g.player.pitch;lastPhase=g.phase;loadoutKey='';return true;}}catch{}return false;}
+ function readLatest(){try{const text=localStorage.getItem(SAVE_KEY);if(text&&text!==lastSaveText){g=restoreGame(JSON.parse(text));syncCoinGear();lastSaveText=text;hasSave=true;yaw=g.player.yaw;pitch=g.player.pitch;lastPhase=g.phase;loadoutKey='';return true;}}catch{}return false;}
  function save(){if(cover)return;if(readLatest())return;try{const serialized=JSON.stringify(g);localStorage.setItem(SAVE_KEY,serialized);lastSaveText=serialized;storageOkay=true;hasSave=true;}catch{storageOkay=false;}$('saveSummary').textContent=storageOkay?'Best: '+g.best+' / 100 nights · '+g.diamonds+' diamonds · '+g.owned.length+' weapons':'Saving is unavailable. Keep this tab open to keep your expedition.';}
  async function claimCoins(){
   if(claiming||cover||!g.coinTickets.length)return;claiming=true;
@@ -90,15 +94,49 @@ function boot(){
   mode=g.phase;resetInput();releaseMouse();save();claimCoins();$('overlay').hidden=false;$('overlayLabel').textContent=g.phase==='won'?'CENTURY SURVIVOR / EXPEDITION COMPLETE':'EXPEDITION ENDED';$('overlayIcon').textContent=g.phase==='won'?'◇':'△';$('overlayTitle').textContent=g.phase==='won'?'You outlasted the forest.':(g.deathCause==='hunger'?'You ran out of food.':'The bear caught you.');$('overlayText').textContent=g.phase==='won'?'100 full nights. +100 bonus diamonds, on top of your daily rewards. Your next expedition starts with all your gear.':'Hunt for food, cook meals, and keep your campfire burning. All your diamonds and weapons are safe. Your best night stays recorded.';$('resultStats').innerHTML='<div><b>'+g.survived+'</b><span>NIGHTS SURVIVED</span></div><div><b>'+g.diamonds+'</b><span>DIAMONDS</span></div>';$('resume').innerHTML='NEW EXPEDITION <span>↗</span>';tone(g.phase==='won'?'win':'hit');
  }
  function pause(){if(mode!=='playing')return;mode='paused';resetInput();releaseMouse();save();$('overlay').hidden=false;$('overlayLabel').textContent=graphicsLost?'RESTORING GRAPHICS':'EXPEDITION PAUSED';$('overlayIcon').textContent='Ⅱ';$('overlayTitle').textContent='Take a breath.';$('overlayText').textContent=graphicsLost?'The forest is paused while your graphics recover. Your expedition is saved.':'The clock and bear are paused. Your expedition is saved.';$('resultStats').innerHTML='<div><b>'+g.survived+'</b><span>NIGHTS SURVIVED</span></div><div><b>'+g.diamonds+'</b><span>DIAMONDS</span></div>';$('resume').innerHTML='BACK TO THE FOREST <span>↗</span>';$('resume').disabled=graphicsLost;}
+ let coinPurchase=false;
  function shopItems(){
+  const wallet=readWallet();
+  syncCoinGear(wallet);
   $('shopDiamonds').textContent=g.diamonds;
-  $('shopItems').innerHTML=WEAPONS.filter(w=>!w.chestOnly).map(w=>{const owned=g.owned.includes(w.id),selected=g.equipped===w.id;return '<article class="shopItem '+(selected?'equipped':'')+'"><div class="shopArt">'+art(w.id)+'</div><small>'+w.tag+'</small><h3>'+w.name+'</h3><p>'+w.detail+'</p><div class="weaponNumbers"><span>REACH '+w.range+'m</span><span>STUN '+w.stun+'s</span></div><button data-buy="'+w.id+'" '+(selected||!owned&&g.diamonds<w.price?'disabled':'')+'>'+(selected?'EQUIPPED':owned?'EQUIP ↗':'BUY · ◇ '+w.price)+'</button></article>';}).join('');
-  $('shopItems').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const result=buyWeapon(g,b.dataset.buy);$('shopStatus').textContent=result.ok?weapon(g).name+' equipped.':result.reason;if(result.ok){tone('buy');save();shopItems();loadout();}});
+  $('shopCoins').textContent=wallet.balance;
+  $('shopItems').innerHTML=WEAPONS.filter(w=>!w.chestOnly).map(w=>{const owned=g.owned.includes(w.id),selected=g.equipped===w.id,price=forestCoinPrice(w.id);return '<article class="shopItem '+(selected?'equipped':'')+'"><div class="shopArt">'+art(w.id)+'</div><small>'+w.tag+'</small><h3>'+w.name+'</h3><p>'+w.detail+'</p><div class="weaponNumbers"><span>REACH '+w.range+'m</span><span>STUN '+w.stun+'s</span></div><button data-buy="'+w.id+'" '+(coinPurchase||selected||!owned&&g.diamonds<w.price?'disabled':'')+'>'+(selected?'EQUIPPED':owned?'EQUIP ↗':'BUY · ◇ '+w.price)+'</button>'+(!owned&&price?'<button data-coin-buy="'+w.id+'" '+(coinPurchase||wallet.balance<price?'disabled':'')+'>BUY · '+price+' COINS</button>':'')+'</article>';}).join('');
+  $('shopItems').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{if(coinPurchase)return;readLatest();const result=buyWeapon(g,b.dataset.buy);$('shopStatus').textContent=result.ok?weapon(g).name+' equipped.':result.reason;if(result.ok){tone('buy');save();shopItems();loadout();}});
+  $('shopItems').querySelectorAll('[data-coin-buy]').forEach(button=>button.onclick=()=>buyWithCoins(button.dataset.coinBuy));
  }
+ async function buyWithCoins(id){
+  if(coinPurchase||cover)return;
+  coinPurchase=true;
+  shopItems();
+  const result=await transactWallet(wallet=>{
+   readLatest();
+   if(mode!=='shop'||!canShop(g))return {ok:false,reason:'closed'};
+   if(g.owned.includes(id))return {ok:true,amount:0};
+   return purchaseForestWeapon(wallet,id);
+  });
+  coinPurchase=false;
+  if(result.ok){
+   readLatest();
+   syncCoinGear();
+   equip(g,id);
+   save();
+   if(mode==='shop')$('shopStatus').textContent=weapon(g).name+' equipped.';
+   tone('buy');
+   loadout();
+  }else if(mode==='shop'){
+   $('shopStatus').textContent=result.reason==='insufficient'?'You need '+result.needed+' more Archerbox coins.'
+    :result.reason==='closed'?'Visit Ranger Supply during the day.':'Could not save the purchase. No coins were spent.';
+  }
+  if(mode==='shop')shopItems();
+ }
+ if(!cover)subscribeWallet(wallet=>{
+  syncCoinGear(wallet);
+  if(mode==='shop'&&!coinPurchase)shopItems();
+ });
  function openShop(){
   readLatest();
   if(mode==='shop')return;if(!canShop(g)){if(mode==='playing')notice(g,g.phase==='night'?'Ranger Supply is closed at night. Hide until dawn.':'Visit Ranger Supply at your base to shop.');return;}
-  returnMode=mode;mode='shop';resetInput();releaseMouse();save();shopItems();$('shopStatus').textContent='You earn 5 diamonds for each full night survived.';$('shop').showModal();
+  returnMode=mode;mode='shop';resetInput();releaseMouse();save();shopItems();$('shopStatus').textContent='Use diamonds or Archerbox coins. Weapons stay yours after a restart.';$('shop').showModal();
  }
  function stopRollAnimation(){clearInterval(rollInterval);clearTimeout(rollTimeout);rollInterval=rollTimeout=null;$('chestPrize').classList.remove('rolling');}
  function showChestPrize(reward){

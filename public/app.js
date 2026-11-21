@@ -3,10 +3,10 @@ import {requirePlayer} from './onboarding/session.js?v=welcome1';
 import {initPlayerLevels} from './progression/ui.js?v=basketball1';
 import {initCharts} from './charts/app.js?v=basketball1';
 import {createReloadNotice} from './game-errors.js?v=recovery1';
-import {coinButton,initCoinUI} from './economy/ui.js?v=basketball1';
+import {coinButton,initCoinUI} from './economy/ui.js?v=rarecoins1';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=league-size14';
 import {initFriends,socialApi} from './friends.js?v=requests1';
-import {GAMES,CATEGORIES,findGames} from './catalog.js?v=basketball1';
+import {GAMES,CATEGORIES,findGames} from './catalog.js?v=rarecoins1';
 const acceptedPlayer=await requirePlayer();
 window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
 const $=id=>document.getElementById(id),KEY='archerbox-lobby-v1',COLORS=['#c0f16b','#b9a2fb','#77d9dc','#f4ae81'];
@@ -39,7 +39,7 @@ let avatarEditor=null;
 function updateAvatarPortrait(look,portrait){if(portrait){try{localStorage.setItem('archerbox-avatar-portrait-v1',portrait)}catch{}}else{try{portrait=localStorage.getItem('archerbox-avatar-portrait-v1')}catch{}}if(typeof portrait==='string'&&portrait.startsWith('data:image/png;base64,')&&portrait.length<180000){const icon=document.createElement('img');icon.src=portrait;icon.alt='Your avatar';const first=$('avatarButton').firstElementChild;if(first)first.replaceWith(icon);$('profileIcon').replaceChildren(icon.cloneNode())}}
 updateAvatarPortrait();
 
-async function showAvatar({recordHistory=true}={}){charts.close();closeFantasy();closeDialogs();removeGame();$('lobby').hidden=true;$('player').hidden=true;document.body.classList.add('playing');if(recordHistory)history.pushState({},'',location.pathname+location.search+'#avatar');document.title='Avatar studio · Archerbox';try{avatarEditor??=await import('./avatar/editor.js?v=tooth1');if(location.hash!=='#avatar')return;await avatarEditor.openEditor({onSaved:updateAvatarPortrait,onBack:()=>lobby()})}catch(e){$('lobby').hidden=false;document.body.classList.remove('playing');console.error(e)}}
+async function showAvatar({recordHistory=true}={}){charts.close();closeFantasy();closeDialogs();removeGame();$('lobby').hidden=true;$('player').hidden=true;document.body.classList.add('playing');if(recordHistory)history.pushState({},'',location.pathname+location.search+'#avatar');document.title='Avatar studio · Archerbox';try{avatarEditor??=await import('./avatar/editor.js?v=rarecoins1');if(location.hash!=='#avatar')return;await avatarEditor.openEditor({onSaved:updateAvatarPortrait,onBack:()=>lobby()})}catch(e){$('lobby').hidden=false;document.body.classList.remove('playing');console.error(e)}}
 $('avatarButton').onclick=()=>showAvatar();$('avatarNav').onclick=()=>showAvatar();$('playerAvatarButton').onclick=()=>showAvatar();
 function closeDialogs(){for(const id of ['details','controlsDialog','profileDialog','coinGuide'])if($(id)?.open)$(id).close()}
 function removeGame(){reloadNotice.reset();clearTimeout(loadingTimer);try{frame?.contentDocument?.exitPointerLock?.()}catch{}if(document.pointerLockElement)document.exitPointerLock?.();if(frame){if(frame.dataset.room){socialApi('room/'+frame.dataset.room,{action:'leave'}).catch(()=>{});}if(frame.dataset.room)document.dispatchEvent(new CustomEvent('archerbox:race-left',{detail:{roomId:frame.dataset.room}}));frame.onload=null;frame.remove();frame=null}$('frameMount').replaceChildren();$('loadError').hidden=true;activeGame=null;}
@@ -53,7 +53,7 @@ function lobby({recordHistory=true}={}){charts.close();view='discover';closeFant
 function showCharts(hash='#charts',{recordHistory=true}={}){closeFantasy();avatarEditor?.closeEditor();closeDialogs();removeGame();$('lobby').hidden=false;$('player').hidden=true;document.body.classList.remove('playing');const [path,query]=hash.split('?'),options=new URLSearchParams(query||'');view=path==='#leaderboards'?'leaderboards':'trending';render();charts.open(view,{game:options.get('game'),period:options.get('period')});if(recordHistory)history.pushState({},'',location.pathname+location.search+hash);document.title=(view==='trending'?'Trending':'Leaderboards')+' · Archerbox';window.scrollTo({top:0});}
 function route(){if(location.hash==='#profile'){if(activeGame)lobby({recordHistory:false});$('profileButton').click();return}if(location.hash==='#charts'||location.hash.startsWith('#leaderboards')){showCharts(location.hash,{recordHistory:false});return}if(['trending','leaderboards'].includes(view)){view='discover';render();}if(location.hash==='#fantasy'){showFantasy({recordHistory:false});return}closeFantasy();if(location.hash==='#avatar'){showAvatar({recordHistory:false});return}avatarEditor?.closeEditor();const parts=location.hash.startsWith('#play/')?location.hash.slice(6).split('?'):[],id=parts[0]||null,roomId=new URLSearchParams(parts[1]||'').get('room');if(id&&validIds.has(id))launch(id,{recordHistory:false,roomId});else if(activeGame||$('lobby').hidden)lobby({recordHistory:false})}
 $('avatarButton').insertAdjacentHTML('beforebegin',coinButton());$('playerAvatarButton').insertAdjacentHTML('beforebegin',coinButton());
-$('featured').insertAdjacentHTML('beforebegin','<section class="coinIntro"><div><strong>✦ Play games. Earn coins. Find your next look.</strong><p>Every touchdown earns 1 coin. All 22 games have ways to earn.</p></div><button data-coin-wallet>How to earn ↗</button></section>');
+$('featured').insertAdjacentHTML('beforebegin','<section class="coinIntro"><div><strong>✦ Play games. Earn coins. Find your next look.</strong><p>Earn rare coins by reaching milestones in all 22 games.</p></div><button data-coin-wallet>How to earn ↗</button></section>');
 initCoinUI({onShop:()=>showAvatar()});
 
 window.addEventListener('popstate',route);window.addEventListener('hashchange',route);

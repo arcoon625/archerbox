@@ -87,3 +87,5 @@
  .lookHint{bottom:105px}
  .phaseWarning,body:has(#chestAlert:not([hidden])) .phaseWarning{top:65px;font-size:7px;padding:5px}
 }
+
+.shopBalance{flex-wrap:wrap}.shopItem [data-coin-buy]{margin-top:6px;background:#5a4a28;color:#fff1c6}.shopItem [data-coin-buy]:disabled{background:#d9ddc9;color:#7a876c}

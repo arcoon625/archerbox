@@ -8,8 +8,8 @@ assert.equal(SPECIES.length,17);for(const s of SPECIES)assert(artSvg(s.id).inclu
 const g=freshGame();chooseStarter(g,'squirtle');assert(startBattle(g,'wild',0).ok);const frozen=g.x;walk(g,1,1,.1);assert.equal(g.x,frozen,'walking cannot escape a battle');
 const beforeBall=g.balls;let rngStep=0;const miss=act(g,'catch',0,()=>rngStep++===0?.999:.2);assert(miss.ok);assert.equal(g.balls,beforeBall-1);assert(g.battle);assert(lead(g).hp<maxHP(lead(g)),'failed catch uses the turn');
 opponent(g).hp=1;const caught=act(g,'catch',0,()=>0);assert.equal(caught.result,'caught');assert.equal(g.team.length,2);assert(g.caught.includes('pidgey'));assert.equal(g.pendingCoins.filter(t=>t==='caught:pidgey').length,1);assert.equal(g.battle,null);assert(g.encounters[0]>g.time);
-const wallet=restoreWallet(null);for(const ticket of g.pendingCoins){const row={game:'pokemon-meadow',event:'discovery',run:ticket,progress:1};assert.equal(award(wallet,row).amount,1);assert.equal(award(wallet,row).amount,0);}
-assert.equal(wallet.balance,1);
+const wallet=restoreWallet(null);for(const ticket of g.pendingCoins){const row={game:'pokemon-meadow',event:'discovery',run:ticket,progress:1};assert.equal(award(wallet,row).amount,0);assert.equal(award(wallet,row).amount,0);}
+assert.equal(wallet.milestones['pokemon-meadow/discovery'],1);
 const restored=restoreGame(JSON.parse(JSON.stringify(g)));assert.equal(restored.team.length,2);assert(restored.caught.includes('pidgey'));assert.deepEqual(restored.pendingCoins,g.pendingCoins);
 const b=freshGame();chooseStarter(b,'bulbasaur');startBattle(b,'wild',1);const battleSave=restoreGame(JSON.parse(JSON.stringify(b)));assert(battleSave.battle);assert.equal(opponent(battleSave).species,'caterpie');act(battleSave,'run');assert.equal(battleSave.battle,null);
 const trainer=freshGame();chooseStarter(trainer,'charmander');startBattle(trainer,'trainer','luca');const count=trainer.balls;assert(!act(trainer,'catch',0,()=>0).ok);assert.equal(trainer.balls,count);assert(!act(trainer,'run').ok);assert(!startBattle(trainer,'wild',0).ok);

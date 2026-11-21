@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=welcome1';
+import {createCoinRun} from '../../economy/wallet.js?v=rarecoins1';
 const coinRun=createCoinRun('turbo-kart-racing');
 import {connectRace} from './online.js?v=restart1';
 import * as THREE from '../../vendor/three.module.js';

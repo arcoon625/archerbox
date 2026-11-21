@@ -27,7 +27,7 @@ for(const selection of ['expedition','survey','power','rescue','unknown'])for(co
  const g=createGame({selection:'power'});g.player.shield=10000;
  for(const station of STATIONS){walk(g,station);assert.equal(interaction(g).target,station.id);hold(g,2.2);assert(g.repaired.includes(station.id));assert(protectedAt(g,g.player));}
  assert(ready(g));assert.equal(goalFor(g).kind,'base');assert.equal(g.stats.completed,0,'objectives alone do not award a mission');walk(g,BASE);hold(g,1.1);assert.equal(g.phase,'finished');assert.equal(g.stats.completed,1);const time=g.time;advance(g,2,{interact:true});assert.equal(g.time,time);assert.equal(g.stats.completed,1);assert(!nextMission(g));
- const wallet=restoreWallet(null);assert.equal(award(wallet,{game:'jurassic-island',event:'mission',run:'expedition',progress:g.stats.completed}).amount,1);assert.equal(award(wallet,{game:'jurassic-island',event:'mission',run:'expedition',progress:g.stats.completed}).amount,0);
+ const wallet=restoreWallet(null);assert.equal(award(wallet,{game:'jurassic-island',event:'mission',run:'expedition',progress:g.stats.completed}).amount,0);assert.equal(award(wallet,{game:'jurassic-island',event:'mission',run:'expedition',progress:g.stats.completed}).amount,0);
 }
 {
  const g=createGame();g.player.shield=10000;
@@ -35,7 +35,7 @@ for(const selection of ['expedition','survey','power','rescue','unknown'])for(co
  assert(ready(g));Object.assign(g.player,BASE);hold(g,1.1);assert.equal(g.phase,'result');assert(nextMission(g));assert.equal(g.mission,'power');assert.equal(g.photos.length,6);g.player.shield=10000;
  for(const station of STATIONS){Object.assign(g.player,station);hold(g,2.2)}Object.assign(g.player,BASE);hold(g,1.1);assert(nextMission(g));assert.equal(g.mission,'rescue');g.player.shield=10000;
  for(const nest of NESTS){walk(g,nest);assert.equal(interaction(g).type,'egg');hold(g,.8);assert(g.eggs.includes(nest.id))}walk(g,BASE);hold(g,1.1);assert.equal(g.phase,'finished');assert.equal(g.stats.completed,3);assert.equal(g.eggs.length,3);
- const wallet=restoreWallet(null);assert.equal(award(wallet,{game:'jurassic-island',event:'mission',run:'full',progress:3}).amount,3);
+ const wallet=restoreWallet(null);assert.equal(award(wallet,{game:'jurassic-island',event:'mission',run:'full',progress:3}).amount,0);
 }
 {
  const g=createGame({selection:'rescue'}),d=g.dinos[0];g.dinos=[d];Object.assign(g.player,{x:20,z:-8,shield:0});Object.assign(d,{x:20,z:-15,tx:20,tz:-15,think:100});tick(g,{});assert.equal(d.state,'chase');assert(useFlare(g));assert.equal(g.flareAmmo,2);assert(!useFlare(g),'cooldown prevents repeated throws');tick(g,{});assert.equal(d.state,'distracted');advance(g,9.2);assert.equal(g.flares.length,0);

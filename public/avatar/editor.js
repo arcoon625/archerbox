@@ -1,5 +1,5 @@
-import {readWallet,subscribeWallet,buyItem,priceOf,canWear} from '../economy/wallet.js?v=coins1';
-import {coinButton,bindCoinButtons,showCoinGuide} from '../economy/ui.js?v=coins1';
+import {readWallet,subscribeWallet,buyItem,priceOf,canWear} from '../economy/wallet.js?v=rarecoins1';
+import {coinButton,bindCoinButtons,showCoinGuide} from '../economy/ui.js?v=rarecoins1';
 import * as THREE from '../vendor/three.module.js';
 import {CATEGORIES,ITEMS,ALL_ITEMS,DEFAULT_LOOK,SKIN_TONES,EXPRESSIONS,findItems,itemById,validateLook,readSavedLook,readOutfits,saveWardrobe,randomLook} from './catalog.js?v=medal1';
 import {buildAvatar,itemPreview,disposeAvatar} from './models.js?v=tooth1';

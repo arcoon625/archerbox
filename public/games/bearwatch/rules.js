@@ -171,7 +171,7 @@ function dawn(g){
  g.felled=g.felled.filter(id=>distance(g.player,TREES[id])<1||distance(g.bear,TREES[id])<1);g.treeHits={};
  const drop=g.survived%CHEST_DAYS===0;if(drop){g.chestReady++;if(g.player.hidden<0&&distance(g.player,CHEST)<1.4)g.player.z=CHEST.z+1.6;}
  if(g.survived===100){g.phase='won';g.wins++;g.diamonds+=CENTURY_DIAMONDS;notice(g,'100 NIGHTS SURVIVED! +100 bonus diamonds!',12);}
- else{g.phase='day';notice(g,drop?'GOLDEN CHEST ARRIVED AT BASE! '+g.survived+' days survived.':'DAWN. Night '+g.survived+' survived! +5 diamonds · +1 coin',drop?12:7);}
+ else{g.phase='day';notice(g,drop?'GOLDEN CHEST ARRIVED AT BASE! '+g.survived+' days survived.':'DAWN. Night '+g.survived+' survived! +5 diamonds',drop?12:7);}
 }
 function moveBear(g,dt){
  const b=g.bear,p=g.player;b.stun=Math.max(0,b.stun-dt);b.retreat=Math.max(0,b.retreat-dt);

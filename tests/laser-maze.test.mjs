@@ -19,6 +19,6 @@ assert(approach('low').zaps>0,'walking through a low laser zaps');assert.equal(a
  const g=createGame();for(let i=0;i<600;i++)tick(g,{x:-1,z:1},dt);assert(canOccupy(g.map,g.player.x,g.player.z),'diagonal movement never clips into walls');const y=g.player.y;tick(g,{jump:true},NaN);assert.equal(g.player.y,y);for(let i=0;i<240;i++)tick(g,{jump:true},dt);assert(g.player.onGround,'holding jump does not bounce forever');
 }
 {
- const g=walkMission(0,'easy'),w=restoreWallet(null),event={game:'laser-maze',event:'finish',run:'maze-test',progress:1};assert.equal(g.phase,'finished');assert.equal(award(w,event).amount,1);assert.equal(award(w,event).amount,0,'one finish cannot pay twice');assert.equal(w.balance,1);
+ const g=walkMission(0,'easy'),w=restoreWallet(null),event={game:'laser-maze',event:'finish',run:'maze-test',progress:1};assert.equal(g.phase,'finished');assert.equal(award(w,event).amount,0);assert.equal(award(w,event).amount,0,'one finish cannot pay twice');assert.equal(w.milestones['laser-maze/finish'],1);
 }
-console.log('Laser Maze passed: all six mission/difficulty combinations completed through real movement and EMP timing; reachable cards, locked exits, jumping, crouching, pulse windows, relays, checkpoints, walls, frozen results and one-coin rewards.');
+console.log('Laser Maze passed: all six mission/difficulty combinations completed through real movement and EMP timing; reachable cards, locked exits, jumping, crouching, pulse windows, relays, checkpoints, walls, frozen results and coin milestone progress.');

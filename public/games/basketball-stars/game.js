@@ -1,4 +1,4 @@
-import {createCoinRun} from '../../economy/wallet.js?v=basketball1';
+import {createCoinRun} from '../../economy/wallet.js?v=rarecoins1';
 import {newGame,tick,shoot,pass,steal} from './court.js?v=court3d1';
 import {createCourtView} from './view.js?v=court3d1';
 

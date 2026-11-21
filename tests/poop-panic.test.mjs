@@ -13,11 +13,11 @@ const active=options=>{const g=createGame(options);advance(g,3.1);assert.equal(g
  const g=active({seed:32});const wallet=restoreWallet(null);
  for(let ko=0;ko<GOAL;ko++){
   while(!g.enemy.alive)tick(g,{});const aim=aimAt(g.player,g.enemy);assert(launch(g,aim.yaw,aim.pitch));let frames=160;while(g.phase==='active'&&g.stats.kos===ko&&frames-->0)tick(g,{});
-  assert.equal(g.stats.kos,ko+1,'a real projectile scores knockout '+(ko+1));assert.equal(award(wallet,{game:'poop-panic',event:'knockout',run:'clean-run',progress:g.stats.kos}).amount,1);
+  assert.equal(g.stats.kos,ko+1,'a real projectile scores knockout '+(ko+1));assert.equal(award(wallet,{game:'poop-panic',event:'knockout',run:'clean-run',progress:g.stats.kos}).amount,0);
   assert.equal(award(wallet,{game:'poop-panic',event:'knockout',run:'clean-run',progress:g.stats.kos}).amount,0,'KO reward cannot repeat');
   if(ko<9){assert.equal(g.phase,'active');assert(!recordRun(null,g).unlocked,'nine or fewer KOs do not unlock the prize')}
  }
- assert.equal(g.phase,'won');const r=recordRun(null,g);assert(r.unlocked&&r.equipped);assert.equal(r.best,10);assert.equal(r.wins,1);assert.equal(wallet.balance,10);assert.deepEqual(restoreRecord(JSON.parse(JSON.stringify(r))),r);assert(restoreRecord(r).equipped);
+ assert.equal(g.phase,'won');const r=recordRun(null,g);assert(r.unlocked&&r.equipped);assert.equal(r.best,10);assert.equal(r.wins,1);assert.equal(wallet.milestones['poop-panic/knockout'],10);assert.deepEqual(restoreRecord(JSON.parse(JSON.stringify(r))),r);assert(restoreRecord(r).equipped);
  const bad=active();launch(bad,Math.PI);advance(bad,1);const after=recordRun(r,bad);assert(after.unlocked&&after.equipped,'the cosmetic persists after a later lost run');assert.equal(after.best,10);assert(!launch(g),'a completed run cannot fire');
 }
 {
