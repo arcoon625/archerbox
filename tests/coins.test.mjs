@@ -20,12 +20,12 @@ assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
  assert.equal(wallet.balance,REWARDS.length);assert.deepEqual(restoreWallet(JSON.parse(JSON.stringify(wallet))),wallet);
  const before=structuredClone(wallet);for(const value of [NaN,Infinity,-1,0,1.5,'2',Number.MAX_SAFE_INTEGER+1])assert(!award(wallet,{game:'touchdown-rush',event:'touchdown',run:'bad',progress:value}).ok);
  assert(!award(wallet,{game:'fake',event:'finish',run:'bad',progress:1}).ok);assert.deepEqual(wallet,before);
- assert.equal(award(wallet,{game:'touchdown-rush',event:'touchdown',run:'round-1',progress:26}).amount,1);
+ assert.equal(award(wallet,{game:'touchdown-rush',event:'touchdown',run:'round-1',progress:76}).amount,1);
  assert.equal(award(wallet,{game:'touchdown-rush',event:'touchdown',run:'round-1',progress:2}).amount,0);
 }
 {
  const wallet=restoreWallet(null);const before=structuredClone(wallet);assert.equal(purchase(wallet,'head-29').reason,'insufficient');assert.deepEqual(wallet,before);assert(!purchase(wallet,'not-real').ok);assert(!purchase(wallet,'head-01').ok);
- award(wallet,{game:'touchdown-rush',event:'touchdown',run:'game',progress:200});assert(purchase(wallet,'head-29').ok);assert.equal(wallet.balance,0);assert.equal(wallet.spent,8);assert.equal(wallet.earned,8);assert(canWear(wallet,'head-29'));assert.equal(purchase(wallet,'head-29').amount,0);assert.equal(wallet.balance,0);assert(!canWear(wallet,'head-33'));assert(canWear(wallet,'head-01'));
+ award(wallet,{game:'touchdown-rush',event:'touchdown',run:'game',progress:600});assert(purchase(wallet,'head-29').ok);assert.equal(wallet.balance,0);assert.equal(wallet.spent,8);assert.equal(wallet.earned,8);assert(canWear(wallet,'head-29'));assert.equal(purchase(wallet,'head-29').amount,0);assert.equal(wallet.balance,0);assert(!canWear(wallet,'head-33'));assert(canWear(wallet,'head-01'));
  assert.equal(restoreWallet({version:1,balance:-4}).balance,0);assert.equal(restoreWallet({version:1,balance:100,earned:4,spent:0}).balance,0);
 }
 {
@@ -49,12 +49,12 @@ assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
  const offline=tracker('turbo-kart-racing',t.storage);assert.equal(offline.run.once('finish'),undefined,'menu and demo do not award');offline.run.begin();await offline.run.once('finish');offline.run.begin();await offline.run.once('finish');assert.equal(readWallet(t.storage).milestones['turbo-kart-racing/finish'],3,'new offline races count again');
 }
 {
- const storage=memoryStorage(),options={storage,locks:serialLocks(),notify:()=>{}};await transactWallet(w=>award(w,{game:'neon-clash',event:'elimination',run:'match',progress:600}),options);
+ const storage=memoryStorage(),options={storage,locks:serialLocks(),notify:()=>{}};await transactWallet(w=>award(w,{game:'neon-clash',event:'elimination',run:'match',progress:1800}),options);
  const results=await Promise.all([transactWallet(w=>purchase(w,'head-29'),options),transactWallet(w=>purchase(w,'shirt-07'),options)]);assert.equal(results.filter(r=>r.ok).length,1);assert.equal(readWallet(storage).balance,2,'simultaneous purchases cannot overspend');
  const original=storage.getItem(WALLET_KEY);const broken={getItem:storage.getItem,setItem(){throw Error('quota')}};assert.equal((await transactWallet(w=>purchase(w,'head-29'),{...options,storage:broken})).reason,'storage');assert.equal(storage.getItem(WALLET_KEY),original);
  const noRead={getItem(){throw Error('blocked')},setItem(){assert.fail('must not write after an unreadable balance')}};assert.equal((await transactWallet(w=>purchase(w,'head-29'),{...options,storage:noRead})).reason,'storage');
  const noticeError=await transactWallet(w=>award(w,{game:'color-rush',event:'round',run:'notice-test',progress:1}),{...options,notify(){throw Error('UI unavailable')}});assert(noticeError.ok,'a notification error cannot reverse a saved transaction');
- const lots=await Promise.all(Array.from({length:30},(_,i)=>transactWallet(w=>award(w,{game:'baseball-blast',event:'home-run',run:'game-'+i,progress:1}),options)));assert(lots.every(r=>r.ok));assert.equal(readWallet(storage).balance,3,'concurrent game rewards are not lost');
+ const lots=await Promise.all(Array.from({length:65},(_,i)=>transactWallet(w=>award(w,{game:'baseball-blast',event:'home-run',run:'game-'+i,progress:1}),options)));assert(lots.every(r=>r.ok));assert.equal(readWallet(storage).balance,3,'concurrent game rewards are not lost');
 }
 // Catch missing entry-point wiring or syntax in any of the 22 shipped games.
 for(const g of GAMES){const source=fs.readFileSync(new URL('../public/games/'+g.id+'/game.js',import.meta.url),'utf8');assert(source.includes(`createCoinRun('${g.id}')`));assert(source.includes('coinRun.counter(')||source.includes('coinRun.once(')||source.includes('coinRun.unique('));}
@@ -67,7 +67,7 @@ console.log('Coins passed: all 22 games, real touchdown and bakery outcomes, dis
  assert(canWear(wallet,'head-29'));
  assert.deepEqual(wallet.milestones,{});
  assert.equal(award(wallet,{game:'bearwatch',event:'survive',run:'old',progress:4}).amount,0);
- assert.equal(award(wallet,{game:'bearwatch',event:'survive',run:'new',progress:10}).amount,1);
+ assert.equal(award(wallet,{game:'bearwatch',event:'survive',run:'new',progress:30}).amount,1);
  assert.equal(purchaseForestWeapon(wallet,'crossbow').amount,8);
  assert.equal(purchaseForestWeapon(wallet,'crossbow').amount,0);
  assert.equal(purchaseForestWeapon(wallet,'flare').reason,'insufficient');
