@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import worker from '../worker/index.js';
 import {fantasyDatabase} from './helpers/fantasy-db.mjs';
+import {DEFAULT_LOOK} from '../public/avatar/catalog.js';
 
 async function fixture(){
  const {db,sqlite}=fantasyDatabase(),env={DB:db};
@@ -48,6 +49,34 @@ test('leaderboard request waits for recipient consent, then both can invite each
   const invited=await f.social(a,'invite',{friend:b.id,game:'turbo-kart-racing',track:0});assert.equal(invited.status,200);
   const gameInvite=(await f.state(b)).incoming[0];assert.equal(gameInvite.game,'turbo-kart-racing');
   assert.equal((await f.social(b,'respond',{invite:gameInvite.id,accept:true})).status,200);
+ }finally{sqlite.close();}
+});
+
+test('friends can see the latest saved catalog avatar and lose access when removed',async()=>{
+ const f=await fixture(),{a,b,c,sqlite}=f;
+ const avatar='avatar?friend='+encodeURIComponent(b.id);
+ const outfit={...DEFAULT_LOOK,head:'head-02',back:'back-01',pet:'pet-02',expression:'wink'};
+ try{
+  assert.equal((await f.social(b,'avatar',{look:[]})).status,400);
+  assert.equal((await f.social(b,'avatar',{look:outfit},{origin:'https://elsewhere.test'})).status,403);
+  const saved=await f.social(b,'avatar',{friend:c.id,look:{...outfit,face:'shirt-01',privateNote:'not a catalog field'}});
+  assert.deepEqual(saved.data,{ok:true});
+  assert.equal((await f.social(null,avatar)).status,401);
+  assert.equal((await f.social(a,avatar)).status,403);
+  const requested=await f.request(a,b);
+  assert.equal(requested.status,200);
+  assert.equal((await f.social(a,avatar)).status,403);
+  const request=(await f.state(b)).friendRequests.incoming[0].id;
+  assert.equal((await f.social(b,'friend-response',{request,accept:true})).status,200);
+  assert.deepEqual((await f.social(a,avatar)).data,{look:outfit});
+  assert.deepEqual((await f.social(b,'avatar?friend='+encodeURIComponent(a.id))).data,{look:null});
+  assert.equal((await f.social(c,avatar)).status,403);
+  assert.equal(sqlite.prepare('SELECT avatar_look FROM social_profiles WHERE id=?').get(c.id).avatar_look,null);
+  const next={...outfit,head:null,expression:'grin'};
+  assert.equal((await f.social(b,'avatar',{look:next})).status,200);
+  assert.deepEqual((await f.social(a,avatar)).data,{look:next});
+  assert.equal((await f.social(a,'remove',{friend:b.id})).status,200);
+  assert.equal((await f.social(a,avatar)).status,403);
  }finally{sqlite.close();}
 });
 
@@ -107,7 +136,7 @@ test('reset everything removes sent and received friend requests without affecti
 test('migration gives existing players unique public identifiers while preserving friend codes and friendships',()=>{
  const sqlite=new DatabaseSync(':memory:');try{
   const migrations=fs.readdirSync(new URL('../drizzle/',import.meta.url)).filter(f=>f.endsWith('.sql')).sort();
-  for(const file of migrations.filter(f=>!f.startsWith('0007_')))sqlite.exec(fs.readFileSync(new URL('../drizzle/'+file,import.meta.url),'utf8'));
+  for(const file of migrations.filter(f=>f<'0007_'))sqlite.exec(fs.readFileSync(new URL('../drizzle/'+file,import.meta.url),'utf8'));
   for(const [id,code] of [['a','abcdefgh23'],['b','jkmnpqrs45']])sqlite.prepare('INSERT INTO social_profiles VALUES (?,?,?,?,?,?)').run(id,code,id,'#77d9dc',0,0);
   sqlite.prepare('INSERT INTO social_friends VALUES (?,?,?)').run('a','b',0);
   sqlite.exec(fs.readFileSync(new URL('../drizzle/0007_friend_requests.sql',import.meta.url),'utf8'));

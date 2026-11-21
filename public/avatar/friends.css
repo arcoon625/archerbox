@@ -1,0 +1,75 @@
+.friendRow .friendIdentity {
+  display:flex;
+  flex:1;
+  min-width:0;
+  align-items:center;
+  gap:10px;
+  padding:2px;
+  border:0;
+  background:none;
+  color:inherit;
+  text-align:left;
+}
+.friendIdentityText {min-width:0}
+.friendIdentityText > span {
+  display:block;
+  margin-top:5px;
+  color:#c0f16b;
+  font-size:11px;
+  font-weight:700;
+}
+.friendIdentity:hover .friendIdentityText > span {text-decoration:underline}
+#friendAvatarDialog {
+  width:680px;
+  padding:22px;
+  background:#1b2920;
+  overscroll-behavior:contain;
+}
+#friendAvatarDialog h2 {
+  margin:0 34px 16px 0;
+  overflow-wrap:anywhere;
+  font-size:24px;
+}
+#friendAvatarStatus {
+  margin:0 0 12px;
+  color:#bdc9b7;
+  font-size:14px;
+}
+.friendAvatarLayout {
+  display:grid;
+  grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);
+  gap:16px;
+  align-items:start;
+}
+#friendAvatarStage {
+  height:clamp(240px,46dvh,400px);
+  overflow:hidden;
+  border:1px solid #ffffff24;
+  border-radius:12px;
+  background:radial-gradient(ellipse at 50% 44%,#607b66,#2c4236 74%,#22342a);
+}
+#friendAvatarStage canvas {display:block;width:100%;height:100%}
+#friendAvatarViews {display:flex;gap:8px;margin-top:10px}
+#friendAvatarViews button {
+  padding:8px 12px;
+  border:1px solid #81907675;
+  border-radius:8px;
+  background:#25372a;
+  color:#e4eddc;
+  font-size:13px;
+}
+#friendAvatarViews button[aria-pressed=true] {
+  background:#c0f16b;
+  border-color:#c0f16b;
+  color:#1b2914;
+}
+#friendAvatarOutfit h3 {margin:0 0 10px;font-size:15px}
+#friendAvatarItems {margin:0}
+#friendAvatarItems div {padding:8px 0;border-top:1px solid #ffffff14;overflow-wrap:anywhere}
+#friendAvatarItems dt {font-size:11px;color:#b1bdaa}
+#friendAvatarItems dd {margin:3px 0 0;font-size:13px;font-weight:700}
+@media (max-width:520px) {
+  #friendAvatarDialog {padding:16px}
+  .friendAvatarLayout {grid-template-columns:1fr}
+  #friendAvatarItems {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+}

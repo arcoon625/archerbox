@@ -1,11 +1,11 @@
 import {initRestart} from './reset/ui.js?v=restart1';
 import {requirePlayer} from './onboarding/session.js?v=welcome1';
 import {initPlayerLevels} from './progression/ui.js?v=catalog21';
-import {initCharts} from './charts/app.js?v=catalog21';
+import {initCharts} from './charts/app.js?v=friendavatar1';
 import {createReloadNotice} from './game-errors.js?v=recovery1';
 import {coinButton,initCoinUI} from './economy/ui.js?v=catalog21';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=league-size14';
-import {initFriends,socialApi} from './friends.js?v=requests1';
+import {initFriends,socialApi,syncFriendAvatar} from './friends.js?v=friendavatar1';
 import {GAMES,CATEGORIES,findGames} from './catalog.js?v=catalog21';
 const acceptedPlayer=await requirePlayer();
 window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
@@ -36,12 +36,12 @@ function controlsHtml(g){return g.controls.map(([key,label])=>`<div><kbd>${escap
 function updateDetailFavorite(){if(detailId){const saved=favorites.includes(detailId);$('detailFavorite').textContent=saved?'★ Saved':'☆ Favorite';$('detailFavorite').setAttribute('aria-pressed',saved)}}
 function showDetails(id){const g=GAMES.find(g=>g.id===id);if(!g)return;detailId=id;$('detailArt').src=g.image;$('detailArt').alt=g.imageAlt;$('detailCategory').textContent=g.category.toUpperCase()+' · '+(g.format||'3D')+' EXPERIENCE';$('detailTitle').textContent=g.name;$('detailDescription').textContent=g.description;$('detailFeatures').innerHTML=g.features.map(f=>'<span>'+escape(f)+'</span>').join('');$('detailControls').innerHTML=controlsHtml(g);updateDetailFavorite();$('details').showModal()}
 let avatarEditor=null;
-function updateAvatarPortrait(look,portrait){if(portrait){try{localStorage.setItem('archerbox-avatar-portrait-v1',portrait)}catch{}}else{try{portrait=localStorage.getItem('archerbox-avatar-portrait-v1')}catch{}}if(typeof portrait==='string'&&portrait.startsWith('data:image/png;base64,')&&portrait.length<180000){const icon=document.createElement('img');icon.src=portrait;icon.alt='Your avatar';const first=$('avatarButton').firstElementChild;if(first)first.replaceWith(icon);$('profileIcon').replaceChildren(icon.cloneNode())}}
+function updateAvatarPortrait(look,portrait){if(look)void syncFriendAvatar();if(portrait){try{localStorage.setItem('archerbox-avatar-portrait-v1',portrait)}catch{}}else{try{portrait=localStorage.getItem('archerbox-avatar-portrait-v1')}catch{}}if(typeof portrait==='string'&&portrait.startsWith('data:image/png;base64,')&&portrait.length<180000){const icon=document.createElement('img');icon.src=portrait;icon.alt='Your avatar';const first=$('avatarButton').firstElementChild;if(first)first.replaceWith(icon);$('profileIcon').replaceChildren(icon.cloneNode())}}
 updateAvatarPortrait();
 
 async function showAvatar({recordHistory=true}={}){charts.close();closeFantasy();closeDialogs();removeGame();$('lobby').hidden=true;$('player').hidden=true;document.body.classList.add('playing');if(recordHistory)history.pushState({},'',location.pathname+location.search+'#avatar');document.title='Avatar studio · Archerbox';try{avatarEditor??=await import('./avatar/editor.js?v=rarecoins1');if(location.hash!=='#avatar')return;await avatarEditor.openEditor({onSaved:updateAvatarPortrait,onBack:()=>lobby()})}catch(e){$('lobby').hidden=false;document.body.classList.remove('playing');console.error(e)}}
 $('avatarButton').onclick=()=>showAvatar();$('avatarNav').onclick=()=>showAvatar();$('playerAvatarButton').onclick=()=>showAvatar();
-function closeDialogs(){for(const id of ['details','controlsDialog','profileDialog','coinGuide'])if($(id)?.open)$(id).close()}
+function closeDialogs(){for(const id of ['details','controlsDialog','friendAvatarDialog','profileDialog','coinGuide'])if($(id)?.open)$(id).close()}
 function removeGame(){reloadNotice.reset();clearTimeout(loadingTimer);try{frame?.contentDocument?.exitPointerLock?.()}catch{}if(document.pointerLockElement)document.exitPointerLock?.();if(frame){if(frame.dataset.room){socialApi('room/'+frame.dataset.room,{action:'leave'}).catch(()=>{});}if(frame.dataset.room)document.dispatchEvent(new CustomEvent('archerbox:race-left',{detail:{roomId:frame.dataset.room}}));frame.onload=null;frame.remove();frame=null}$('frameMount').replaceChildren();$('loadError').hidden=true;activeGame=null;}
 function launch(id,{recordHistory=true,roomId=null}={}){charts.close();closeFantasy();
  const g=GAMES.find(g=>g.id===id);if(!g)return false;avatarEditor?.closeEditor();if(activeGame===id&&frame&&frame.dataset.room===(roomId||'')){frame.focus();return true}closeDialogs();removeGame();activeGame=id;recent=[id,...recent.filter(r=>r!==id)].slice(0,5);save();$('lobby').hidden=true;$('player').hidden=false;document.body.classList.add('playing');$('playingName').textContent=g.name;$('playingCategory').textContent=g.category+' · '+(g.format||'3D');$('loadingName').textContent='Launching '+g.name+'…';$('loading').hidden=false;

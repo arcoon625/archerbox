@@ -1,6 +1,7 @@
 import {friendRequests,requestFriend,answerFriendRequest,cancelFriendRequest} from './friend-requests.js';
 import {makeRoom,tickRoom,readyPlayer,safeInput,publicRoom,validGame,event,encodeRoom} from './matches.js';
 import {recordFantasyResult} from './fantasy.js';
+import {validateLook} from '../public/avatar/catalog.js';
 const alphabet='23456789abcdefghjkmnpqrstuvwxyz';
 const now=()=>Date.now(),pair=(a,b)=>[a,b].sort();
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
@@ -55,6 +56,20 @@ export async function handleSocial(request,db){
   let body={};try{body=raw?JSON.parse(raw):{}}catch{fail('Invalid message.');}if(!body||typeof body!=='object'||Array.isArray(body))fail('Invalid message.');
   if(path[0]==='profile'&&method==='POST'){await ensureProfile(db,id,body);return json(await socialState(db,id));}
   const me=await getProfile(db,id);if(!me)fail('Save your profile to turn on Friends.',428);
+  if(path[0]==='avatar'&&path.length===1){
+   if(method==='POST'){
+    if(!body.look||typeof body.look!=='object'||Array.isArray(body.look))fail('Save a look in Avatar Studio first.');
+    const look=JSON.stringify(validateLook(body.look));
+    await db.prepare('UPDATE social_profiles SET avatar_look=? WHERE id=? AND avatar_look IS NOT ?').bind(look,id,look).run();
+    return json({ok:true});
+   }
+   const friend=url.searchParams.get('friend');
+   if(!friend||friend.length>128)fail('Choose a friend.');
+   const row=await db.prepare(`SELECT avatar_look FROM social_profiles WHERE id=?
+    AND EXISTS (SELECT 1 FROM social_friends WHERE a=? AND b=?)`).bind(friend,...pair(id,friend)).first();
+   if(!row)fail('You can only view avatars of your friends.',403);
+   return json({look:row.avatar_look?validateLook(JSON.parse(row.avatar_look)):null});
+  }
   if(path[0]==='state'&&method==='GET'){await db.prepare('UPDATE social_profiles SET seen=? WHERE id=?').bind(now(),id).run();return json(await socialState(db,id));}
   if(method==='POST'&&['friend-request','friend-response','friend-cancel'].includes(path[0])){
    const message=path[0]==='friend-request'?await requestFriend(db,id,body.playerId):path[0]==='friend-response'?await answerFriendRequest(db,id,body.request,body.accept):await cancelFriendRequest(db,id,body.request);

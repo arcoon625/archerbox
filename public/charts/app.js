@@ -1,4 +1,4 @@
-import {friendAction} from '../friends.js?v=requests1';
+import {friendAction} from '../friends.js?v=friendavatar1';
 import {PERIODS,metricFor} from './rules.js?v=catalog21';
 import {flushStats} from './client.js?v=catalog21';
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
