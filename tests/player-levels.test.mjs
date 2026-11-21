@@ -7,7 +7,7 @@ import {METRICS} from '../public/charts/rules.js';
 import {XP_REWARDS,levelInfo,levelThreshold,xpFor} from '../public/progression/rules.js';
 import {createLevelClient} from '../public/progression/client.js';
 
-test('all 23 games award fitting XP and level thresholds stay exact',()=>{
+test('all 21 games award fitting XP and level thresholds stay exact',()=>{
   assert.deepEqual(new Set(XP_REWARDS.map(r=>r.game)),new Set(GAMES.map(g=>g.id)));
   assert.deepEqual(XP_REWARDS.map(r=>r.game+'/'+r.event).sort(),METRICS.flatMap(m=>Object.keys(m.events).map(e=>m.game+'/'+e)).sort());
   assert.equal(xpFor('neon-clash','elimination'),10);
@@ -58,6 +58,14 @@ test('server-owned XP credits saved achievements once, persists, and isolates br
   const restored=await request('charts/player',{cookie,headers:{'oai-authenticated-user-id':'someone-else'}});
   assert.equal(restored.totalXP,150);assert.equal(restored.level,2);
   assert.equal('userId' in restored,false);assert.equal('code' in restored,false);
+  const addPastScore=sqlite.prepare(`INSERT INTO chart_scores (id,user_id,game,session_id,event,run,progress,amount,points,created)
+    SELECT ?,user_id,?,'retired-session',?,'retired-run',1,1,1,created FROM chart_scores WHERE session_id=? LIMIT 1`);
+  addPastScore.run('past-maze','outpost-maze','finish',rs.session);
+  addPastScore.run('past-basket','basketball-stars','basket',rs.session);
+  const historical=await request('charts/player',{cookie});
+  assert.equal(historical.totalXP,240,'earned XP survives game removal');
+  assert.equal(historical.achievements,13);
+  assert.equal(historical.gamesPlayed,2,'count only games in the current catalog');
   const indexes=sqlite.prepare("PRAGMA index_list('chart_scores')").all();assert(indexes.some(i=>i.name==='chart_scores_user_game_event'));
   sqlite.close();
 });

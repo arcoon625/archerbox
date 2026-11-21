@@ -10,7 +10,7 @@ for(const [i,id] of users.entries())sqlite.prepare('INSERT INTO social_profiles 
 async function call(path,{id=users[0],body,origin='https://arcade.test',method=body?'POST':'GET'}={}){const r=await handleCharts(new Request('https://arcade.test/api/charts/'+path,{method,headers:{...(id?{'oai-authenticated-user-id':id}:{}),Origin:origin,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})}),db,{now:()=>clock});return{status:r.status,...await r.json()}}
 async function play(game='neon-clash',id=users[0]){const r=await call('play',{id,body:{game}});assert.equal(r.status,200,JSON.stringify(r));return r.session}
 async function score(session,progress,{id=users[0],game='neon-clash',event='elimination',run='run1',...extra}={}){return call('progress',{id,body:{game,event,run,progress,session,...extra}})}
-assert.equal(METRICS.length,23);assert.deepEqual(new Set(METRICS.map(m=>m.game)),new Set(GAMES.map(g=>g.id)));
+assert.equal(METRICS.length,21);assert.deepEqual(new Set(METRICS.map(m=>m.game)),new Set(GAMES.map(g=>g.id)));
 assert.equal(periodStart('daily',clock),Date.parse('2026-11-11T00:00:00Z'));
 assert.equal(periodStart('weekly',clock),Date.parse('2026-11-09T00:00:00Z'));
 assert.equal(periodStart('monthly',clock),Date.parse('2026-11-01T00:00:00Z'));
@@ -61,4 +61,4 @@ const insertProfile=sqlite.prepare('INSERT INTO social_profiles (id,code,name,co
 for(let n=0;n<55;n++){const id='rank-'+n;insertProfile.run(id,'rankcode'+String(n).padStart(2,'0'),'Player '+n,'#77d9dc',clock,clock);insertScore.run('score-'+n,id,'touchdown-rush','fixture','touchdown','fixture',n+1,n+1,n+1,clock)}
 b=await call('leaderboard?game=touchdown-rush&period=daily',{id:'rank-0'});assert.equal(b.entries.length,50);assert.equal(b.totalPlayers,56);assert.equal(b.yourEntry.rank,55);assert.equal(b.yourEntry.score,1);
 assert.equal(b.entries.some(e=>e.name==='Player 0'),false);
-sqlite.close();console.log('Charts passed: 23 games × 4 periods, UTC resets, shared ranking, unique-player trends, identity checks, duplicate/reordered submissions, discovery deduplication, Rivals match validation, rate limits and own rank beyond top 50.');
+sqlite.close();console.log('Charts passed: 21 games × 4 periods, UTC resets, shared ranking, unique-player trends, identity checks, duplicate/reordered submissions, discovery deduplication, Rivals match validation, rate limits and own rank beyond top 50.');
