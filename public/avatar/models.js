@@ -1,8 +1,9 @@
+import {medalFace} from './medal-face.js?v=medal1';
 import {buildSneaker,isSneaker} from './sneakers.js?v=kicks1';
 import {petBuilders} from './pet-builders.js?v=petjoints1';
 import {makeBackGear} from './back-gear.js?v=backgear1';
 import * as THREE from '../vendor/three.module.js';
-import {validateLook,itemById} from './catalog.js?v=kicks1';
+import {validateLook,itemById} from './catalog.js?v=medal1';
 import {surface,fabricType,roundedBox} from './surfaces.js?v=scan2';
 import {buildCharacterHead,buildCharacterHair} from './character.js?v=playful1';
 import {makeShark} from '../games/shark-racing/sharks.js';
@@ -105,6 +106,64 @@ function goldChain(item,shirt) {
  return chain;
 }
 
+function pendantCord(group,front,material,radius) {
+ const points=[[-.12,1.57,-.055],[-.155,1.55,.053],[-.144,1.48,front-.045],
+  [-.071,1.373,front],[0,1.328,front],[.071,1.373,front],[.144,1.48,front-.045],
+  [.155,1.55,.053],[.12,1.57,-.055],[0,1.59,-.105]];
+ mesh(group,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)),true),56,radius,8,true),material);
+}
+
+function neckwear(item,shirt) {
+ if(item.kind==='chain')return goldChain(item,shirt);
+ const group=new THREE.Group();
+ group.name=item.name;
+ const front=['armor','spacesuit','puffer'].includes(shirt?.kind) ? .35 : .259;
+ if(item.kind==='bowtie'){
+  const tieFront=front-.057;
+  const satin=surface(item.color,'cotton',{roughness:.43});
+  const trim=surface(item.accent,'cotton',{roughness:.51});
+  ring(group,.111,.014,0,1.564,0,satin,Math.PI/2);
+  line(group,[[0,1.565,.104],[0,1.548,.144],[0,1.533,tieFront-.019]],.023,satin);
+  for(const side of [-1,1]){
+   const fold=plate(group,[[0,.012],[side*.082,.042],[side*.169,.065],[side*.174,-.062],[side*.071,-.039],[0,-.013]],
+    .027,0,1.532,tieFront-.022,satin);
+   fold.rotation.y=side*.14;
+   line(group,[[side*.025,1.527,tieFront],[side*.076,1.535,tieFront-.004],[side*.116,1.548,tieFront-.018]],.0035,trim);
+  }
+  box(group,.069,.073,.049,0,1.533,tieFront,satin);
+  return group;
+ }
+ if(item.kind==='sharktooth'){
+  const cord=surface(item.accent,'leather',{roughness:.84});
+  const ivory=surface(item.color,'ceramic',{roughness:.42});
+  const root=surface('#b2a384','ceramic',{roughness:.57});
+  pendantCord(group,front,cord,.010);
+  for(const side of [-1,1]){
+   ball(group,.019,side*.039,1.354,front,surface('#9b6744','wood'),.88,1,1);
+   ball(group,.012,side*.063,1.368,front,surface('#593c2e','wood'));
+  }
+  const tooth=plate(group,[[-.066,.055],[-.042,.066],[.017,.060],[.054,.044],[.040,.018],[.018,-.009],[-.035,-.052],[-.032,-.019],[-.046,.018]],.021,0,1.254,front-.004,ivory);
+  tooth.rotation.z=-.13;
+  box(group,.089,.018,.024,0,1.315,front+.006,root);
+  ring(group,.019,.0048,0,1.325,front+.008,root);
+  return group;
+ }
+ const gold=surface(item.color,'metal',{metalness:.62,roughness:.31});
+ const ribbon=surface(item.accent,'cotton');
+ pendantCord(group,front,ribbon,.014);
+ for(const side of [-1,1]){
+  const band=plate(group,[[side*.011,0],[side*.036,.002],[side*.151,.182],[side*.124,.191]],.009,0,1.321,front+.009,ribbon);
+  band.rotation.x=.11;
+ }
+ ring(group,.019,.005,0,1.319,front+.016,gold);
+ const faceZ=front+.031;
+ const disc=cyl(group,.113,.113,.025,0,1.196,faceZ,gold,48);
+ disc.rotation.x=Math.PI/2;
+ ring(group,.104,.005,0,1.196,faceZ+.018,gold);
+ mesh(group,new THREE.CircleGeometry(.103,48),new THREE.MeshBasicMaterial({map:medalFace()}),0,1.196,faceZ+.018);
+ return group;
+}
+
 function classicHoodie(rig,arms,cloth,trim) {
  const pocket=plate(rig,[[-.22,0],[.22,0],[.18,.075],[.128,.145],[-.128,.145],[-.18,.075]],.025,0,.952,.218,cloth);
  pocket.name='Kangaroo pocket';
@@ -137,9 +196,9 @@ export function buildAvatar(input,{pets=true}={}){const look=validateLook(input)
 
 if(look.head){const hat=headwear(itemById(look.head));rig.add(hat);headParts.push(hat);}if(look.face){const accessory=facewear(itemById(look.face));accessory.position.y=.055;rig.add(accessory);headParts.push(accessory)}if(bottom?.kind==='overalls'){box(rig,.34,.37,.027,0,1.06,.225,mat(bottom.color));for(const s of [-1,1])box(rig,.065,.6,.025,s*.23,1.23,.221,mat(bottom.accent))}if(bottom?.kind==='tailpants')line(rig,[[0,.8,-.18],[.15,.64,-.4],[.14,.47,-.5]],.07,mat(bottom.color));if(bottom?.kind==='finshorts')plate(rig,[[-.13,0],[0,.2],[.13,0]],.02,0,.82,-.3,mat(bottom.accent)).rotation.y=Math.PI/2;
  const headRig=new THREE.Group();headRig.name='Head pose';headRig.position.set(0,1.95,0);rig.add(headRig);rig.updateMatrixWorld(true);for(const part of headParts)headRig.attach(part);const handMounts=arms.map(arm=>arm.worldToLocal(new THREE.Vector3(arm.position.x<0?-.41:.41,.89,.04)));
- if(look.neck)rig.add(goldChain(itemById(look.neck),shirt));
+ if(look.neck)rig.add(neckwear(itemById(look.neck),shirt));
  const backGear=look.back?makeBackGear(itemById(look.back)):null;if(backGear)rig.add(backGear);
  let pet=null;if(pets&&look.pet){pet=makePet(itemById(look.pet));pet.position.set(.95,.08,.08);root.add(pet)}const shadow=mesh(root,new THREE.CircleGeometry(.46,32),new THREE.MeshBasicMaterial({color:'#192b29',transparent:true,opacity:.14,depthWrite:false}),0,.018,0);shadow.rotation.x=-Math.PI/2;root.userData={rig,arms,legs,handMounts,shadow,pet,backGear,look,head:characterHead,style:'playful',headRig,animate(time,moving){backGear?.userData.animate(time);characterHead.userData.animate(time);headRig.rotation.y=moving?Math.sin(time*5)*.008:Math.sin(time*.48)*.025;headRig.rotation.z=moving?0:Math.sin(time*.37)*.006;arms.forEach((l,i)=>l.rotation.x=moving?Math.sin(time*10+i*Math.PI)*.45:0);legs.forEach((l,i)=>l.rotation.x=moving?-Math.sin(time*10+i*Math.PI)*.5:0);shoeLights.forEach((light,i)=>light?.(time,moving,i*Math.PI));if(pet){pet.position.y=.08+Math.sin(time*2.6)*.035;pet.rotation.y=Math.sin(time*.8)*.1;pet.userData.petAnimate?.(time)}rig.traverse(o=>{if(o.userData.rotor)o.userData.rotor.rotation.y=time*4})}};return root;
 }
-export function itemPreview(item){if(item.category==='pet')return makePet(item);if(item.category==='neck')return goldChain(item,null);if(item.category==='back'){const gear=makeBackGear(item);gear.rotation.y=Math.PI;return gear}const look={head:null,face:null,shirt:null,bottom:null,shoes:null,pet:null,skin:'#e4b78c',expression:'smile'};look[item.category]=item.id;const root=buildAvatar(look,{pets:false});if(['head','face'].includes(item.category)){for(const part of root.userData.rig.children)part.visible=part===root.userData.headRig;root.userData.shadow.visible=false;}return root}
+export function itemPreview(item){if(item.category==='pet')return makePet(item);if(item.category==='neck')return neckwear(item,null);if(item.category==='back'){const gear=makeBackGear(item);gear.rotation.y=Math.PI;return gear}const look={head:null,face:null,shirt:null,bottom:null,shoes:null,pet:null,skin:'#e4b78c',expression:'smile'};look[item.category]=item.id;const root=buildAvatar(look,{pets:false});if(['head','face'].includes(item.category)){for(const part of root.userData.rig.children)part.visible=part===root.userData.headRig;root.userData.shadow.visible=false;}return root}
 export function disposeAvatar(root){const gs=new Set(),ms=new Set(),ts=new Set();root.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)gs.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[]){ms.add(m);for(const v of Object.values(m))if(v?.isTexture)ts.add(v)}});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.forEach(t=>t.dispose())}

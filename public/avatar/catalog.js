@@ -309,7 +309,10 @@ Ember Dragon Wings|dragon|98463e|e08b46|dragon membrane
 Moon Rover Jetpack|jetpack|bfcbd4|83dffe|orbit
 Retro Rocket Jetpack|jetpack|a93e38|f1ca76|retro
 Neon Turbo Jetpack|jetpack|35515c|a9fa66|turbo`,
-neck:`Gold Chain|chain|e9b950|c5903b|linked gold`
+neck:`Gold Chain|chain|e9b950|c5903b|linked gold
+Shark Tooth Necklace|sharktooth|e9dcc2|6e4936|braided cord
+Black Bow Tie|bowtie|222733|424a58|satin
+Championship Medal|medal|e3b24f|982f44|basketball football baseball skiing`
 };
 export const ITEMS=Object.fromEntries(CATEGORIES.map(c=>[c.id,rows[c.id].split('\n').map((line,i)=>{const [name,kind,color,accent,pattern]=line.split('|');return {id:c.id+'-'+String(i+1).padStart(2,'0'),category:c.id,name,kind,color:'#'+color,accent:'#'+accent,pattern,index:i}})]));
 export const ALL_ITEMS=CATEGORIES.flatMap(c=>ITEMS[c.id]);
