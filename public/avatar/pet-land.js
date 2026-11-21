@@ -1,4 +1,4 @@
-import {THREE,mesh,oval,sweep,silhouette,eye,sides,surface,lamp} from './pet-forms.js';
+import {THREE,mesh,oval,sweep,silhouette,eye,sides,surface,lamp} from './pet-forms.js?v=petjoints1';
 
 const mammals={
  raccoon:{fur:'#817e72',mark:'#37343a',light:'#d6cfc0',length:.30,leg:.18,head:.135,muzzle:.085},
@@ -9,11 +9,21 @@ const mammals={
  unicorn:{fur:'#d9d1de',mark:'#aa799e',light:'#ece6e3',length:.33,leg:.36,head:.102,muzzle:.114}
 };
 
-function limb(group,fur,paw,x,h,z,{rear=false,hoof=false,bunny=false}={}) {
+function limb(group,fur,paw,x,h,z,{rootY,rootZ=z,rear=false,hoof=false,bunny=false}={}) {
  const bend=rear?-.048:.027;
- sweep(group,fur,[[x,h,z,.066],[x,h*.67,z+bend,.056],[x,h*.30,z-.019,.033],[x,.048,z,.031],[x,.018,z,.002]]);
- if(rear) oval(group,fur,[x*.94,h*.94,z-.027],[.066,bunny?.123:.093,bunny?.12:.088],.08);
- oval(group,paw,[x,.033,z+.031],[hoof ? .037 : .043,.027,bunny ? .090 : .052]);
+ // Start inside the torso, then blend through the shoulder or haunch into the lower leg.
+ const leg=sweep(group,fur,[
+  [x*.52,rootY,rootZ,.063],
+  [x*.87,(rootY+h)*.5,THREE.MathUtils.lerp(rootZ,z,.72),rear?.075:.061],
+  [x,h,z+bend*.28,rear?.067:.054],
+  [x,h*.62,z+bend,.048],
+  [x,h*.29,z-.019,.033],
+  [x,.046,z+.015,.032],
+  [x,.023,z+.031,.022]
+ ]);
+ leg.name=rear?'Hind leg':'Foreleg';
+ if(rear) oval(group,fur,[x*.89,(rootY+h)*.52,z-.024],[.066,bunny?.112:.087,bunny?.111:.083],.08);
+ oval(group,paw,[x,.033,z+.031],[hoof ? .037 : .043,.029,bunny ? .090 : .053]);
  if(!hoof)for(const toe of [-1,0,1])oval(group,fur,[x+toe*.022,.027,z+.067],[.014,.015,.018]);
 }
 
@@ -75,14 +85,14 @@ export function mammal(group,item) {
  const nose=surface(kind==='rabbit'?'#ac797b':'#312727','skin',{roughness:.31});
  const earTone=surface(kind==='rabbit'||kind==='cat'?'#cda3a4':design.mark,'skin');
  const h=design.leg, y=h+.155, headY=h+(kind==='unicorn'?.32:.225), z=design.length*.74;
- oval(group,fur,[0,y,-.07],[.147,.138,design.length]);
+ oval(group,fur,[0,y,-.07],[.147,.138,design.length]).name='Torso';
  oval(group,light,[0,y-.073,-.024],[.12,.081,design.length*.78]);
  oval(group,fur,[0,y+.025,.135],[.133,.143,.15]);
  const chest=oval(group,light,[0,y+.015,.227],[.111,.112,.056]);chest.rotation.x=-.25;
  const neck=oval(group,fur,[0,(y+headY)*.5,z-.034],[.103,(kind==='unicorn'?.19:.12),.104]);neck.rotation.x=.24;
  for(const side of sides){
-  limb(group,fur,kind==='fox'||kind==='unicorn'?mark:fur,side*.107,h+.034,.145,{hoof:kind==='unicorn'});
-  limb(group,fur,kind==='fox'||kind==='unicorn'?mark:fur,side*.113,h+.035,-design.length*.71,{rear:true,hoof:kind==='unicorn',bunny:kind==='rabbit'});
+  limb(group,fur,kind==='fox'||kind==='unicorn'?mark:fur,side*.107,h+.034,.145,{rootY:y+.007,rootZ:.091,hoof:kind==='unicorn'});
+  limb(group,fur,kind==='fox'||kind==='unicorn'?mark:fur,side*.113,h+.035,-design.length*.71,{rootY:y,rootZ:-design.length*.67,rear:true,hoof:kind==='unicorn',bunny:kind==='rabbit'});
  }
  oval(group,fur,[0,headY,z],[design.head,design.head*.92,design.head*.88]);
  ears(group,kind,fur,earTone,[headY+design.head*.63,z-.037]);
@@ -108,6 +118,7 @@ export function mammal(group,item) {
 
  const tail=new THREE.Group();
  tail.position.set(0,y+.025,-design.length*.77);
+ tail.name='Tail';
  group.add(tail);
  if(kind==='raccoon')sweep(tail,[fur,mark],[[0,0,0,.054],[0,.019,-.105,.078],[.029,.014,-.22,.084],[.075,.039,-.33,.064],[.103,.09,-.41,.006]],{bands:t=>Math.floor(t*7)%2});
  else if(kind==='fox')sweep(tail,[fur,light],[[0,0,0,.067],[0,-.025,-.14,.095],[.018,-.057,-.29,.105],[.065,-.013,-.42,.067],[.103,.029,-.49,.003]],{bands:t=>Number(t>.69)});
@@ -129,7 +140,7 @@ export function reptile(group,item) {
  const kind=item.kind;
  const scales=surface(item.color,'scale'),belly=surface(item.accent,'scale'),horn=surface('#ede0c4','ceramic',{roughness:.66});
  const dragon=kind==='dragon', adult=dragon||kind==='triceratops',headY=adult?.48:.43;
- oval(group,scales,[0,.27,-.10],[.161,.164,.295]);
+ oval(group,scales,[0,.27,-.10],[.161,.164,.295]).name='Torso';
  oval(group,belly,[0,.202,-.055],[.141,.11,.231]);
  sweep(group,scales,[[0,.29,.1,.131],[0,.36,.182,.111],[0,headY,.25,.077]]);
  const jawZ=kind==='triceratops'?.33:.39;
@@ -140,15 +151,16 @@ export function reptile(group,item) {
   eye(group,[side*.099,headY+.022,.327],.024,'#c9a456',side*.78);
   oval(group,belly,[side*.041,headY+.011,jawZ+.104],[.016,.008,.005],side*.15);
   oval(group,scales,[side*.086,headY+.047,.327],[.048,.017,.046],-side*.2);
-  if(kind==='dino') limb(group,scales,scales,side*.11,.30,-.088,{rear:true});
+  if(kind==='dino') limb(group,scales,scales,side*.11,.30,-.088,{rootY:.345,rear:true});
   else {
-   limb(group,scales,scales,side*.10,.19,.121);
-   limb(group,scales,scales,side*.121,.21,-.235,{rear:true});
+   limb(group,scales,scales,side*.10,.19,.121,{rootY:.285,rootZ:.076});
+   limb(group,scales,scales,side*.121,.21,-.235,{rootY:.294,rootZ:-.195,rear:true});
   }
-  if(kind==='dino')sweep(group,scales,[[side*.093,.31,.154,.031],[side*.132,.22,.21,.019],[side*.124,.193,.279,.009]]);
+  if(kind==='dino')sweep(group,scales,[[side*.058,.321,.115,.047],[side*.107,.288,.157,.031],[side*.132,.22,.21,.019],[side*.124,.193,.279,.009]]).name='Dinosaur arm';
  }
  const tail=new THREE.Group();
  tail.position.set(0,.263,-.29);
+ tail.name='Tail';
  group.add(tail);
  sweep(tail,scales,[[0,0,0,.10],[0,-.021,-.12,.078],[.024,-.024,-.25,.053],[.086,.02,-.43,.019],[.129,.05,-.52,.002]]);
  if(kind==='triceratops'){
@@ -170,7 +182,13 @@ export function reptile(group,item) {
   const wings=[];
   const membrane=new THREE.MeshPhysicalMaterial({color:item.accent,roughness:.70,side:THREE.DoubleSide,clearcoat:.22});
   for(const side of sides){
-   const wing=new THREE.Group();wing.position.set(side*.105,.36,-.03);wing.scale.x=side;group.add(wing);wings.push({wing,side});
+   const wing=new THREE.Group();
+   wing.name='Dragon wing';
+   wing.position.set(side*.082,.355,-.046);
+   wing.scale.x=side;
+   group.add(wing);
+   wings.push({wing,side});
+   oval(wing,scales,[.02,.012,.004],[.060,.057,.044]);
    silhouette(wing,membrane,[[0,0],[.32,.44],[.655,.31],[.523,.154,.584,-.035],[.376,.072,.397,-.087],[.216,.024,.213,-.114]],[0,0,0]);
    for(const [x,y] of [[.655,.31],[.584,-.035],[.397,-.087],[.213,-.114]])sweep(wing,scales,[[0,0,.011,.025],[.31,.36,.011,.018],[x,y,.013,.003]]);
    sweep(group,horn,[[side*.079,.552,.21,.032],[side*.109,.622,.15,.027],[side*.131,.653,.105,.002]]);

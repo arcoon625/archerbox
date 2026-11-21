@@ -1,4 +1,4 @@
-import {THREE,oval,sweep,silhouette,eye,sides,surface,glass} from './pet-forms.js';
+import {THREE,oval,sweep,silhouette,eye,sides,surface,glass} from './pet-forms.js?v=petjoints1';
 
 function octopus(group,body,accent){
  oval(group,body,[0,.374,-.047],[.135,.183,.144]);
@@ -7,7 +7,7 @@ function octopus(group,body,accent){
  for(let i=0;i<8;i++){
   const theta=i*Math.PI/4,x=Math.sin(theta),z=Math.cos(theta);
   const limb=new THREE.Group();group.add(limb);tentacles.push(limb);
-  const nodes=[[x*.075,.282,z*.074,.049],[x*.143,.17,z*.14,.038],[x*.228,.073,z*.232,.026],[x*.299+.045*z,.09,z*.30-.044*x,.016],[x*.318+.065*z,.158,z*.32-.063*x,.002]];
+  const nodes=[[x*.063,.313,z*.061,.049],[x*.10,.249,z*.095,.046],[x*.143,.17,z*.14,.038],[x*.228,.073,z*.232,.026],[x*.299+.045*z,.09,z*.30-.044*x,.016],[x*.318+.065*z,.158,z*.32-.063*x,.002]];
   sweep(limb,body,nodes);
   for(let j=0;j<5;j++){
    const r=.152+j*.031, y=.131-j*.013;
@@ -32,8 +32,11 @@ function jellyfish(group,item){
  for(let i=0;i<12;i++){
   const a=i*Math.PI/6;
   const x=Math.sin(a),z=Math.cos(a),r=i%3===0?.073:.16,k=i%3===0?.023:.007;
-  const strip=sweep(group,arms,[[x*r,.456,z*r,k],[x*(r+.01)+.023,.329,z*r,k*.75],[x*r-.019,.229,z*(r+.033),k*.53],[x*r+.031,.12+i%3*.041,z*(r+.039),.0018]]);
-  ribbons.push(strip);
+  const pivot=new THREE.Group();
+  pivot.position.set(x*r,.478,z*r);
+  group.add(pivot);
+  sweep(pivot,arms,[[0,0,0,k],[x*.01+.023,-.149,0,k*.75],[-.019,-.249,z*.033,k*.53],[.031,-.358+i%3*.041,z*.039,.0018]]);
+  ribbons.push(pivot);
  }
  group.userData.petAnimate=time=>{
   const pulse=Math.sin(time*2.8);
@@ -62,7 +65,8 @@ function manta(group,body,accent){
  oval(group,accent,[0,.332,.024],[.154,.037,.205]);
  const wings=[],finOutline=[[0,.109],[.25,.091,.50,-.084],[.48,-.147,.383,-.141],[.135,-.226,0,-.147]];
  for(const side of sides){
-  const wing=new THREE.Group();wing.position.set(side*.034,.342,.006);wing.scale.x=side;group.add(wing);wings.push({wing,side});
+  const wing=new THREE.Group();wing.position.set(side*.055,.347,.006);wing.scale.x=side;group.add(wing);wings.push({wing,side});
+  oval(wing,body,[.038,-.002,.003],[.087,.038,.151]);
   silhouette(wing,body,finOutline,[0,0,0],.030).rotation.x=-Math.PI/2;
   silhouette(wing,accent,[[.026,.088],[.22,.05,.425,-.094],[.18,-.172,.026,-.12]],[0,-.011,0],.012).rotation.x=-Math.PI/2;
   sweep(group,body,[[side*.119,.347,.145,.037],[side*.133,.325,.224,.023],[side*.111,.341,.275,.004]]);

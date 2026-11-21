@@ -19,3 +19,31 @@ for(const type of ['cotton','denim','knit','leather','fur','skin','metal','rubbe
 const rounded=roundedBox(.5,.3,.2);for(const n of rounded.attributes.normal.array)assert(Number.isFinite(n));rounded.dispose();
 const body=buildAvatar({...DEFAULT_LOOK,head:null,face:null,pet:null});const torso=body.userData.rig.children.find(o=>o.geometry?.type==='BufferGeometry');assert(torso);assert(torso.geometry.attributes.normal.getZ(0)>0,'shirt front faces outward');disposeAvatar(body);
 console.log('Physical surface materials, rounded normals, and outward-facing torso passed.');
+
+// A limb must begin inside the solid torso, even when its animation rotates it.
+const legCounts={raccoon:4,cat:4,fox:4,dog:4,rabbit:4,unicorn:4,dragon:4,dino:2,stego:4,triceratops:4,penguin:2,owl:2,parrot:2,duck:2};
+for(const item of ITEMS.pet.filter(item=>Object.hasOwn(legCounts,item.kind))){
+ const model=itemPreview(item),torso=model.getObjectByName('Torso');
+ const legs=[],joints=[];
+ model.traverse(part=>{
+  if(['Foreleg','Hind leg','Bird leg'].includes(part.name))legs.push(part);
+  if(['Dragon wing','Tail','Dinosaur arm'].includes(part.name))joints.push(part);
+ });
+ assert.equal(legs.length,legCounts[item.kind],item.name);
+ for(const time of [0,.3,1.7,3.1]){
+  model.userData.petAnimate?.(time);
+  model.updateMatrixWorld(true);
+  for(const part of [...legs,...joints]){
+   const root=new THREE.Vector3();
+   if(part.isMesh){
+    const positions=part.geometry.getAttribute('position');
+    for(let i=0;i<12;i++)root.add(new THREE.Vector3().fromBufferAttribute(positions,i));
+    root.divideScalar(12);
+   }
+   part.localToWorld(root);
+   torso.worldToLocal(root);
+   assert(root.length()<.95,item.name+' '+part.name+' needs to start inside its torso');
+  }
+ }
+ disposeAvatar(model);
+}

@@ -5,7 +5,7 @@ let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
 import {COLORS,MODES,createGame,step,clamp,supported} from './rules.js?v=multiplayer1';
 import {readSavedLook} from '../../avatar/catalog.js?v=chain1';
-import {buildAvatar,disposeAvatar} from '../../avatar/models.js?v=petdetail1';
+import {buildAvatar,disposeAvatar} from '../../avatar/models.js?v=petjoints1';
 import {ARENAS,AVATARS,makeArena,makeAvatar,makeTileMaterials,textMaterial,dispose} from './scene.js';
 const $=id=>document.getElementById(id),canvas=$('world');
 window.addEventListener('error',e=>{$('error').hidden=false;$('error').textContent='The arena could not load. Please reload the page.';console.error(e.error)});

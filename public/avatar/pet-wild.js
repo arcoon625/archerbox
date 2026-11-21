@@ -1,4 +1,4 @@
-import {THREE,oval,sweep,silhouette,eye,sides,surface,glass} from './pet-forms.js';
+import {THREE,oval,sweep,silhouette,eye,sides,surface,glass} from './pet-forms.js?v=petjoints1';
 
 const birds={
  penguin:{coat:'#495460',breast:'#e7e7dc',bill:'#c99464',y:.38,head:.59,wing:.28},
@@ -10,11 +10,12 @@ export function bird(group,item){
  const kind=item.kind,b=birds[kind],coat=surface(b.coat,'fur'),breast=surface(b.breast,'fur'),beak=surface(b.bill,'skin');
  const dark=surface(kind==='parrot'?'#49649b':b.coat,'fur');
  const duck=kind==='duck',z=duck?.142:.075;
- oval(group,coat,[0,b.y,-.04],[.15,duck?.12:.235,duck?.244:.141]);
+ oval(group,coat,[0,b.y,-.04],[.15,duck?.12:.235,duck?.244:.141]).name='Torso';
  oval(group,breast,[0,b.y-.009,duck?.084:.071],[.116,duck?.089:.190,.060]);
  oval(group,coat,[0,b.head,z],[.113,.110,.104]);
+ oval(group,coat,[0,(b.y+b.head)*.5+.01,z*.55],[.097,duck?.088:.103,.089]);
  for(const side of sides){
-  const wing=oval(group,coat,[side*.132,b.y-.014,-.036],[.055,b.wing*.70,.117],side*(kind==='penguin'?.31:.13));
+  const wing=oval(group,coat,[side*.115,b.y-.014,-.036],[.066,b.wing*.70,.117],side*(kind==='penguin'?.31:.13));
   wing.rotation.x=duck?1.04:.24;
   for(let i=0;i<5;i++){
    const feather=oval(group,dark,[side*(.146-.003*i),b.y-.029-i*.025,-.057-i*.013],[.028,.077-i*.004,.051],side*.24);
@@ -23,11 +24,14 @@ export function bird(group,item){
   if(kind==='owl') oval(group,breast,[side*.056,b.head+.006,z+.085],[.064,.068,.019],side*-.10);
   if(kind==='parrot') oval(group,breast,[side*.072,b.head+.006,z+.075],[.042,.038,.022]);
   eye(group,[side*(kind==='owl'?.056:.079),b.head+.016,z+.104],kind==='owl'?.036:.024,kind==='owl'?'#d3a146':'#8e6947',side*(kind==='owl'?.16:.56));
+  const thighY=duck?.183:b.y-.123;
+  const ankleZ=duck||kind==='penguin'?.068:.047;
+  const leg=sweep(group,beak,[[side*.057,thighY,-.004,.031],[side*.068,thighY*.58,.009,.023],[side*.077,.052,ankleZ,.021],[side*.077,.031,ankleZ+.018,.019]]);
+  leg.name='Bird leg';
   if(duck||kind==='penguin'){
    oval(group,beak,[side*.078,.032,.074],[.064,.026,.077]);
    for(let i=-1;i<=1;i++)oval(group,beak,[side*.076+i*.029,.028,.122],[.017,.018,.04],-i*.20);
   } else {
-   sweep(group,beak,[[side*.077,.128,.03,.024],[side*.077,.058,.042,.018],[side*.077,.038,.055,.012]]);
    for(const offset of [-.025,0,.024])sweep(group,beak,[[side*.076,.043,.044,.010],[side*.076+offset,.026,.088,.009],[side*.076+offset,.021,.116,.003]]);
   }
  }
@@ -65,6 +69,7 @@ export function crawler(group,item){
   for(const side of sides){
    eye(group,[side*.071,.242,.345],.022,'#af8a49',side*.9);
    for(const z of [-.154,.108]){
+    sweep(group,skin,[[side*.113,.141,z,.049],[side*.165,.102,z,.047],[side*.19,.063,z,.040]]);
     oval(group,skin,[side*.19,.063,z],[.088,.049,.066],side*.18);
     for(let i=-1;i<=1;i++)oval(group,accent,[side*.209+i*.018,.033,z+.048],[.010,.009,.018]);
    }
@@ -104,7 +109,7 @@ export function crawler(group,item){
     }
    }
    for(const z of [.028,-.179]){
-    sweep(group,skin,[[side*.081,.114,z,.031],[side*.144,.053,z-.034,.022],[side*.168,.026,z+.024,.013]]);
+    sweep(group,skin,[[side*.058,.132,z+.014,.038],[side*.104,.097,z-.012,.029],[side*.144,.053,z-.034,.022],[side*.168,.026,z+.024,.013]]);
     for(let i=-1;i<=1;i++)sweep(group,accent,[[side*.164,.028,z+.021,.007],[side*.174+i*.014,.023,z+.054,.004],[side*.185+i*.021,.024,z+.067,.002]]);
    }
   }
@@ -122,7 +127,7 @@ export function insect(group,item){
   sweep(group,dark,[[side*.021,y+.039,.084,.009],[side*.046,y+.085,.129,.005],[side*.073,y+.102,.17,.003]]);
   for(let i=0;i<3;i++){
    const z=.048-i*.062;
-   sweep(group,dark,[[side*.039,y-.018,z,.008],[side*.11,y-.052,z+.009,.007],[side*.121,y-.106,z-.026,.0045],[side*.15,y-.135,z-.018,.003]]);
+   sweep(group,dark,[[side*.023,y-.015,z-.015,.012],[side*.062,y-.033,z-.004,.009],[side*.11,y-.052,z+.009,.007],[side*.121,y-.106,z-.026,.0045],[side*.15,y-.135,z-.018,.003]]);
   }
  }
  if(kind==='ladybug'){
@@ -137,7 +142,8 @@ export function insect(group,item){
  if(kind==='firefly')oval(group,new THREE.MeshStandardMaterial({color:'#d5ef86',emissive:'#b8ec5e',emissiveIntensity:.6}),[0,y-.024,-.115],[.052,.043,.053]);
  const wings=[];
  for(const side of sides){
-  const wing=new THREE.Group();wing.position.set(side*.025,y+.041,.006);wing.scale.x=side;group.add(wing);wings.push({wing,side});
+  const wing=new THREE.Group();wing.position.set(side*.025,y+.033,.002);wing.scale.x=side;group.add(wing);wings.push({wing,side});
+  oval(wing,bug,[.012,0,0],[.036,.018,.056]);
   const butterfly=kind==='butterfly', pigment=butterfly?surface(item.color,'polymer'):glass('#e9e6ca',.63);
   const wingTip=butterfly?.285:.235;
   const first=silhouette(wing,pigment,[[0,0],[.12,.25,wingTip,.22],[wingTip+.04,.02,.145,-.016],[.059,-.02,0,0]],[0,0,0],.006);

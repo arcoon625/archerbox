@@ -1,4 +1,4 @@
-import {petBuilders} from './pet-builders.js?v=petdetail1';
+import {petBuilders} from './pet-builders.js?v=petjoints1';
 import {makeBackGear} from './back-gear.js?v=backgear1';
 import * as THREE from '../vendor/three.module.js';
 import {validateLook,itemById} from './catalog.js?v=chain1';

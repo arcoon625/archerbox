@@ -1,5 +1,5 @@
-import {THREE,mesh,oval,casing,sweep,silhouette,eye,sides,surface,glass,enamel,lamp} from './pet-forms.js';
-import {crab} from './pet-water.js';
+import {THREE,mesh,oval,casing,sweep,silhouette,eye,sides,surface,glass,enamel,lamp} from './pet-forms.js?v=petjoints1';
+import {crab} from './pet-water.js?v=petjoints1';
 
 function cylinder(group,material,position,top,bottom,height,segments=24){
  return mesh(group,new THREE.CylinderGeometry(top,bottom,height,segments),material,position);
@@ -25,12 +25,12 @@ export function machine(group,item){
     casing(group,signal,[side*.047,.427,.291],[.039,.024,.007]);
     casing(group,trim,[side*.115,.473,.148],[.045,.088,.085]).rotation.z=side*-.25;
     for(const z of [.053,-.205]){
-     sweep(group,steel,[[side*.123,.283,z,.045],[side*.147,.165,z-.038,.038],[side*.130,.066,z+.004,.025]]);
+     sweep(group,steel,[[side*.088,.292,z,.044],[side*.123,.252,z-.014,.045],[side*.147,.165,z-.038,.038],[side*.130,.066,z+.004,.030]]);
      oval(group,screw,[side*.154,.157,z-.039],[.024,.035,.035]);
      casing(group,rubber,[side*.129,.036,z+.029],[.082,.063,.103]);
     }
    }
-   sweep(group,trim,[[0,.316,-.265,.028],[0,.37,-.337,.023],[0,.424,-.369,.012]]);
+   sweep(group,trim,[[0,.316,-.234,.028],[0,.37,-.337,.023],[0,.424,-.369,.012]]);
    break;
   }
   case 'drone':{
@@ -97,7 +97,7 @@ export function machine(group,item){
    }else{
     for(const side of sides){
      casing(group,signal,[side*.050,.374,.165],[.046,.029,.008]);
-     sweep(group,steel,[[side*.171,.329,0,.033],[side*.211,.259,.015,.027],[side*.217,.192,.048,.024]]);
+     sweep(group,steel,[[side*.149,.329,0,.043],[side*.180,.31,.003,.035],[side*.211,.259,.015,.027],[side*.217,.192,.048,.024]]);
     }
     casing(group,trim,[0,.232,.130],[.105,.042,.028]);
    }

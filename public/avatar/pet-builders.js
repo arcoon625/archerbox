@@ -1,7 +1,7 @@
-import {mammal,reptile} from './pet-land.js';
-import {bird,crawler,insect} from './pet-wild.js';
-import {waterPet} from './pet-water.js';
-import {machine,collectible} from './pet-collectibles.js';
+import {mammal,reptile} from './pet-land.js?v=petjoints1';
+import {bird,crawler,insect} from './pet-wild.js?v=petjoints1';
+import {waterPet} from './pet-water.js?v=petjoints1';
+import {machine,collectible} from './pet-collectibles.js?v=petjoints1';
 
 export const petBuilders=new Map([
  [mammal,['raccoon','cat','fox','dog','rabbit','unicorn']],
