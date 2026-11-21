@@ -6,7 +6,7 @@ import * as THREE from '../../vendor/three.module.js';
 import {MAPS,createGame,tick,interact,ping,startSeeking,nearestSpot,distance,visible} from './rules.js?v=multiplayer1';
 import {makeWorld,makeAvatar} from './scene.js';
 import {readSavedLook} from '../../avatar/catalog.js?v=medal1';
-import {buildAvatar,disposeAvatar} from '../../avatar/models.js?v=medal1';
+import {buildAvatar,disposeAvatar} from '../../avatar/models.js?v=tooth1';
 const $=id=>document.getElementById(id),colors=['#e2b85d','#ed745b','#7dbec6','#ab91cd','#709f74','#d98d61'];
 let renderer,scene,camera,world,avatars=[],g=null,mapIndex=0,role='hider',difficulty='easy',paused=false,eye=false,camYaw=0,camPitch=.12,zoom=8,lastTime=0,menuTime=0,drag=null,previousPhase='',audio=null,noticeSound='';const keys=new Set(),tagNodes=[];
 try{renderer=new THREE.WebGLRenderer({canvas:$('world'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(55,1,.08,180);scene.add(new THREE.HemisphereLight(0xfff4dc,0x466549,2.4));const sun=new THREE.DirectionalLight(0xffe6b7,3);sun.position.set(-22,38,18);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.normalBias=.035;Object.assign(sun.shadow.camera,{left:-28,right:28,top:28,bottom:-28,far:100});scene.add(sun);}

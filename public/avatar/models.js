@@ -113,6 +113,50 @@ function pendantCord(group,front,material,radius) {
  mesh(group,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)),true),56,radius,8,true),material);
 }
 
+function sharkTooth(group,y,z,enamel,dentin) {
+ const tooth=new THREE.Group();
+ tooth.name='Great white tooth';
+ tooth.position.set(0,y,z);
+ group.add(tooth);
+
+ // Each cross section tapers to a cutting edge around a gently raised enamel face.
+ const rows=40,ring=20,positions=[],uv=[],indices=[];
+ for(let row=0;row<=rows;row++){
+  const t=row/rows;
+  const tipCurve=-.011*t*t;
+  const notch=row>1&&row<rows-2&&row%3===1 ? .0033*(1-t*.65) : 0;
+  const width=.079*Math.pow(1-t,.89)+.0005-notch;
+  const thickness=.016*Math.pow(1-t,.71)+.0005;
+  for(let column=0;column<=ring;column++){
+   const angle=column/ring*Math.PI*2;
+   positions.push(tipCurve+Math.cos(angle)*width,.038-.169*t,Math.sin(angle)*thickness);
+   uv.push(column/ring,t);
+   if(row<rows&&column<ring){
+    const a=row*(ring+1)+column,b=a+ring+1;
+    indices.push(a,a+1,b,b,a+1,b+1);
+   }
+  }
+ }
+ const crown=new THREE.BufferGeometry();
+ crown.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ crown.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+ crown.setIndex(indices);
+ crown.computeVertexNormals();
+ mesh(tooth,crown,enamel).name='Serrated enamel crown';
+ const rootShape=new THREE.Shape();
+ rootShape.moveTo(-.082,.022);
+ rootShape.quadraticCurveTo(-.094,.052,-.073,.065);
+ rootShape.quadraticCurveTo(-.046,.073,-.024,.058);
+ rootShape.quadraticCurveTo(0,.047,.024,.058);
+ rootShape.quadraticCurveTo(.058,.073,.082,.058);
+ rootShape.quadraticCurveTo(.096,.044,.081,.023);
+ rootShape.quadraticCurveTo(0,.037,-.082,.022);
+ const geometry=new THREE.ExtrudeGeometry(rootShape,{
+  depth:.027,bevelEnabled:true,bevelThickness:.003,bevelSize:.003,bevelSegments:3,curveSegments:12
+ });
+ mesh(tooth,geometry,dentin,0,0,-.0135).name='Two-lobed root';
+}
+
 function neckwear(item,shirt) {
  if(item.kind==='chain')return goldChain(item,shirt);
  const group=new THREE.Group();
@@ -142,10 +186,8 @@ function neckwear(item,shirt) {
    ball(group,.019,side*.039,1.354,front,surface('#9b6744','wood'),.88,1,1);
    ball(group,.012,side*.063,1.368,front,surface('#593c2e','wood'));
   }
-  const tooth=plate(group,[[-.066,.055],[-.042,.066],[.017,.060],[.054,.044],[.040,.018],[.018,-.009],[-.035,-.052],[-.032,-.019],[-.046,.018]],.021,0,1.254,front-.004,ivory);
-  tooth.rotation.z=-.13;
-  box(group,.089,.018,.024,0,1.315,front+.006,root);
-  ring(group,.019,.0048,0,1.325,front+.008,root);
+  sharkTooth(group,1.248,front+.015,ivory,root);
+  ring(group,.019,.0048,0,1.321,front+.016,root);
   return group;
  }
  const gold=surface(item.color,'metal',{metalness:.62,roughness:.31});
