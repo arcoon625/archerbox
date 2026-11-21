@@ -6,12 +6,39 @@ import {buildAvatar,itemPreview,disposeAvatar} from '../public/avatar/models.js'
 // same Three.js builders prove every catalog recipe creates finite geometry.
 const context=new Proxy({}, {get(target,property){if(property==='createImageData')return(w,h)=>({data:new Uint8ClampedArray(w*h*4)});if(property==='measureText')return text=>({width:text.length*12});return target[property]??(()=>{})},set(target,p,v){target[p]=v;return true}});
 globalThis.document={createElement(tag){assert.equal(tag,'canvas');return{width:256,height:256,getContext(){return context}}}};
-assert.equal(CATEGORIES.length,8);assert.equal(ALL_ITEMS.length,313);assert.equal(new Set(ALL_ITEMS.map(x=>x.id)).size,313);assert.equal(new Set(ALL_ITEMS.map(x=>x.name)).size,313);
-for(const c of CATEGORIES){assert.equal(ITEMS[c.id].length,({back:6,neck:4,shirt:51,shoes:52}[c.id]||50));for(const item of ITEMS[c.id]){assert.equal(itemById(item.id).category,c.id);const root=itemPreview(item);root.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(root);assert(!bounds.isEmpty());for(const v of [bounds.min,bounds.max])for(const axis of ['x','y','z'])assert(Number.isFinite(v[axis]),item.id+' has invalid bounds');let count=0;root.traverse(o=>{if(!o.geometry)return;count++;const position=o.geometry.getAttribute('position');for(const v of position.array)assert(Number.isFinite(v),item.id+' has invalid vertices')});assert(count>3,item.id+' has no recognizable model');disposeAvatar(root)}console.log(c.name+': '+ITEMS[c.id].length+' unique items with valid 3D previews.');}
+assert.equal(CATEGORIES.length,8);assert.equal(ALL_ITEMS.length,318);assert.equal(new Set(ALL_ITEMS.map(x=>x.id)).size,318);assert.equal(new Set(ALL_ITEMS.map(x=>x.name)).size,318);
+for(const c of CATEGORIES){assert.equal(ITEMS[c.id].length,({face:51,pet:51,back:9,neck:4,shirt:51,shoes:52}[c.id]||50));for(const item of ITEMS[c.id]){assert.equal(itemById(item.id).category,c.id);const root=itemPreview(item);root.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(root);assert(!bounds.isEmpty());for(const v of [bounds.min,bounds.max])for(const axis of ['x','y','z'])assert(Number.isFinite(v[axis]),item.id+' has invalid bounds');let count=0;root.traverse(o=>{if(!o.geometry)return;count++;const position=o.geometry.getAttribute('position');for(const v of position.array)assert(Number.isFinite(v),item.id+' has invalid vertices')});assert(count>3,item.id+' has no recognizable model');disposeAvatar(root)}console.log(c.name+': '+ITEMS[c.id].length+' unique items with valid 3D previews.');}
 for(let i=0;i<50;i++){const look=Object.fromEntries(CATEGORIES.map(c=>[c.id,ITEMS[c.id][i%ITEMS[c.id].length].id]));const root=buildAvatar(look);assert.equal(root.userData.arms.length,2);assert.equal(root.userData.legs.length,2);assert(root.userData.pet);assert.equal(root.userData.backGear.userData.item,look.back);root.userData.animate(1.5,true);disposeAvatar(root)}
 assert.deepEqual(validateLook({head:'shirt-01',skin:'red',expression:'broken'}),DEFAULT_LOOK);assert.equal(validateLook({face:null,head:'head-03'}).head,'head-03');assert.equal(findItems('face',' SCUBA ')[0].name,'Scuba Gear');assert.equal(findItems('head','helmet').length,7);assert.equal(findItems('pet','raccoon').length,1);for(const c of CATEGORIES)assert.equal(itemById(randomLook(()=>.5)[c.id]).category,c.id);
 const memory=new Map(),storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};assert.equal(readSavedLook(storage),null);const look={...DEFAULT_LOOK,pet:'pet-01',face:'face-03',back:'back-04',shirt:'shirt-51',neck:'neck-01'};assert(saveWardrobe(look,[{name:'Ocean Explorer',look}],storage));assert.deepEqual(readSavedLook(storage),look);assert.equal(readOutfits(storage)[0].name,'Ocean Explorer');memory.set(STORAGE_KEY,'broken');assert.equal(readSavedLook(storage),null);memory.set(STORAGE_KEY,JSON.stringify({look:{head:'not-an-item'},outfits:[null,{name:'  Test  ',look:{pet:'shirt-02'}}]}));assert.equal(readOutfits(storage)[0].look.pet,null);assert.equal(readOutfits(storage)[0].name,'Test');assert(!saveWardrobe(look,[],{setItem(){throw Error('quota')}}));assert(SKIN_TONES.includes(randomLook(()=>.999).skin));
-console.log('All 313 item models, 50 complete outfits, search, invalid save recovery, outfit persistence and storage failure passed.');
+console.log('All 318 item models, 50 complete outfits, search, invalid save recovery, outfit persistence and storage failure passed.');
+
+const mask=findItems('face','Glitch Mask')[0],ghost=findItems('pet','Glow Ghost')[0];
+const capes=findItems('back','Shadow Cape');
+assert.deepEqual(capes.map(item=>item.pattern),['ghost','moon','bolt']);
+const dropLook={...DEFAULT_LOOK,face:mask.id,back:capes[0].id,pet:ghost.id};
+assert(saveWardrobe(dropLook,[{name:'Shadow',look:dropLook}],storage));
+assert.deepEqual(readSavedLook(storage),dropLook);
+assert.deepEqual(readOutfits(storage)[0].look,dropLook);
+const drop=buildAvatar(dropLook);
+const faces=['eyes','grin','404'].map(name=>drop.getObjectByName('Glitch display '+name));
+const cape=drop.getObjectByName('Torn cape cloth');
+assert(cape.material.map&&cape.material.bumpMap,'the cape has a stitched design and a cloth texture');
+const smoke=drop.getObjectByName('Cape smoke'),mote=drop.getObjectByName('Ghost light');
+const idleHem=cape.geometry.attributes.position.getZ(cape.geometry.attributes.position.count-1);
+const idleMote=mote.position.clone();
+assert.deepEqual(faces.map(face=>face.visible),[true,false,false]);
+assert.equal(smoke.visible,false);
+drop.userData.animate(2.5,true);
+assert.deepEqual(faces.map(face=>face.visible),[false,true,false]);
+assert.equal(smoke.visible,true);
+assert(cape.geometry.attributes.position.getZ(cape.geometry.attributes.position.count-1)<idleHem-.2);
+assert(mote.position.distanceTo(idleMote)>.05);
+drop.userData.animate(5,false);
+assert.deepEqual(faces.map(face=>face.visible),[false,false,true]);
+assert.equal(smoke.visible,false);
+disposeAvatar(drop);
+console.log('Glitch Mask cycles faces, Shadow Cape animates while moving, and Glow Ghost keeps orbiting lights.');
 
 // Rounded geometry normals remain finite; material samples cover every surface family.
 const {surface,roundedBox}=await import('../public/avatar/surfaces.js');

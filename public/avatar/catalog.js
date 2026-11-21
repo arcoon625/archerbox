@@ -99,7 +99,8 @@ Lightning Face Paint|paint|78b7bb|ead283|bolt
 Galaxy Face Paint|paint|8c81b4|cfb7d4|stars
 Sports Eye Black|paint|34423f|c6a583|sport
 Comet Cheek Stickers|paint|dfb669|97b9c4|comet
-Dragon Scale Mask|dragonmask|78916e|dec481|scales`,
+Dragon Scale Mask|dragonmask|78916e|dec481|scales
+Glitch Mask|glitchmask|151b27|71fbd4|animated pixel eyes grin 404 LED`,
 shirt:`Archerbox Tee|tee|4e7860|cae88f|A
 Baseball Jersey|jersey|efe6cf|346985|BASE
 Basketball Jersey|tank|6d89aa|f2d087|23
@@ -302,13 +303,17 @@ Comet Sprite|comet|d4bd7e|91afb5|comet
 Crystal Golem|golem|a4c1c0|c3b2ce|crystal
 Mushroom Sprout|mushroom|b595a7|dcd1ad|spots
 Leaf Sprite|sprite|a4b88c|ded7a9|leaves
-Friendly Ghost|ghost|dae0d9|8fa0b5|ghost`,
+Friendly Ghost|ghost|dae0d9|8fa0b5|ghost
+Glow Ghost|glowghost|98e6de|70b4ff|floating spirit and wisps`,
 back:`Skyfeather Wings|feather|e7edf0|b3d3e6|layered feathers
 Aurora Crystal Wings|crystal|7770c4|67e9cf|iridescent
 Ember Dragon Wings|dragon|98463e|e08b46|dragon membrane
 Moon Rover Jetpack|jetpack|bfcbd4|83dffe|orbit
 Retro Rocket Jetpack|jetpack|a93e38|f1ca76|retro
-Neon Turbo Jetpack|jetpack|35515c|a9fa66|turbo`,
+Neon Turbo Jetpack|jetpack|35515c|a9fa66|turbo
+Shadow Cape|shadowcape|241c2d|c59aee|ghost
+Shadow Cape (Moon)|shadowcape|1b2634|a9deee|moon
+Shadow Cape (Bolt)|shadowcape|272227|edbe76|bolt`,
 neck:`Gold Chain|chain|e9b950|c5903b|linked gold
 Shark Tooth Necklace|sharktooth|e9dcc2|6e4936|braided cord
 Black Bow Tie|bowtie|222733|424a58|satin

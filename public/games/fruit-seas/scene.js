@@ -1,5 +1,5 @@
 import * as T from '../../vendor/three.module.js';
-import {createPlayer} from './player.js?v=scan2';
+import {createPlayer} from './player.js?v=glitchdrop1';
 import {ISLANDS,PLACES,BUILDINGS,FRUITS,freshGame,target} from './rules.js?v=seas2';
 const mat=(color,roughness=.8,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
 const materials=new Map();const m=c=>{if(!materials.has(c))materials.set(c,mat(c));return materials.get(c);};

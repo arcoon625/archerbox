@@ -1,5 +1,5 @@
 import {SAVE_KEY,LEGACY_SAVE_KEY,ISLANDS,PLACES,WEAPONS,FRUITS,STAT_NAMES,questReward,fruitDamage,moveDescription,freshGame,restoreGame,snapshot,maxHP,step,nearestPlace,target,acceptQuest,claimQuest,spendStat,buyWeapon,equipWeapon,buyFruit,eatFruit,travel,usePower,attack} from './rules.js?v=seas2';
-import {createWorld} from './scene.js?v=scan2';
+import {createWorld} from './scene.js?v=glitchdrop1';
 import {createCoinRun} from '../../economy/wallet.js?v=rarecoins1';
 const $=id=>document.getElementById(id),coinRun=createCoinRun('fruit-seas');
 let g=freshGame(),savedText=null,storageOkay=true;

@@ -111,6 +111,50 @@ function littleFace(group,y,z,spread=.054) {
  for(const side of sides)eye(group,[side*spread,y,z],.017,'#705241',side*.18);
 }
 
+export function glowGhost(group,item){
+ const spirit=new THREE.Group();
+ spirit.name='Floating glow ghost';
+ group.add(spirit);
+ const cloth=glass(item.color,.82);
+ cloth.emissive.set(item.accent);
+ cloth.emissiveIntensity=.28;
+ const profile=[[.094,.18],[.150,.216],[.191,.298],[.199,.436],[.183,.51],[.139,.572],[.072,.611],[0,.628]];
+ const sheet=new THREE.LatheGeometry(profile.map(point=>new THREE.Vector2(...point)),40);
+ const vertices=sheet.getAttribute('position');
+ for(let index=0;index<vertices.count;index++){
+  const x=vertices.getX(index),y=vertices.getY(index),z=vertices.getZ(index);
+  const angle=Math.atan2(x,z),skirt=1-THREE.MathUtils.smoothstep(y,.18,.40);
+  const fold=Math.cos(angle*6)*skirt;
+  vertices.setXYZ(index,x*(1+.13*fold),y+fold*.041,z*(.78+.11*fold)-skirt*.089);
+ }
+ sheet.computeVertexNormals();
+ const body=mesh(spirit,sheet,cloth);
+ body.name='Translucent ghost sheet';
+ const ink=surface('#17313a','polymer',{roughness:.64}),spark=lamp('#c7fff9');
+ for(const side of sides){
+  oval(spirit,ink,[side*.066,.46,.156],[.027,.04,.013],side*.08);
+  oval(spirit,spark,[side*.066-.008,.474,.168],[.007,.010,.004]);
+  sweep(spirit,cloth,[[side*.144,.367,.01,.052],[side*.196,.356,.018,.04],[side*.239,.387,.033,.025],[side*.253,.40,.045,.002]]);
+ }
+ sweep(spirit,ink,[[-.041,.389,.156,.007],[0,.376,.163,.01],[.041,.39,.156,.007]]);
+ const glow=lamp(item.accent);
+ const motes=Array.from({length:4},(_,i)=>{
+  const mote=mesh(group,new THREE.OctahedronGeometry(.016+i*.0015,0),glow);
+  mote.name='Ghost light';
+  return mote;
+ });
+ group.userData.petAnimate=time=>{
+  spirit.position.y=Math.sin(time*2.1)*.048;
+  spirit.rotation.z=Math.sin(time*1.6)*.095;
+  motes.forEach((mote,i)=>{
+   const angle=i*Math.PI/2+time*(.95+i*.09);
+   mote.position.set(Math.cos(angle)*.252,.28+Math.sin(angle*1.50+i)*.116,Math.sin(angle)*.207);
+   mote.rotation.y=time*1.3+i;
+  });
+ };
+ group.userData.petAnimate(0);
+}
+
 export function collectible(group,item){
  const material=surface(item.color,'skin',{roughness:.62}),accent=surface(item.accent,'polymer');
  const baked=surface('#bd834f','cotton'),icing=enamel(item.color),dark=surface('#543523','polymer');

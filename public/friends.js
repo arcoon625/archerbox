@@ -1,5 +1,5 @@
 import {FRIEND_GAMES,friendGame} from './multiplayer/catalog.js';
-import {CATEGORIES,itemById,readSavedLook,STORAGE_KEY} from './avatar/catalog.js?v=medal1';
+import {CATEGORIES,itemById,readSavedLook,STORAGE_KEY} from './avatar/catalog.js?v=glitchdrop1';
 import {initFriendChat} from './friend-chat.js?v=chat1';
 const $=id=>document.getElementById(id),escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function gameChoices(){const meta=friendGame($('friendGame').value);$('friendArena').innerHTML=meta.arenas.map((name,i)=>`<option value="${i}">${escape(name)}</option>`).join('');$('friendModeRow').hidden=meta.id!=='neon-clash';$('friendGameHelp').textContent=meta.detail;}
@@ -50,7 +50,7 @@ async function viewFriendAvatar(friend){
  $('friendAvatarItems').innerHTML=pieces.map(([category,name])=>`<div><dt>${escape(category)}</dt><dd>${escape(name)}</dd></div>`).join('');
  $('friendAvatarOutfit').hidden=!pieces.length;
  try{
-  const {showFriendPreview}=await import('./avatar/friend-preview.js?v=friends1');
+  const {showFriendPreview}=await import('./avatar/friend-preview.js?v=glitchdrop1');
   if(!isCurrent())return;
   const canvas=document.createElement('canvas');
   canvas.setAttribute('role','img');

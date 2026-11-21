@@ -1,5 +1,5 @@
 import * as THREE from '../vendor/three.module.js';
-import {buildAvatar,disposeAvatar} from './models.js?v=tooth1';
+import {buildAvatar,disposeAvatar} from './models.js?v=glitchdrop1';
 import {studioEnvironment} from './surfaces.js?v=scan2';
 
 export function showFriendPreview(canvas,look){

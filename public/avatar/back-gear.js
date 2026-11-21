@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
 import {roundedBox,surface} from './surfaces.js?v=scan2';
+import {attachShadowCape} from './shadow-cape.js?v=glitchdrop1';
 
 function piece(group,geometry,material,x,y,z) {
   const mesh=new THREE.Mesh(geometry,material);
@@ -142,6 +143,7 @@ export function makeBackGear(item) {
   root.name=item.name;
   root.userData.item=item.id;
   if(item.kind==='jetpack') makeJetpack(root,item);
+  else if(item.kind==='shadowcape') attachShadowCape(root,item);
   else makeWings(root,item);
   return root;
 }
