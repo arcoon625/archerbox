@@ -100,7 +100,7 @@ function boot(){
   syncCoinGear(wallet);
   $('shopDiamonds').textContent=g.diamonds;
   $('shopCoins').textContent=wallet.balance;
-  $('shopItems').innerHTML=WEAPONS.filter(w=>!w.chestOnly).map(w=>{const owned=g.owned.includes(w.id),selected=g.equipped===w.id,price=forestCoinPrice(w.id);return '<article class="shopItem '+(selected?'equipped':'')+'"><div class="shopArt">'+art(w.id)+'</div><small>'+w.tag+'</small><h3>'+w.name+'</h3><p>'+w.detail+'</p><div class="weaponNumbers"><span>REACH '+w.range+'m</span><span>STUN '+w.stun+'s</span></div><button data-buy="'+w.id+'" '+(coinPurchase||selected||!owned&&g.diamonds<w.price?'disabled':'')+'>'+(selected?'EQUIPPED':owned?'EQUIP ↗':'BUY · ◇ '+w.price)+'</button>'+(!owned&&price?'<button data-coin-buy="'+w.id+'" '+(coinPurchase||wallet.balance<price?'disabled':'')+'>BUY · '+price+' COINS</button>':'')+'</article>';}).join('');
+  $('shopItems').innerHTML=WEAPONS.filter(w=>!w.chestOnly).map(w=>{const owned=g.owned.includes(w.id),selected=g.equipped===w.id,price=forestCoinPrice(w.id);return '<article class="shopItem '+(selected?'equipped':'')+'"><div class="shopArt">'+art(w.id)+'</div><small>'+w.tag+'</small><h3>'+w.name+'</h3><p>'+w.detail+'</p><div class="weaponNumbers"><span>REACH '+w.range+'m</span><span>STUN '+w.stun+'s</span></div><button data-buy="'+w.id+'" '+(coinPurchase||selected||!owned&&g.diamonds<w.price?'disabled':'')+'>'+(selected?'EQUIPPED':owned?'EQUIP ↗':'BUY · ◇ '+w.price)+'</button>'+(!owned&&price?'<button data-coin-buy="'+w.id+'" '+(coinPurchase||wallet.balance<price?'disabled':'')+'>BUY · '+price+' ARCHCOINS</button>':'')+'</article>';}).join('');
   $('shopItems').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{if(coinPurchase)return;readLatest();const result=buyWeapon(g,b.dataset.buy);$('shopStatus').textContent=result.ok?weapon(g).name+' equipped.':result.reason;if(result.ok){tone('buy');save();shopItems();loadout();}});
   $('shopItems').querySelectorAll('[data-coin-buy]').forEach(button=>button.onclick=()=>buyWithCoins(button.dataset.coinBuy));
  }
@@ -124,8 +124,8 @@ function boot(){
    tone('buy');
    loadout();
   }else if(mode==='shop'){
-   $('shopStatus').textContent=result.reason==='insufficient'?'You need '+result.needed+' more Archerbox coins.'
-    :result.reason==='closed'?'Visit Ranger Supply during the day.':'Could not save the purchase. No coins were spent.';
+   $('shopStatus').textContent=result.reason==='insufficient'?'You need '+result.needed+' more Archcoins.'
+    :result.reason==='closed'?'Visit Ranger Supply during the day.':'Could not save the purchase. No Archcoins were spent.';
   }
   if(mode==='shop')shopItems();
  }
@@ -136,7 +136,7 @@ function boot(){
  function openShop(){
   readLatest();
   if(mode==='shop')return;if(!canShop(g)){if(mode==='playing')notice(g,g.phase==='night'?'Ranger Supply is closed at night. Hide until dawn.':'Visit Ranger Supply at your base to shop.');return;}
-  returnMode=mode;mode='shop';resetInput();releaseMouse();save();shopItems();$('shopStatus').textContent='Use diamonds or Archerbox coins. Weapons stay yours after a restart.';$('shop').showModal();
+  returnMode=mode;mode='shop';resetInput();releaseMouse();save();shopItems();$('shopStatus').textContent='Use diamonds or Archcoins. Weapons stay yours after a restart.';$('shop').showModal();
  }
  function stopRollAnimation(){clearInterval(rollInterval);clearTimeout(rollTimeout);rollInterval=rollTimeout=null;$('chestPrize').classList.remove('rolling');}
  function showChestPrize(reward){
