@@ -11,7 +11,7 @@ function memoryStorage(){const data=new Map();return {getItem:key=>data.get(key)
 function serialLocks(){let queue=Promise.resolve();return {request(key,fn){const work=queue.then(fn);queue=work.catch(()=>{});return work}}}
 function tracker(game,storage=memoryStorage(),room=null){let serial=0;const options={storage,locks:serialLocks(),notify:()=>{}};const write=data=>transactWallet(wallet=>award(wallet,data),options);return {run:createCoinRun(game,{room,write,newId:()=>`test-${++serial}`}),storage,write,options}}
 assert.deepEqual([...new Set(REWARDS.map(r=>r.game))].sort(),GAMES.map(g=>g.id).sort());
-assert.equal(Object.keys(PRICES).length,24);assert.equal(ALL_ITEMS.filter(i=>!priceOf(i.id)).length,289);
+assert.equal(Object.keys(PRICES).length,24);assert.equal(ALL_ITEMS.filter(i=>!priceOf(i.id)).length,294);
 for(const [id,price] of Object.entries(PRICES)){assert(ALL_ITEMS.some(i=>i.id===id));assert([8,14,24,40].includes(price));}
 for(const c of CATEGORIES){assert.equal(ALL_ITEMS.filter(i=>i.category===c.id&&priceOf(i.id)).length,['back','neck'].includes(c.id)?0:4);assert(!priceOf(DEFAULT_LOOK[c.id]));}
 assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
@@ -58,7 +58,7 @@ assert.equal(priceOf('toString'),0);assert.equal(priceOf('__proto__'),0);
 }
 // Catch missing entry-point wiring or syntax in any of the 22 shipped games.
 for(const g of GAMES){const source=fs.readFileSync(new URL('../public/games/'+g.id+'/game.js',import.meta.url),'utf8');assert(source.includes(`createCoinRun('${g.id}')`));assert(source.includes('coinRun.counter(')||source.includes('coinRun.once(')||source.includes('coinRun.unique('));}
-console.log('Coins passed: all 21 games, real touchdown and bakery outcomes, discovery deduplication, replay protection, purchases, legacy outfits, storage failure and concurrent wallet updates.');
+console.log('Coins passed: all 22 games, real touchdown and bakery outcomes, discovery deduplication, replay protection, purchases, legacy outfits, storage failure and concurrent wallet updates.');
 
 // Old balances and owned avatar items survive the switch to rare milestones.
 {

@@ -1,12 +1,12 @@
 import {initRestart} from './reset/ui.js?v=restart1';
 import {requirePlayer} from './onboarding/session.js?v=welcome1';
-import {initPlayerLevels} from './progression/ui.js?v=catalog21';
-import {initCharts} from './charts/app.js?v=glitchdrop1';
+import {initPlayerLevels} from './progression/ui.js?v=passport1';
+import {initCharts} from './charts/app.js?v=passport1';
 import {createReloadNotice} from './game-errors.js?v=recovery1';
-import {coinButton,initCoinUI} from './economy/ui.js?v=catalog21';
+import {coinButton,initCoinUI} from './economy/ui.js?v=passport1';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=league-size14';
 import {initFriends,socialApi,syncFriendAvatar} from './friends.js?v=glitchdrop1';
-import {GAMES,CATEGORIES,findGames} from './catalog.js?v=catalog21';
+import {GAMES,CATEGORIES,findGames} from './catalog.js?v=passport1';
 const acceptedPlayer=await requirePlayer();
 window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
 const $=id=>document.getElementById(id),KEY='archerbox-lobby-v1',COLORS=['#c0f16b','#b9a2fb','#77d9dc','#f4ae81'];

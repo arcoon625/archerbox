@@ -1,6 +1,7 @@
 export const DAY=86400000;
 export const PERIODS=[{id:'all-time',name:'All-time'},{id:'monthly',name:'Monthly'},{id:'weekly',name:'Weekly'},{id:'daily',name:'Daily'}];
 export const METRICS=[
+ ['fast-food-passport','Food tours finished',{finish:1},18,4],
  ['fruit-seas','Quests completed',{quest:1},20,3],['pokemon-meadow','Pokémon discovered',{discovery:1},120,30],
  ['bearwatch','Nights survived',{survive:1},4,2],['poop-panic','Knockouts',{knockout:1},120,12],
  ['jurassic-island','Missions completed',{mission:1},30,5],['snowball-showdown','Rounds won',{'round-win':1},30,5],

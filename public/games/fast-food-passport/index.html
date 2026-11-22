@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Fast Food Passport · Archerbox</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <header class="top">
+  <div><h1>Fast Food <em>Passport</em></h1><p>Taste the town. Get all eight stamps.</p></div>
+  <div class="wallet"><span>TOWN CASH</span><b id="cash">$12</b></div>
+ </header>
+ <main class="layout">
+  <section class="town" aria-label="Passport Plaza">
+   <div class="map"><canvas id="world" aria-label="Passport Plaza town map" role="img" tabindex="0"></canvas></div>
+   <div class="toolbar">
+    <div class="dpad" aria-label="Move">
+     <button type="button" data-move="up" aria-label="Move up">↑</button>
+     <button type="button" data-move="left" aria-label="Move left">←</button>
+     <button type="button" data-move="down" aria-label="Move down">↓</button>
+     <button type="button" data-move="right" aria-label="Move right">→</button>
+    </div>
+    <p id="hint" aria-live="polite">Tap a restaurant to walk there.</p>
+    <button id="enter" class="action" type="button" disabled>Open menu <kbd>E</kbd></button>
+   </div>
+  </section>
+  <aside class="passport">
+   <div class="passportHeading"><div><h2>Your passport</h2><p>One stamp for each food you try</p></div><b id="stamps">0 / 8</b></div>
+   <progress id="progress" max="8" value="0" aria-label="Passport stamps">0 of 8</progress>
+   <div id="stops" aria-label="Restaurant stops"></div>
+   <div class="passportFooter"><span id="tours"></span><button id="finishButton" class="action" hidden type="button">See your reward ↗</button></div>
+  </aside>
+ </main>
+ <p class="sr" id="alert" role="status"></p>
+ <dialog id="counter" aria-labelledby="placeName">
+  <button class="close" id="closeCounter" type="button" aria-label="Close restaurant menu" autofocus>×</button>
+  <header class="counterHeader"><span id="dishIcon"></span><div><h2 id="placeName"></h2><p id="dishName"></p></div></header>
+  <div id="counterBody"></div>
+  <p id="counterStatus" role="status"></p>
+ </dialog>
+ <dialog id="celebrate" aria-labelledby="finishTitle">
+  <h2 id="finishTitle">Passport complete!</h2>
+  <p>You tasted your way through all eight restaurants. A completed tour earns 75 XP.</p>
+  <div class="stampRoll" id="stampRoll" aria-label="Your eight stamps"></div>
+  <button class="action" id="replay" type="button">Start a new tour ↗</button>
+  <button id="stay" type="button">Keep exploring</button>
+ </dialog>
+ <script type="module" src="game.js?v=tour1"></script>
+ <script type="module" src="../../bridge.js"></script>
+</body>
+</html>

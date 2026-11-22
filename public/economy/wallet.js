@@ -1,5 +1,5 @@
-import {restoreWallet,award,purchase,canWear,priceOf} from './rules.js?v=catalog21';
-import {recordPlay,recordProgress} from '../charts/client.js?v=catalog21';
+import {restoreWallet,award,purchase,canWear,priceOf} from './rules.js?v=passport1';
+import {recordPlay,recordProgress} from '../charts/client.js?v=passport1';
 export {canWear,priceOf};
 export const WALLET_KEY='archerbox-coins-v1';
 const parse=value=>{try{return JSON.parse(value||'null')}catch{return null}};
