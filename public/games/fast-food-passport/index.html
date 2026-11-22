@@ -4,7 +4,7 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <title>Fast Food Passport · Archerbox</title>
- <link rel="stylesheet" href="style.css">
+ <link rel="stylesheet" href="style.css?v=eyeview1">
 </head>
 <body>
  <header class="top">
@@ -13,7 +13,10 @@
  </header>
  <main class="layout">
   <section class="town" aria-label="Passport Plaza">
-   <div class="map"><canvas id="world" aria-label="Passport Plaza town map" role="img" tabindex="0"></canvas></div>
+   <div class="map">
+    <canvas id="world" aria-label="First-person view of Passport Plaza. Drag to look around." role="img" tabindex="0"></canvas>
+    <canvas id="townMap" aria-label="Passport Plaza town map" role="img" tabindex="0" hidden></canvas>
+   </div>
    <div class="toolbar">
     <div class="dpad" aria-label="Move">
      <button type="button" data-move="up" aria-label="Move up">↑</button>
@@ -22,6 +25,7 @@
      <button type="button" data-move="right" aria-label="Move right">→</button>
     </div>
     <p id="hint" aria-live="polite">Tap a restaurant to walk there.</p>
+    <button type="button" id="viewButton" aria-pressed="false"><span id="viewLabel">Map</span> <kbd>M</kbd></button>
     <button id="enter" class="action" type="button" disabled>Open menu <kbd>E</kbd></button>
    </div>
   </section>
@@ -46,7 +50,7 @@
   <button class="action" id="replay" type="button">Start a new tour ↗</button>
   <button id="stay" type="button">Keep exploring</button>
  </dialog>
- <script type="module" src="game.js?v=realchains1"></script>
+ <script type="module" src="game.js?v=eyeview1"></script>
  <script type="module" src="../../bridge.js"></script>
 </body>
 </html>

@@ -1,7 +1,21 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {PLACES,START,canWalk,nearPlace,routeTo,walk} from '../public/games/fast-food-passport/town.js';
+import {PLACES,START,canWalk,firstPersonVector,nearPlace,routeTo,turnToward,walk} from '../public/games/fast-food-passport/town.js';
 import {restore,status,placeOrder,eatOrder,payJob,replay,complete,jobChoices,checkChoice,timingHit} from '../public/games/fast-food-passport/rules.js';
+
+test('eye-view movement follows the camera and turns the shortest way toward a stop',()=>{
+ const south=firstPersonVector(0,0,1),right=firstPersonVector(0,1,0);
+ assert.equal(south.y,1);
+ assert.equal(right.x,-1);
+ const west=firstPersonVector(-Math.PI/2,0,1);
+ assert(west.x<-.999&&Math.abs(west.y)<1e-8);
+ const position={...START};
+ walk(position,west.x,west.y,.2);
+ assert(position.x<START.x);
+ assert(Math.abs(position.y-START.y)<1e-8);
+ const heading=turnToward(Math.PI-.1,-Math.PI+.1,.15);
+ assert(heading>Math.PI&&heading<Math.PI+.1);
+});
 
 test('every restaurant has a walkable route from the plaza and all other doors',()=>{
  assert.equal(PLACES.length,8);

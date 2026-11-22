@@ -1,4 +1,4 @@
-import {PLACES,placeById} from './town.js?v=realchains1';
+import {PLACES,placeById} from './town.js?v=eyeview1';
 
 export const SAVE_KEY='archerbox-fast-food-passport-v1';
 export const START_CASH=12;

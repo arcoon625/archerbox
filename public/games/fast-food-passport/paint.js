@@ -1,4 +1,4 @@
-import {WIDTH,HEIGHT,PLACES} from './town.js?v=realchains1';
+import {WIDTH,HEIGHT,PLACES} from './town.js?v=eyeview1';
 
 function box(ctx,x,y,w,h,r,color){
  ctx.fillStyle=color;

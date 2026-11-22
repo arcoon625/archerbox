@@ -1,11 +1,40 @@
 import {createCoinRun} from '../../economy/wallet.js?v=passport1';
-import {PLACES,START,canWalk,nearPlace,placeById,routeTo,walk} from './town.js?v=realchains1';
-import {SAVE_KEY,restore,complete,status,placeOrder,eatOrder,payJob,replay,jobChoices,checkChoice,timingMarker,timingHit} from './rules.js?v=realchains1';
-import {townPainter} from './paint.js?v=realchains1';
+import {PLACES,START,START_HEADING,canWalk,firstPersonVector,nearPlace,placeById,routeTo,turnToward,walk} from './town.js?v=eyeview1';
+import {SAVE_KEY,restore,complete,status,placeOrder,eatOrder,payJob,replay,jobChoices,checkChoice,timingMarker,timingHit} from './rules.js?v=eyeview1';
+import {townPainter} from './paint.js?v=eyeview1';
+import {streetView} from './street-view.js?v=eyeview1';
 
 const $=id=>document.getElementById(id);
-const world=$('world'),counter=$('counter'),celebrate=$('celebrate');
-const painter=townPainter(world),coinRun=createCoinRun('fast-food-passport');
+const world=$('world'),townMap=$('townMap'),counter=$('counter'),celebrate=$('celebrate');
+const painter=townPainter(townMap),coinRun=createCoinRun('fast-food-passport');
+let eyeView,yaw=START_HEADING,pitch=-.04,mapOpen=false,lookDrag=null;
+try{eyeView=streetView(world);}catch{eyeView=null;}
+const viewCanvas=()=>mapOpen?townMap:world;
+const focusView=()=>viewCanvas().focus({preventScroll:true});
+
+function resizeView(){
+ if(mapOpen)painter.resize();
+ else eyeView?.resize();
+}
+function showMap(open){
+ mapOpen=open||!eyeView;
+ world.hidden=mapOpen;
+ townMap.hidden=!mapOpen;
+ $('viewButton').hidden=!eyeView;
+ $('viewButton').setAttribute('aria-pressed',String(mapOpen));
+ $('viewLabel').textContent=mapOpen?'Eye view':'Map';
+ for(const button of document.querySelectorAll('[data-move]')){
+  const direction=button.dataset.move;
+  const eyeLabel={up:'Walk forward',down:'Walk backward',left:'Step left',right:'Step right'}[direction];
+  button.setAttribute('aria-label',mapOpen?'Move '+direction:eyeLabel);
+ }
+ resizeView();
+}
+$('viewButton').onclick=()=>{showMap(!mapOpen);focusView();};
+world.addEventListener('webglcontextlost',()=>{
+ eyeView=null;
+ showMap(true);
+});
 const newId=()=>crypto.randomUUID();
 function load(fallback){
  try{
@@ -77,6 +106,7 @@ function cancelWalk(){
 }
 function clearInput(){
  keys.clear();touch.clear();
+ lookDrag=null;
  document.querySelectorAll('.dpad .active').forEach(button=>button.classList.remove('active'));
 }
 function walkingTo(place){
@@ -85,7 +115,7 @@ function walkingTo(place){
  const path=routeTo(position,place.door);
  if(!path.length)return;
  destination=place;steps=path;
- world.focus({preventScroll:true});
+ focusView();
 }
 function openCounter(place){
  if(counter.open||celebrate.open)return;
@@ -164,26 +194,53 @@ $('counterBody').onclick=async event=>{
 };
 
 $('stops').onclick=event=>{const place=placeById(event.target.closest('[data-stop]')?.dataset.stop);if(place)walkingTo(place);};
-world.addEventListener('click',event=>{
+townMap.addEventListener('click',event=>{
  const {x,y}=painter.mapPoint(event.clientX,event.clientY);
  const place=PLACES.find(entry=>Math.abs(entry.x-x)<97&&(Math.abs(entry.door.y-y)<36||y>=entry.bounds.y-38&&y<=entry.bounds.y+entry.bounds.h+30));
  if(place)walkingTo(place);
 });
+world.addEventListener('pointerdown',event=>{
+ if(!eyeView||event.button!==0||lookDrag)return;
+ focusView();
+ lookDrag={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false};
+ world.setPointerCapture(event.pointerId);
+});
+world.addEventListener('pointermove',event=>{
+ if(lookDrag?.id!==event.pointerId)return;
+ const dx=event.clientX-lookDrag.x,dy=event.clientY-lookDrag.y;
+ if(!lookDrag.moved&&Math.hypot(dx,dy)<5)return;
+ cancelWalk();
+ lookDrag={id:event.pointerId,x:event.clientX,y:event.clientY,moved:true};
+ yaw-=dx*.006;
+ pitch=Math.max(-.72,Math.min(.72,pitch-dy*.0045));
+});
+world.addEventListener('pointerup',event=>{
+ if(lookDrag?.id!==event.pointerId)return;
+ const {moved}=lookDrag;
+ lookDrag=null;
+ if(!moved){
+  const place=eyeView?.pick(event.clientX,event.clientY);
+  if(place)walkingTo(place);
+ }
+});
+for(const event of ['pointercancel','lostpointercapture'])world.addEventListener(event,()=>{lookDrag=null;});
 $('enter').onclick=()=>{if(nearby)openCounter(nearby);};
 $('closeCounter').onclick=()=>counter.close();
-counter.addEventListener('close',()=>{visit=null;job=null;clearInput();if(!celebrate.open)world.focus({preventScroll:true});});
+counter.addEventListener('close',()=>{visit=null;job=null;clearInput();if(!celebrate.open)focusView();});
 $('finishButton').onclick=showFinish;
 $('stay').onclick=()=>celebrate.close();
 $('replay').onclick=async()=>{
  if(!await change(current=>replay(current,newId())))return;
- position={...START};cancelWalk();celebrate.close();void flushFinishes();
+ position={...START};yaw=START_HEADING;pitch=-.04;
+ cancelWalk();celebrate.close();void flushFinishes();
 };
-celebrate.addEventListener('close',()=>world.focus({preventScroll:true}));
+celebrate.addEventListener('close',focusView);
 
 window.addEventListener('keydown',event=>{
  if(counter.open||celebrate.open||event.altKey||event.ctrlKey||event.metaKey)return;
  if(bindings[event.code]){event.preventDefault();keys.add(event.code);}
  if(event.code==='KeyE'&&nearby&&!event.repeat)openCounter(nearby);
+ if(event.code==='KeyM'&&eyeView&&!event.repeat){showMap(!mapOpen);focusView();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.code));
 window.addEventListener('blur',clearInput);
@@ -200,7 +257,7 @@ window.addEventListener('storage',event=>{
  if(event.key!==SAVE_KEY)return;
  const next=load(profile);
  if(next.tour.id!==profile.tour.id){
-  position={...START};cancelWalk();
+  position={...START};yaw=START_HEADING;pitch=-.04;cancelWalk();
   if(counter.open)counter.close();
   if(celebrate.open)celebrate.close();
  }
@@ -208,24 +265,41 @@ window.addEventListener('storage',event=>{
  if(visit&&!job)renderCounter();
 });
 window.addEventListener('online',()=>void flushFinishes());
-new ResizeObserver(painter.resize).observe(world);
+new ResizeObserver(resizeView).observe(world.parentElement);
 
 function frame(now){
  requestAnimationFrame(frame);
  const dt=Math.min(.045,(now-last)/1000);last=now;
- const active=new Set([...keys].map(key=>bindings[key]).concat([...touch.values()]));
+ const turn=mapOpen?0:Number(keys.has('ArrowLeft'))-Number(keys.has('ArrowRight'));
+ const directions=[...keys].filter(key=>mapOpen||key!=='ArrowLeft'&&key!=='ArrowRight').map(key=>bindings[key]);
+ const active=new Set(directions.concat([...touch.values()]));
  const dx=Number(active.has('right'))-Number(active.has('left'));
  const dy=Number(active.has('down'))-Number(active.has('up'));
  let moving=false;
  if(!counter.open&&!celebrate.open){
-  if(dx||dy){cancelWalk();walk(position,dx,dy,dt);moving=true;}
+  if(dx||dy||turn){
+   cancelWalk();
+   yaw+=turn*dt*1.75;
+   const direction=mapOpen?{x:dx,y:dy}:firstPersonVector(yaw,dx,-dy);
+   walk(position,direction.x,direction.y,dt);
+   moving=!!(dx||dy);
+  }
   else if(steps.length){
    const goal=steps[0],x=goal.x-position.x,y=goal.y-position.y,dist=Math.hypot(x,y);
    if(dist<4){
     if(canWalk(goal.x,goal.y))position={...goal};
     steps.shift();
-    if(!steps.length&&destination){const place=destination;cancelWalk();openCounter(place);}
-   }else{walk(position,x,y,Math.min(dt,dist/270),270);moving=true;}
+    if(!steps.length&&destination){
+     const place=destination;
+     yaw=place.top?Math.PI:0;
+     pitch=-.04;
+     cancelWalk();openCounter(place);
+    }
+   }else{
+    yaw=turnToward(yaw,Math.atan2(x,y),dt);
+    pitch+=(-.04-pitch)*Math.min(1,dt*9);
+    walk(position,x,y,Math.min(dt,dist/270),270);moving=true;
+   }
   }
  }
  const detected=nearPlace(position);
@@ -233,15 +307,17 @@ function frame(now){
   nearby=detected;
   $('enter').disabled=!nearby;
  }
- const tip=destination?'Walking to '+destination.name+'…':nearby?'Press E or open the menu.':'Tap a restaurant to walk there.';
+ const tip=destination?'Walking to '+destination.name+'…':nearby?'Press E or open the menu.':
+  mapOpen?'Tap a restaurant to walk there.':'Drag to look around. Pick a restaurant to walk there.';
  if($('hint').textContent!==tip)$('hint').textContent=tip;
  if(job?.spec.type==='timing'){
   const marker=$('timingMarker');
   if(marker)marker.style.left=100*timingMarker(now-job.started)+'%';
  }
- painter.draw(position,profile.tour,nearby,steps,moving,now);
+ if(mapOpen)painter.draw(position,profile.tour,nearby,steps,moving,now);
+ else eyeView?.draw(position,yaw,pitch,steps);
 }
 refreshPassport();
-painter.resize();
+showMap(false);
 void flushFinishes();
 requestAnimationFrame(frame);

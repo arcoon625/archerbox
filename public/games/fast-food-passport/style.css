@@ -18,8 +18,12 @@ h1 em{color:#ffd67c;font-style:normal}
 .town{display:flex;flex-direction:column;min-width:0}
 .map{min-height:0;flex:1;display:grid;align-items:stretch;background:#a4c5a0}
 canvas{display:block;width:100%;height:100%;min-height:0;cursor:pointer;touch-action:none}
+#world{cursor:grab}
+#world:active{cursor:grabbing}
 .toolbar{min-height:62px;display:flex;flex:none;align-items:center;gap:10px;padding:10px;justify-content:space-between;border-top:1px solid #cfbe9e}
 .toolbar p{font-size:13px;font-weight:700;text-align:center;color:var(--ink-light)}
+.toolbar #viewButton,.toolbar #enter{flex:none;white-space:nowrap}
+.toolbar #viewButton[aria-pressed=true]{background:#afd0bd}
 .dpad{display:flex;gap:3px}
 .dpad button,.toolbar button,#stay,.close{border:1px solid #b7b6a3;background:#f5ecd6;border-radius:8px;padding:8px 10px}
 .dpad button{touch-action:none;user-select:none;padding-inline:8px}

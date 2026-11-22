@@ -1,5 +1,6 @@
 export const WIDTH=1080, HEIGHT=650;
 export const START={x:540,y:350};
+export const START_HEADING=Math.atan2(-125,-110);
 export const PLACES=[
  {id:'stack',name:"McDonald's",dish:'Big Mac',icon:'🍔',color:'#d45040',trim:'#ffd56b',price:5,pay:6,
   job:{type:'stack',title:'Build a Big Mac',steps:['Sesame Seed Bun','Beef Patties','Big Mac Sauce'],extra:'Bacon'}},
@@ -27,6 +28,14 @@ export const PLACES=[
 });
 export const placeById=id=>PLACES.find(place=>place.id===id);
 export const nearPlace=({x,y})=>PLACES.find(place=>Math.hypot(x-place.door.x,y-place.door.y)<46);
+export function firstPersonVector(heading,side,forward){
+ const sin=Math.sin(heading),cos=Math.cos(heading);
+ return {x:sin*forward-cos*side,y:cos*forward+sin*side};
+}
+export function turnToward(current,target,seconds){
+ const distance=target-current;
+ return current+Math.atan2(Math.sin(distance),Math.cos(distance))*(1-Math.exp(-seconds*12));
+}
 export function canWalk(x,y){
  if(x<22||y<30||x>WIDTH-22||y>HEIGHT-22)return false;
  return PLACES.every(({bounds:b})=>x<b.x-13||x>b.x+b.w+13||y<b.y-13||y>b.y+b.h+13);
