@@ -1,7 +1,7 @@
 import {createCoinRun} from '../../economy/wallet.js?v=passport1';
-import {PLACES,START,canWalk,nearPlace,placeById,routeTo,walk} from './town.js';
-import {SAVE_KEY,restore,complete,status,placeOrder,eatOrder,payJob,replay,jobChoices,checkChoice,timingMarker,timingHit} from './rules.js';
-import {townPainter} from './paint.js';
+import {PLACES,START,canWalk,nearPlace,placeById,routeTo,walk} from './town.js?v=realchains1';
+import {SAVE_KEY,restore,complete,status,placeOrder,eatOrder,payJob,replay,jobChoices,checkChoice,timingMarker,timingHit} from './rules.js?v=realchains1';
+import {townPainter} from './paint.js?v=realchains1';
 
 const $=id=>document.getElementById(id);
 const world=$('world'),counter=$('counter'),celebrate=$('celebrate');

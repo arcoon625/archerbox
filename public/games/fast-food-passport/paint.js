@@ -1,4 +1,4 @@
-import {WIDTH,HEIGHT,PLACES} from './town.js';
+import {WIDTH,HEIGHT,PLACES} from './town.js?v=realchains1';
 
 function box(ctx,x,y,w,h,r,color){
  ctx.fillStyle=color;
@@ -35,7 +35,7 @@ function building(ctx,place){
  for(let i=1;i<=4;i++)box(ctx,x+9+i*33,y+27,3,39,0,'#7ba5a4');
  box(ctx,x+15,y+31,w-31,4,1,'#a3ccbe7a');
  box(ctx,x+7,y+68,w-14,20,5,place.color);
- for(let i=0;i<8;i++)box(ctx,x+13+i*20,y+68,9,15,2,'#fff1cc94');
+ for(let i=0;i<8;i++)box(ctx,x+13+i*20,y+68,9,15,2,place.trim);
  box(ctx,mid-27,doorY,54,26,4,'#293d44');
  box(ctx,mid-22,doorY+3,44,20,3,'#82a9a5');
  box(ctx,mid-1,doorY+3,2,20,0,'#263e45');
