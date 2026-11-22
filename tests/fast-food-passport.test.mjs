@@ -1,97 +1,108 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {PLACES,START,canWalk,firstPersonVector,nearPlace,routeTo,turnToward,walk} from '../public/games/fast-food-passport/town.js';
-import {restore,status,placeOrder,eatOrder,payJob,replay,complete,jobChoices,checkChoice,timingHit} from '../public/games/fast-food-passport/rules.js';
+import {INGREDIENTS,RESTAURANTS,HEAT,pantry} from '../public/games/fast-food-passport/menus.js';
+import {TICKETS,restore,emptyProfile,newShift,customer,ticket,takeOrder,togglePart,startCooking,stopCooking,setPacked,serve,nextCustomer} from '../public/games/fast-food-passport/rules.js';
+import {START,LIMITS,STATIONS,nearStation,move,relative,turnToward} from '../public/games/fast-food-passport/space.js';
 
-test('eye-view movement follows the camera and turns the shortest way toward a stop',()=>{
- const south=firstPersonVector(0,0,1),right=firstPersonVector(0,1,0);
- assert.equal(south.y,1);
- assert.equal(right.x,-1);
- const west=firstPersonVector(-Math.PI/2,0,1);
- assert(west.x<-.999&&Math.abs(west.y)<1e-8);
- const position={...START};
- walk(position,west.x,west.y,.2);
- assert(position.x<START.x);
- assert(Math.abs(position.y-START.y)<1e-8);
- const heading=turnToward(Math.PI-.1,-Math.PI+.1,.15);
- assert(heading>Math.PI&&heading<Math.PI+.1);
-});
-
-test('every restaurant has a walkable route from the plaza and all other doors',()=>{
- assert.equal(PLACES.length,8);
- for(const from of [START,{x:45,y:49},{x:1027,y:619},...PLACES.map(place=>place.door)]){
-  for(const place of PLACES){
-   const position={...from};
-   const route=routeTo(position,place.door);
-   assert(route.length,place.name+' has a route');
-   for(const goal of route){
-    let budget=80;
-    while(Math.hypot(goal.x-position.x,goal.y-position.y)>=4&&budget-->0){
-     const x=goal.x-position.x,y=goal.y-position.y;
-     walk(position,x,y,Math.min(1/60,Math.hypot(x,y)/270),270);
+test('all ten kitchens can prepare, cook, and serve every order in a complete shift',()=>{
+ assert.deepEqual(RESTAURANTS.map(site=>site.id),['mcd','taco','subway','chick','chipotle','wendys','king','dominos','popeyes','in-n-out']);
+ for(const restaurant of RESTAURANTS){
+  let profile=emptyProfile();
+  let shift=profile.shifts[restaurant.id]=newShift(restaurant.id,'perfect-'+restaurant.id);
+  assert.equal(restaurant.menu.length,3);
+  assert.equal(new Set(restaurant.menu.map(meal=>meal.name)).size,3);
+  const guests=new Set(),seen=new Set();
+  for(let index=0;index<TICKETS.length;index++){
+   assert.equal(shift.index,index);
+   guests.add(customer(shift).name);
+   assert(!serve(shift,1000),'take the ticket before serving');
+   assert(takeOrder(shift,1000));
+   assert(!takeOrder(shift,1000),'avoid taking the same ticket twice');
+   for(const [slot,meal] of ticket(shift).entries()){
+    seen.add(meal.name);
+    assert(!setPacked(shift,slot,true));
+    for(const part of meal.parts){
+     assert(INGREDIENTS[part]);
+     assert(togglePart(shift,slot,part));
     }
-    assert(budget>0,place.name+' route is unobstructed');
-    if(canWalk(goal.x,goal.y))Object.assign(position,goal);
+    if(meal.heat){
+     const {from,to}=HEAT[meal.heat];
+     assert(!setPacked(shift,slot,true),'cook the hot food before packing');
+     assert(startCooking(shift,slot,1500));
+     assert(stopCooking(shift,slot,1500+(from+to)*500));
+    }
+    assert(setPacked(shift,slot,true));
+    assert(!togglePart(shift,slot,meal.parts[0]),'packed dishes must be unpacked before editing');
    }
-   assert.equal(nearPlace(position),place);
+   profile=restore(JSON.parse(JSON.stringify(profile)));
+   shift=profile.shifts[restaurant.id];
+   assert(serve(shift,10000));
+   assert.equal(shift.feedback.stars,5);
+   assert.equal(shift.feedback.tip,4);
+   assert(!serve(shift,11000),'a replayed serve must not pay again');
+   assert(nextCustomer(profile,shift));
   }
+  assert.equal(guests.size,TICKETS.length);
+  assert.equal(seen.size,3);
+  assert.equal(shift.phase,'finished');
+  assert.equal(shift.ordersPerfect,6);
+  assert.equal(shift.tips,24);
+  assert.deepEqual(profile.pending,[shift.id]);
+  assert.equal(profile.completed,1);
+  assert(!nextCustomer(profile,shift));
  }
- const {bounds}=PLACES[0];
- assert(!canWalk(bounds.x+bounds.w/2,bounds.y+bounds.h/2));
 });
 
-test('order prices, wages, stamps, resume, completion, and replay apply once per visit',()=>{
- let profile=restore(null,'tour-one');
- assert.equal(profile.tour.cash,12);
- assert(!eatOrder(profile,PLACES[0].id));
- assert(!replay(profile,'tour-two'));
- let paid=0,spent=0;
- for(const place of PLACES){
-  const {id}=place;
-  assert(payJob(profile,id));
-  assert(!payJob(profile,id));
-  paid+=place.pay;
-  assert(placeOrder(profile,id));
-  assert(!placeOrder(profile,id));
-  spent+=place.price;
-  assert.equal(status(profile.tour,id),'ready');
-  profile=restore(JSON.parse(JSON.stringify(profile)),'unsaved');
-  assert.equal(profile.tour.id,'tour-one');
-  assert(eatOrder(profile,id));
-  assert.equal(status(profile.tour,id),'stamped');
-  assert(!eatOrder(profile,id));
- }
- assert.equal(profile.tour.cash,12+paid-spent);
- assert.equal(profile.completed,1);
- assert(complete(profile.tour));
- assert.deepEqual(profile.pending,['tour-one']);
- assert(replay(profile,'tour-two'));
- assert.equal(profile.tour.cash,12);
- assert.equal(profile.tour.stamps.length,0);
- assert.equal(profile.completed,1);
- assert.deepEqual(profile.pending,['tour-one']);
- const short=restore(null,'short');
- short.tour.cash=1;
- assert(!placeOrder(short,'stack'));
- assert(payJob(short,'stack'));
- assert(placeOrder(short,'stack'));
+test('feedback identifies wrong ingredients, cooking mistakes, and missing items',()=>{
+ const shift=newShift('mcd','practice');
+ takeOrder(shift,1000);
+ assert(pantry(RESTAURANTS[0]).includes('tomato'));
+ assert(!togglePart(shift,0,'unknown-ingredient'));
+ togglePart(shift,0,'double');
+ togglePart(shift,0,'tomato');
+ startCooking(shift,0,2000);
+ assert(!togglePart(shift,0,'salt'),'ingredients cannot change while cooking');
+ stopCooking(shift,0,2300);
+ assert.equal(shift.dishes[0].heat,'early');
+ startCooking(shift,0,4000);
+ stopCooking(shift,0,11000);
+ assert.equal(shift.dishes[0].heat,'burnt');
+ assert(!serve(shift,12000),'pack the order first');
+ setPacked(shift,0,true);
+ serve(shift,12000);
+ assert.equal(shift.feedback.stars,1);
+ assert.equal(shift.feedback.tip,0);
+ assert.match(shift.feedback.items[0].problems.join(', '),/Missing sesame bun/);
+ assert.match(shift.feedback.items[0].problems.join(', '),/Didn’t order tomato/);
+ assert(shift.feedback.items[0].problems.includes('Cooked too long'));
 });
 
-test('every counter job has a correct solution and permits a retry',()=>{
- assert.deepEqual(new Set(PLACES.map(place=>place.job.type)),new Set(['stack','timing','match']));
- for(const {job} of PLACES){
-  if(job.type==='timing'){
-   assert(!timingHit(job,0));
-   assert(timingHit(job,(job.zone[0]+job.zone[1])*600));
-  }else if(job.type==='match'){
-   assert(checkChoice(job,0,job.answer));
-   assert(!checkChoice(job,0,(job.answer+1)%job.choices.length));
-  }else{
-   const choices=jobChoices(job);
-   for(const [step,name] of job.steps.entries()){
-    assert(checkChoice(job,step,choices.indexOf(name)));
-    assert(!checkChoice(job,step,choices.indexOf(job.extra)));
-   }
-  }
+test('each station can be reached at eye level with camera-relative walking',()=>{
+ assert.equal(relative(0,0,1).z,1);
+ assert.equal(relative(0,1,0).x,-1);
+ for(const station of STATIONS){
+  const pos={...START};
+  for(let frame=0;!nearStation(pos)&&frame<120;frame++)move(pos,station.x-pos.x,station.z-pos.z,1/60,4.9);
+  assert.equal(nearStation(pos)?.id,station.id);
  }
+ const pos={...START};
+ move(pos,0,1,10);
+ assert.equal(pos.z,LIMITS.front);
+ assert(turnToward(Math.PI-.1,-Math.PI+.1,.2)>Math.PI);
+});
+
+test('a cook in progress and an outgoing review survive reload',()=>{
+ let profile=emptyProfile();
+ let shift=profile.shifts.dominos=newShift('dominos','oven-save');
+ takeOrder(shift,1000);
+ for(const part of ticket(shift)[0].parts)togglePart(shift,0,part);
+ startCooking(shift,0,3000);
+ profile=restore(JSON.parse(JSON.stringify(profile)));
+ shift=profile.shifts.dominos;
+ assert.equal(shift.dishes[0].cookAt,3000);
+ stopCooking(shift,0,6100);
+ setPacked(shift,0,true);
+ serve(shift,9000);
+ const restored=restore(JSON.parse(JSON.stringify(profile)));
+ assert.deepEqual(restored.shifts.dominos.feedback,shift.feedback);
 });
