@@ -1,5 +1,6 @@
 // Every reward is earned by playing. Avatar items and Ranger Supply purchases share one wallet.
 export const REWARDS=[
+ ['mini-golf','Mini Golf Mayhem','finish','Golf round completed','Play all six holes in a full round.',20],
  ['fast-food-passport','Fast Food Shift','finish','Food challenge completed','Serve six customers to finish a restaurant shift.',24],
  ['fruit-seas','Fruit Seas','quest','Pirate quest','Complete a five-enemy island quest and collect your reward from its captain.',24],
  ['pokemon-meadow','Pokémon: Meadow Quest','discovery','New Pokémon','Catch or evolve a Pokémon species for the first time.',17],

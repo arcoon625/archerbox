@@ -1,5 +1,5 @@
-import {restoreWallet,award,purchase,canWear,priceOf} from './rules.js?v=foodshift1';
-import {recordPlay,recordProgress} from '../charts/client.js?v=foodshift1';
+import {restoreWallet,award,purchase,canWear,priceOf} from './rules.js?v=golf1';
+import {recordPlay,recordProgress} from '../charts/client.js?v=golf1';
 export {canWear,priceOf};
 export const WALLET_KEY='archerbox-coins-v1';
 const parse=value=>{try{return JSON.parse(value||'null')}catch{return null}};

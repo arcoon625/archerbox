@@ -1,4 +1,12 @@
 export const GAMES=[
+ {id:'mini-golf',name:'Mini Golf Mayhem',category:'Sports',format:'3D',accent:'#d7ee95',
+  image:'assets/mini-golf-gameplay.jpg',imageAlt:'Gameplay screenshot of a miniature putting green, golf ball, and red flag on a ship at sea',
+  tag:'MAKE EVERY PUTT COUNT',
+  summary:'Putt through six holes on a ship, a rooftop garden, and a moon station.',
+  description:'Start on Captain’s Putt and play six holes in a full round, or choose a course to practice its two holes. Bank shots off rails around crates, time the moving gates, and launch over barriers on Moon Station’s low-gravity pads. Aim with a click or tap, set your power, then putt. You can drag back from the ball to take a shot or switch to Top view to plan your route. Your best full round saves in this browser. Full rounds count toward the Archerbox leaderboard, player XP, and rare Archcoins.',
+  features:['Six holes','Three courses','Practice mode','Saved best round'],
+  controls:[['CLICK / TAP','Aim on the green'],['DRAG BACK','Pull back from the ball and release to putt'],['A D / ← →','Adjust aim'],['W S / ↑ ↓','Adjust power'],['SPACE / PUTT','Hit the ball']],
+  label:'Solo putting',emoji:'⚑'},
  {id:'fast-food-passport',name:'Fast Food Shift',category:'Adventure',format:'3D',accent:'#f3cc7b',
   image:'assets/fast-food-shift-gameplay.jpg',imageAlt:'A first-person gameplay screenshot of a Whopper on the prep tray with sliced tomatoes and lettuce nearby',
   tag:'TAKE ORDERS. COOK. SERVE.',

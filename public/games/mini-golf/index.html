@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Golf Mayhem · Archerbox</title>
+  <link rel="stylesheet" href="./style.css?v=golf1">
+</head>
+<body>
+<main class="golf">
+  <header class="header">
+    <div class="wordmark"><span aria-hidden="true">⚑</span><h1>Mini Golf <em>Mayhem</em></h1></div>
+    <div class="headerActions">
+      <button id="view" type="button" aria-pressed="false">Top view</button>
+      <button id="courses" type="button">Courses</button>
+    </div>
+  </header>
+  <div class="layout">
+    <section class="stage" aria-label="Mini golf course">
+      <canvas id="world" tabindex="0" aria-label="3D mini golf course. Click or tap the green to aim. Use A and D to turn, and Space to putt."></canvas>
+      <div class="holeTag">
+        <span id="courseName">Pirate Ship</span>
+        <strong id="holeName">Captain’s Putt</strong>
+      </div>
+      <p id="fieldNotice" class="fieldNotice" hidden></p>
+      <div id="result" class="result" hidden>
+        <section aria-labelledby="resultTitle">
+          <p id="resultInfo"></p>
+          <h2 id="resultTitle"></h2>
+          <p id="resultScore"></p>
+          <button id="next" class="primary" type="button">Next hole →</button>
+          <button id="resultCourses" class="plain" type="button">Choose a course</button>
+        </section>
+      </div>
+    </section>
+    <aside class="side" aria-label="Scorecard and putting controls">
+      <div class="scorecard">
+        <div class="scoreTitle"><h2>Scorecard</h2><span id="mode">Full round</span></div>
+        <div class="scores">
+          <div><small>Hole</small><strong id="holeNumber">1/6</strong></div>
+          <div><small>Par</small><strong id="par">2</strong></div>
+          <div><small>Strokes</small><strong id="strokes">0</strong></div>
+        </div>
+        <ol id="round" class="round" aria-label="Strokes on each hole"></ol>
+        <p id="best" class="best"></p>
+      </div>
+      <div class="shotPanel">
+        <div class="aim">
+          <button id="left" type="button" aria-label="Aim left">↶</button>
+          <strong>Aim</strong>
+          <button id="right" type="button" aria-label="Aim right">↷</button>
+        </div>
+        <label for="power">Power <output id="powerValue" for="power">70%</output></label>
+        <input id="power" type="range" min="5" max="100" value="70" step="1">
+        <button id="putt" class="primary" type="button">Putt <kbd>SPACE</kbd></button>
+        <p id="hint">Tap the green to aim, then set your power and putt.</p>
+      </div>
+    </aside>
+  </div>
+  <div id="status" class="screenReader" role="status"></div>
+</main>
+<dialog id="courseMenu" aria-labelledby="menuTitle">
+  <button id="closeMenu" class="close" type="button" aria-label="Close courses">×</button>
+  <h2 id="menuTitle">Choose a course</h2>
+  <p>Play all six holes or practice two holes on a course.</p>
+  <button id="fullRound" class="primary" type="button">Start full round →</button>
+  <div id="courseChoices"></div>
+</dialog>
+<script type="module" src="./game.js?v=golf1"></script>
+<script type="module" src="../../bridge.js"></script>
+</body>
+</html>
