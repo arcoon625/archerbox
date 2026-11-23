@@ -47,6 +47,17 @@ canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: 
 .round li[aria-current] { border-color: var(--lime); color: var(--lime) }
 .round li b { display: block; color: var(--ink) }
 .best, #hint { color: var(--muted); margin-top: 9px; font-size: 12px }
+.golfConnection { padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel) }
+#golfConnectionStatus > b { display: none }
+#golfConnectionStatus > span { display: block; color: var(--muted); font-size: 12px; margin: 5px 0 7px }
+#golfConnectionStatus button { font-size: 12px; padding: 5px 8px; margin-right: 4px }
+#golfConnectionStatus.compact > span { margin-top: 0 }
+.matchPlayers { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; margin-top: 10px }
+.matchPlayers > div { padding: 5px 6px; background: #263b2c; border-radius: 6px; min-width: 0 }
+.matchPlayers span { display: block; font-size: 11px; overflow-wrap: anywhere; color: #fff7df }
+.matchPlayers .friendScore span, .round .friendStroke { color: #ffc06f }
+.matchPlayers b { font-size: 14px; font-variant-numeric: tabular-nums }
+.turnNotice { margin: 0 0 8px; color: var(--lime); font-weight: 750; line-height: 1.25; overflow-wrap: anywhere }
 .aim { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; text-align: center; gap: 8px; margin-bottom: 12px }
 .aim button { font-size: 20px; padding-block: 4px }
 .shotPanel label { display: flex; justify-content: space-between; font-weight: 770 }
@@ -79,6 +90,7 @@ dialog .close { position: absolute; right: 7px; top: 7px; padding: 3px 9px; font
   .layout { display: block; padding: 6px }
   .stage { height: clamp(275px, 53dvh, 470px); min-height: 0 }
   .side { grid-template-columns: minmax(110px, .88fr) minmax(148px, 1fr); gap: 6px; margin-top: 6px }
+  .golfConnection { grid-column: 1 / -1 }
   .scorecard, .shotPanel { padding: 7px }
   .scoreTitle { flex-wrap: wrap }
   .scoreTitle h2 { font-size: 17px }

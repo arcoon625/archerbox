@@ -1,4 +1,5 @@
 import {playerLevels} from './player-levels.js';
+import {fullGolfRound} from './golf-match.js';
 import {DAY,METRICS,metricFor,periodStart,scoreEvent,validRun} from '../public/charts/rules.js';
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie','X-Content-Type-Options':'nosniff'}});
@@ -27,12 +28,14 @@ async function checkRoom(db,id,game,run,progress,getRoomScore){
  if(getRoomScore){
   const live=await getRoomScore(id,run.slice(5));
   if(live.game!==game)fail('That match is for another game.');
+  if(game==='mini-golf'&&(!live.fullGolfRound||progress!==1))fail('Finish all six holes together first.');
   if(game==='neon-clash'&&progress>live.kills)fail('Those kills are not in this match yet.');
   return;
  }
  const row=await db.prepare('SELECT host,guest,data FROM social_rooms WHERE id=?').bind(run.slice(5)).first();
  if(!row||(row.host!==id&&row.guest!==id))fail('That match does not belong to you.',403);
  const room=JSON.parse(row.data);if((room.game||'turbo-kart-racing')!==game)fail('That match is for another game.');
+ if(game==='mini-golf'&&(!fullGolfRound(room)||progress!==1))fail('Finish all six holes together first.');
  if(game==='neon-clash'){
   const seat=room.players.findIndex(p=>p.id===id),actor=room.match?.actors?.find(a=>a.seat===seat&&a.human);
   if(!actor||progress>actor.kills)fail('Those kills are not in this match yet.');

@@ -1,6 +1,7 @@
 import {friendRequests,requestFriend,answerFriendRequest,cancelFriendRequest} from './friend-requests.js';
 import {makeRoom,tickRoom,readyPlayer,safeInput,publicRoom,validGame,event,encodeRoom} from './matches.js';
 import {recordFantasyResult} from './fantasy.js';
+import {applyRoomCommand} from './room-commands.js';
 import {validateLook} from '../public/avatar/catalog.js';
 import {friendChat} from './friend-chat.js';
 const alphabet='23456789abcdefghjkmnpqrstuvwxyz';
@@ -109,6 +110,7 @@ export async function handleSocial(request,db){
    const connection=typeof body.clientId==='string'&&/^[a-f0-9-]{36}$/.test(body.clientId)?body.clientId:null;
    if(body.action!=='leave'&&!connection)fail('Reconnect to the race.',400);
    const room=await editRoom(db,path[1],id,connection,(r,t)=>{
+    if(r.game==='mini-golf'){applyRoomCommand(r,id,body,t);return;}
     const p=r.players.find(p=>p.id===id);
     if(!p.connection||body.action==='claim'||(body.action==='ready'&&r.status==='waiting')){p.connection=connection;p.seq=-1;}
     const controlling=p.connection===connection;if(controlling)p.seen=t;

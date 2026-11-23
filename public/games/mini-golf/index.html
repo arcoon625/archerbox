@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mini Golf Mayhem · Archerbox</title>
-  <link rel="stylesheet" href="./style.css?v=golf1">
+  <link rel="stylesheet" href="./style.css?v=golf-friends1">
 </head>
 <body>
 <main class="golf">
@@ -13,6 +13,7 @@
     <div class="headerActions">
       <button id="view" type="button" aria-pressed="false">Top view</button>
       <button id="courses" type="button">Courses</button>
+      <button id="friendPlay" type="button">Play a friend</button>
     </div>
   </header>
   <div class="layout">
@@ -34,6 +35,10 @@
       </div>
     </section>
     <aside class="side" aria-label="Scorecard and putting controls">
+      <section id="golfConnection" class="golfConnection" aria-label="Friend match lobby" hidden>
+        <button id="readyGolf" class="primary" type="button">Ready to play</button>
+        <div id="golfConnectionStatus"></div>
+      </section>
       <div class="scorecard">
         <div class="scoreTitle"><h2>Scorecard</h2><span id="mode">Full round</span></div>
         <div class="scores">
@@ -42,9 +47,11 @@
           <div><small>Strokes</small><strong id="strokes">0</strong></div>
         </div>
         <ol id="round" class="round" aria-label="Strokes on each hole"></ol>
+        <div id="matchPlayers" class="matchPlayers" aria-label="Total strokes" hidden></div>
         <p id="best" class="best"></p>
       </div>
       <div class="shotPanel">
+        <p id="turnNotice" class="turnNotice" role="status" hidden></p>
         <div class="aim">
           <button id="left" type="button" aria-label="Aim left">↶</button>
           <strong>Aim</strong>
@@ -66,7 +73,7 @@
   <button id="fullRound" class="primary" type="button">Start full round →</button>
   <div id="courseChoices"></div>
 </dialog>
-<script type="module" src="./game.js?v=golf1"></script>
+<script type="module" src="./game.js?v=golf-friends1"></script>
 <script type="module" src="../../bridge.js"></script>
 </body>
 </html>

@@ -24,6 +24,11 @@ export const HOLES = [
     sweep: [0, -1.2, 2.35, .75, 3.45], sand: [[-3.6, -6.5, 2, 2.8]], pads: [[2.45, 3.9, 1.65, 1.2]] },
 ];
 
+export function golfRange(track) {
+  const start = track === 0 ? 0 : (track - 1) * 2;
+  return {start, end: track === 0 ? HOLES.length : start + 2};
+}
+
 export const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 export const aimAt = (x, z, tx, tz) => Math.atan2(tx - x, z - tz);
 export const powerSpeed = value => clamp(value, 5, 100) * .17;

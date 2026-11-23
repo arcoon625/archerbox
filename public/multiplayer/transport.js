@@ -1,6 +1,6 @@
 import {createPollLoop} from './poll-loop.js';
 
-// Persistent authenticated connection shared by all six friend games.
+// Persistent authenticated connection shared by the friend games.
 // HTTP is retained for networks which block WebSockets, not used per live frame.
 export function createMatchTransport({id,clientId,input,onRoom,onError=()=>{},WebSocketClass=globalThis.WebSocket,fetcher=globalThis.fetch,base=location.href,playerKey=globalThis.archerboxRuntime?.playerKey}){
  let socket=null,closed=false,connected=false,sequence=Date.now()*1000,requestId=sequence,reconnect=null,heartbeat=null,watchdog=null,previous=null;

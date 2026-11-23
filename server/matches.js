@@ -11,6 +11,7 @@ import * as football from '../public/games/touchdown-rush/rules.js';
 import {TEAMS,teamById,rosterNumbers} from '../public/games/touchdown-rush/teams.js';
 import {teamRoster,realNumbers} from '../public/games/touchdown-rush/rosters.js';
 import {createRivals,tickRivals,rivalAction} from './rivals.js';
+import {advanceGolf,createGolfMatch,golfMatchView,playGolfShot} from './golf-match.js';
 const bounded=(n,a,b)=>Math.max(a,Math.min(b,Number(n)||0)),integer=(n,a,b)=>Math.floor(bounded(n,a,b)),boolean=n=>n===true,clone=o=>JSON.parse(JSON.stringify(o,(key,value)=>value instanceof Set?[...value]:value));
 const isKart=r=>!r.game||r.game==='turbo-kart-racing';
 export function validGame(id){return FRIEND_GAMES.find(g=>g.id===id);}
@@ -28,10 +29,19 @@ export function readyPlayer(room,user,raw,now){if(isKart(room)){readyKart(room,u
   const g=football.createGame(['rookie','pro','allstar'].includes(a.config.difficulty)?a.config.difficulty:'pro',{teamNames:teams.map(t=>t.name),teamRosters:rosters,offenseNumbers:[a.config.numbers||rosters[0].offense.map(p=>p.number),b.config.numbers||rosters[1].offense.map(p=>p.number)],injuries:a.config.injuries,injurySeed:room.seed,weather:rollWeather(seededRandom(room.seed)),playerTraits:a.config.playerTraits});g.homeTeamId=room.players[a.config.homeSide===1?1:0].config.team;g.multiplayer=true;g.statsByTeam=[g.stats,{passes:0,tackles:0,touchdowns:0}];football.lineup(g);room.match=g;
  }
  if(room.game==='neon-clash')room.match=createRivals(room);
+ if(room.game==='mini-golf')room.match=createGolfMatch(room.track);
  room.startAt=now+4000;room.updatedAt=now;room.status='countdown';
 }
 function restore(room){const g=room.match;if(room.game==='color-rush'){g.random=color.rng(g.randomState??room.seed);}if(room.game==='hide-and-seek'){g.map=hide.MAPS[room.track];for(const a of g.actors)a.visited=new Set(a.visited);g.rng=()=>.5;}if(room.game==='touchdown-rush')g.stats=g.statsByTeam[0];}
-export function tickRoom(room,now){if(isKart(room))return tickKartRoom(room,now);if(['left','finished'].includes(room.status))return;if(now-room.created>15*60000||room.players.some(p=>now-p.seen>60000)){room.status='left';room.message='A friend disconnected. Invite them for another match.';return;}if(room.status==='waiting')return;if(now<room.startAt){room.status='countdown';room.updatedAt=now;return;}room.status='playing';restore(room);
+export function tickRoom(room,now){if(isKart(room))return tickKartRoom(room,now);if(['left','finished'].includes(room.status))return;if(now-room.created>(room.game==='mini-golf'?60:15)*60000||room.players.some(p=>now-p.seen>60000)){room.status='left';room.message='A friend disconnected. Invite them for another match.';return;}if(room.status==='waiting')return;if(now<room.startAt){room.status='countdown';room.updatedAt=now;return;}room.status='playing';
+ if(room.game==='mini-golf'){
+  const elapsed=Math.max(0,Math.min(.4,(now-Math.max(room.updatedAt,room.startAt))/1000));
+  advanceGolf(room.match,elapsed);
+  room.time+=elapsed;room.updatedAt=now;
+  if(room.match.phase==='finished')room.status='finished';
+  return;
+ }
+ restore(room);
  if(room.celebration){room.celebration.elapsed=Math.min(6,(now-room.celebration.started)/1000);if(room.celebration.elapsed<6){room.updatedAt=now;return;}room.celebration=null;}
  const elapsed=Math.max(0,Math.min(.4,(now-Math.max(room.updatedAt,room.startAt))/1000)),count=Math.ceil(elapsed*60),dt=count?elapsed/count:0,g=room.match,inputs=seat=>now-room.players[seat].seen<1800?room.players[seat].input:safeInput({},room.game);
  for(let i=0;i<count;i++){room.time+=dt;
@@ -44,6 +54,7 @@ export function tickRoom(room,now){if(isKart(room))return tickKartRoom(room,now)
  }room.updatedAt=now;
 }
 export function event(room,seat,type,args={},now=Date.now()){if(isKart(room))return;restore(room);if(room.status!=='playing')return;const g=room.match;
+ if(room.game==='mini-golf'&&type==='putt'){playGolfShot(g,seat,args);return;}
  if(room.game==='hide-and-seek'){if(type==='interact')hide.interact(g,seat);if(type==='ping')hide.ping(g,seat);}
  if(room.game==='shark-racing'&&type==='recover'){const r=g.racers[seat];r.lane=r.depth=0;r.bump=0;}
  if(room.game==='touchdown-rush'){
@@ -54,6 +65,7 @@ export function event(room,seat,type,args={},now=Date.now()){if(isKart(room))ret
 }
 function footballView(room,seat){const g=clone(room.match);g.viewDirection=football.direction(g.phase==='kick'?g.ball.receivingTeam:g.offense);g.control=g.controls[seat];g.stats=g.statsByTeam[seat];if(seat===1){const remap=id=>id<11?id+11:id-11;g.actors=g.actors.map(a=>({...a,id:remap(a.id),team:1-a.team,blocking:a.blocking==null?null:remap(a.blocking),blockedBy:a.blockedBy==null?null:remap(a.blockedBy)})).sort((a,b)=>a.id-b.id);g.carrier=remap(g.carrier);g.control=remap(g.control);g.selected=remap(g.selected);if(g.finishContact){g.finishContact.carrier=remap(g.finishContact.carrier);g.finishContact.defender=remap(g.finishContact.defender);}if(g.placeKick){g.placeKick.team=1-g.placeKick.team;g.placeKick.kicker=remap(g.placeKick.kicker);g.placeKick.holder=remap(g.placeKick.holder);if(Number.isInteger(g.placeKick.longSnapper))g.placeKick.longSnapper=remap(g.placeKick.longSnapper);}if(g.ball){if(Number.isInteger(g.ball.target))g.ball.target=remap(g.ball.target);if(g.ball.receivingTeam!==undefined)g.ball.receivingTeam=1-g.ball.receivingTeam;}if(g.passResult){g.passResult.fromTeam=1-g.passResult.fromTeam;for(const key of ['receiver','defender'])if(Number.isInteger(g.passResult[key]))g.passResult[key]=remap(g.passResult[key]);}if(g.returnPlay)g.returnPlay.team=1-g.returnPlay.team;if(g.specialTeams)g.specialTeams.kickingTeam=1-g.specialTeams.kickingTeam;if(g.medical){for(const e of g.medical.events)e.team=1-e.team;if(g.medical.notice)g.medical.notice.team=1-g.medical.notice.team;}g.offense=1-g.offense;g.nextOffense=g.nextOffense===undefined?undefined:1-g.nextOffense;g.scores.reverse();g.teamNames.reverse();g.teamRosters.reverse();g.offenseNumbers.reverse();}if(g.phase==='ready'){g.event=g.offense===0?'YOUR BALL':'DEFEND YOUR END ZONE';g.detail=g.offense===0?'Choose a play, or press P to punt.':g.teamNames[1]+' are choosing a play. Get ready!';}if(g.returnPlay)g.detail=g.offense===0?'Run it back · Shift to sprint · Space to juke. A return touchdown scores six!':'Stop your friend’s return · E switches defender · Space tackles.';return g;}
 export function publicRoom(room,user,connection){if(isKart(room))return {...kartPublic(room,user,connection),game:'turbo-kart-racing'};const seat=room.players.findIndex(p=>p.id===user),me=room.players[seat],data={id:room.id,game:room.game,variant:room.variant,track:room.track,status:room.status,time:room.time,startAt:room.startAt,now:Date.now(),message:room.message,controlling:me?.connection===connection,seat,players:room.players.map((p,i)=>({seat:i,name:p.name,color:p.color,config:p.config,ready:p.ready,you:i===seat})),celebration:room.celebration?{id:room.celebration.id,elapsed:room.celebration.elapsed,own:room.celebration.seat===seat}:null};if(!room.match)return data;
+ if(room.game==='mini-golf')return {...data,match:golfMatchView(room.match)};
  let g=clone(room.match);
  if(room.game==='shark-racing'){const own=g.racers.find(r=>r.seat===seat),rest=g.racers.filter(r=>r!==own);g.racers=[own,...rest].map((r,i)=>({...r,id:i,you:i===0}));g.shark=own.shark;g.rings=own.rings||0;g.place=shark.order(g.racers).findIndex(r=>r.id===0)+1;delete g.course;}
  if(room.game==='color-rush'){const actors=g.actors;g.actors=[actors[seat],...actors.filter((a,i)=>i!==seat)].map((a,i)=>({...a,player:i===0,human:i===0||i===1}));g.result=g.actors[0].alive?'win':'loss';}

@@ -1,6 +1,7 @@
 import {tickRoom,publicRoom,encodeRoom} from '../server/matches.js';
 import {applyRoomCommand} from '../server/room-commands.js';
 import {recordFantasyResult} from '../server/fantasy.js';
+import {fullGolfRound} from '../server/golf-match.js';
 const terminal=room=>['finished','left'].includes(room.status);
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store'}});
 
@@ -89,7 +90,7 @@ export class MatchRoom {
    if(!this.room.players.some(p=>p.id===user))return json({error:'This match belongs to other players.'},403);
    if(url.pathname.endsWith('/score')&&request.method==='GET'){
     const seat=this.room.players.findIndex(p=>p.id===user);
-    return json({game:this.room.game||'turbo-kart-racing',kills:this.room.match?.actors?.find(a=>a.seat===seat&&a.human)?.kills||0});
+    return json({game:this.room.game||'turbo-kart-racing',...(this.room.game==='mini-golf'?{fullGolfRound:fullGolfRound(this.room)}:{}),kills:this.room.match?.actors?.find(a=>a.seat===seat&&a.human)?.kills||0});
    }
    if(request.headers.get('Upgrade')?.toLowerCase()==='websocket'){
     if(request.headers.get('Origin')!==url.origin)return json({error:'Open this match from Archerbox.'},403);

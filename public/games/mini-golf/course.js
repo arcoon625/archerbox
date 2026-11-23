@@ -33,7 +33,7 @@ function turfTexture(color) {
   return map;
 }
 
-export function makeCourse(hole) {
+export function makeCourse(hole, friendRound = false) {
   const style = styles[hole.course];
   const scene = new T.Scene();
   scene.background = new T.Color(style.sky);
@@ -247,11 +247,19 @@ export function makeCourse(hole) {
 
   const ball = sphere(0, BALL_RADIUS, 0, BALL_RADIUS, BALL_RADIUS, BALL_RADIUS, '#fff7df', true);
   const ballShadow = tube(0, .008, 0, .235, .012, hole.course === 2 ? '#3c6373' : '#327749');
+  const friendBall = friendRound ? sphere(0, BALL_RADIUS, 0, BALL_RADIUS, BALL_RADIUS, BALL_RADIUS, '#ffc06f', true) : null;
   const dots = Array.from({ length: 17 }, (_, i) => tube(0, .034, 0, i < 3 ? .073 : .049, .022, '#faf4cc', false));
-  function update(state, angle, power, aiming) {
+  function update(state, angle, power, aiming, friend = null, friendTurn = false) {
     ball.position.set(state.x, state.y + (state.phase === 'holed' ? -.24 : BALL_RADIUS), state.z);
     ballShadow.position.set(state.x + state.y * .13, .009, state.z - state.y * .11);
-    ballShadow.visible = state.phase !== 'holed';
+    const overlap = friend && friend.phase !== 'holed' &&
+      Math.hypot(state.x - friend.x, state.y - friend.y, state.z - friend.z) < BALL_RADIUS * 1.75;
+    ball.visible = !(overlap && friendTurn);
+    ballShadow.visible = state.phase !== 'holed' && ball.visible;
+    if (friendBall) {
+      friendBall.visible = Boolean(friend && friend.phase !== 'holed' && (!overlap || friendTurn));
+      if (friend) friendBall.position.set(friend.x, friend.y + BALL_RADIUS, friend.z);
+    }
     const sliding = holeObstacle(hole, state.time);
     for (const item of slider) item.mesh.position.x = sliding[0] + item.offset;
     const speed = powerSpeed(power);
