@@ -66,6 +66,15 @@ test('server-owned XP credits saved achievements once, persists, and isolates br
   assert.equal(historical.totalXP,240,'earned XP survives game removal');
   assert.equal(historical.achievements,13);
   assert.equal(historical.gamesPlayed,2,'count only games in the current catalog');
+  const golf=await request('charts/play',{cookie,body:{game:'mini-golf'}});
+  assert.equal(golf.status,200);
+  const round={game:'mini-golf',event:'finish',run:'golf-one',progress:1,session:golf.session};
+  assert.equal((await request('charts/progress',{cookie,body:round})).added,1);
+  assert.equal((await request('charts/progress',{cookie,body:round})).added,0);
+  const afterGolf=await request('charts/player',{cookie});
+  assert.equal(afterGolf.totalXP,330);
+  assert.equal(afterGolf.achievements,14);
+  assert.equal(afterGolf.gamesPlayed,3);
   const indexes=sqlite.prepare("PRAGMA index_list('chart_scores')").all();assert(indexes.some(i=>i.name==='chart_scores_user_game_event'));
   sqlite.close();
 });

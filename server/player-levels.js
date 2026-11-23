@@ -5,17 +5,23 @@ const historicXP=[
   ['outpost-maze','finish',75],
   ['basketball-stars','basket',15]
 ];
-const xpRates=[...XP_REWARDS.map(({game,event,xp})=>[game,event,xp]),...historicXP];
-const xpCase=xpRates.map(()=> 'WHEN game=? AND event=? THEN amount*?').join(' ');
-const xpArgs=xpRates.flat();
-const currentGames=[...new Set(XP_REWARDS.map(({game})=>game))];
-const gamePlaceholders=currentGames.map(()=>'?').join(',');
+const xpRates=new Map([
+  ...XP_REWARDS.map(({game,event,xp})=>[game+'/'+event,xp]),
+  ...historicXP.map(([game,event,xp])=>[game+'/'+event,xp])
+]);
+const currentGames=new Set(XP_REWARDS.map(({game})=>game));
 export async function playerLevels(db,id,now) {
   // Read the same deduplicated achievements as the leaderboards. This also gives existing
-  // players credit for their recorded results without trusting local coin balances.
-  const stats=await db.prepare(`SELECT COALESCE(SUM(CASE ${xpCase} ELSE 0 END),0) AS xp,
-    COALESCE(SUM(amount),0) AS achievements,
-    COUNT(DISTINCT CASE WHEN game IN (${gamePlaceholders}) THEN game END) AS gamesPlayed
-    FROM chart_scores WHERE user_id=?`).bind(...xpArgs,...currentGames,id).first();
-  return {...levelInfo(stats.xp),achievements:stats.achievements,gamesPlayed:stats.gamesPlayed,asOf:now};
+  // players credit for their recorded results. Group first so the query stays the same
+  // size as the catalog grows, and only one row per game and event comes back from D1.
+  const {results}=await db.prepare(`SELECT game,event,SUM(amount) AS amount
+    FROM chart_scores WHERE user_id=? GROUP BY game,event`).bind(id).all();
+  let xp=0,achievements=0;
+  const played=new Set();
+  for(const {game,event,amount} of results){
+    xp+=amount*(xpRates.get(game+'/'+event)||0);
+    achievements+=amount;
+    if(currentGames.has(game))played.add(game);
+  }
+  return {...levelInfo(xp),achievements,gamesPlayed:played.size,asOf:now};
 }
