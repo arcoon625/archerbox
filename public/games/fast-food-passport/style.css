@@ -74,10 +74,13 @@ dialog p {color:var(--muted);line-height:1.45;margin:8px 0}
 .tabs button {font-size:12px;padding:6px 8px}
 .tabs button[aria-pressed=true] {background:#d2e8d3;border-color:#759a80;font-weight:750}
 .parts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:10px 0}
-.part {text-align:left;font-size:12px;display:flex;align-items:center;gap:5px;padding:6px 7px;min-height:38px}
+.part {text-align:left;font-size:12px;display:flex;align-items:center;gap:6px;padding:4px 6px;min-height:51px}
 .part[aria-pressed=true] {background:#d7ead7;border-color:#6f9c7a;font-weight:750}
+.part img {display:block;flex:none;width:40px;height:40px;object-fit:contain}
 .part i {width:12px;height:12px;border-radius:4px;flex:none;background:var(--part);border:1px solid #0002}
 .recipe {border-left:3px solid #93b598;padding-left:8px}
+.prepOverview {display:flex;align-items:center;gap:9px;justify-content:space-between}
+.foodTray {display:block;max-width:44%;width:185px;height:auto;border:1px solid #e2cfaf;border-radius:8px;background:#f3e8cf}
 .cookBar {position:relative;overflow:hidden;height:20px;background:#ead1a6;border-radius:6px;margin-top:12px}
 .cookZone {position:absolute;height:100%;background:#85bb8b}
 .cookNeedle {position:absolute;width:4px;height:100%;background:#25474e}
@@ -100,4 +103,5 @@ dialog p {color:var(--muted);line-height:1.45;margin:8px 0}
  .toolbar kbd {display:none}
  .stations {grid-template-columns:repeat(3,minmax(0,1fr))}
  .parts {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .part img {width:35px;height:35px}
 }

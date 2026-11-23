@@ -2,7 +2,8 @@ import {createCoinRun} from '../../economy/wallet.js?v=foodshift1';
 import {RESTAURANTS,INGREDIENTS,HEAT,restaurantById,pantry} from './menus.js';
 import {SAVE_KEY,TICKETS,emptyProfile,restore,newShift,customer,ticket,takeOrder,togglePart,startCooking,stopCooking,setPacked,serve,nextCustomer} from './rules.js?v=shift1';
 import {START,STATIONS,nearStation,move,relative,turnToward} from './space.js';
-import {kitchen} from './kitchen.js';
+import {kitchen} from './kitchen.js?v=fooddetail1';
+import {foodPreviews} from './food-previews.js?v=fooddetail1';
 
 const $=id=>document.getElementById(id);
 const world=$('world'),dialog=$('stationDialog'),summary=$('summary');
@@ -183,10 +184,18 @@ function counterBody(shift){
 }
 function prepBody(shift,recipe,draft){
  const restaurant=restaurantById(site);
- const parts=pantry(restaurant).map(key=>`<button type="button" class="part" data-part="${key}" aria-pressed="${draft.parts.includes(key)}" ${draft.packed||draft.cookAt?'disabled':''}><i aria-hidden="true" style="--part:${INGREDIENTS[key].color}"></i>${INGREDIENTS[key].name}</button>`).join('');
+ const previews=foodPreviews();
+ const parts=pantry(restaurant).map(key=>{
+  const ingredient=INGREDIENTS[key],image=previews?.ingredient(key);
+  const art=image?`<img alt="" src="${image}">`:`<i aria-hidden="true" style="--part:${ingredient.color}"></i>`;
+  return `<button type="button" class="part" data-part="${key}" aria-pressed="${draft.parts.includes(key)}" ${draft.packed||draft.cookAt?'disabled':''}>${art}<span>${ingredient.name}</span></button>`;
+ }).join('');
+ const recipeText=`<p class="recipe">Recipe <b>${recipe.parts.map(key=>INGREDIENTS[key].name).join(' · ')}</b></p>`;
+ const image=previews?.tray(recipe,draft);
+ const overview=`<div class="prepOverview">${recipeText}${image?`<img class="foodTray" alt="Current prep tray" src="${image}">`:''}</div>`;
  const staged=draft.packed?action('unpack','Unpack to edit'):action('pack','Pack item',{primary:true,disabled:!draft.parts.length||!!draft.cookAt||!!recipe.heat&&!draft.heat});
  const heat=recipe.heat&&!draft.packed?stationLink('cook','Go to '+HEAT[recipe.heat].name.toLowerCase()):'';
- return `${itemTabs(shift)}<h3>${recipe.icon} ${recipe.name}</h3><p class="recipe">Recipe <b>${recipe.parts.map(key=>INGREDIENTS[key].name).join(' · ')}</b></p><div class="parts">${parts}</div><p>${recipe.heat&&!draft.heat?'Add the ingredients, then use the '+HEAT[recipe.heat].name.toLowerCase()+'.':draft.packed?'Packed and ready.':'Check the ingredients, then pack the item.'}</p><div class="actions">${staged}${heat}${shift.dishes.every(item=>item.packed)?stationLink('counter','Go to pickup'):''}</div>`;
+ return `${itemTabs(shift)}<h3>${recipe.icon} ${recipe.name}</h3>${overview}<div class="parts">${parts}</div><p>${recipe.heat&&!draft.heat?'Add the ingredients, then use the '+HEAT[recipe.heat].name.toLowerCase()+'.':draft.packed?'Packed and ready.':'Check the ingredients, then pack the item.'}</p><div class="actions">${staged}${heat}${shift.dishes.every(item=>item.packed)?stationLink('counter','Go to pickup'):''}</div>`;
 }
 function cookBody(shift,recipe,draft){
  const method=HEAT[recipe.heat],tabs=itemTabs(shift);
@@ -339,7 +348,7 @@ function movement(dt){
   const x=destination.x-position.x,z=destination.z-position.z,dist=Math.hypot(x,z);
   if(dist<.15){
    const {id}=destination;
-   yaw=0;pitch=-.055;
+   yaw=0;pitch=id==='prep'?-.22:-.055;
    openStation(id);
   }else{
    yaw=turnToward(yaw,Math.atan2(x,z),dt);

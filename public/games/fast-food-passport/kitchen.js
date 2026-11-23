@@ -1,6 +1,7 @@
 import * as THREE from '../../vendor/three.module.js';
-import {INGREDIENTS} from './menus.js';
+import {pantry} from './menus.js';
 import {STATIONS} from './space.js';
+import {ingredientModel,foodTray} from './food-models.js?v=fooddetail1';
 
 const cubeGeometry=new THREE.BoxGeometry();
 const cylinderGeometry=new THREE.CylinderGeometry(1,1,1,24);
@@ -88,12 +89,23 @@ function furniture(scene,color){
 function prepRail(scene){
  const metal='#77908b';
  box(scene,metal,3.8,1.06,.25,3.2,.18,.82);
- const colors=['#96b366','#da7257','#f6cf76','#be986c','#edcfac'];
- colors.forEach((color,i)=>{
+ box(scene,metal,3.8,1.095,-.23,1.14,.07,.69);
+ const stock=new THREE.Group();
+ scene.add(stock);
+ for(let i=0;i<5;i++){
   const x=2.56+i*.61;
   box(scene,'#344a4c',x,1.185,.29,.54,.124,.50);
-  box(scene,color,x,1.252,.29,.46,.055,.42);
- });
+  box(scene,metal,x,1.237,.29,.472,.038,.438);
+ }
+ return restaurant=>{
+  stock.clear();
+  const ingredients=[...new Set(['lettuce','tomato',...pantry(restaurant).filter(id=>!['sesame','bun','subroll','tortilla','dough'].includes(id))])].slice(0,5);
+  for(const [index,id] of ingredients.entries()){
+   const food=ingredientModel(id);
+   food.position.set(2.56+index*.61,1.252,.29);
+   food.scale.setScalar(.77);stock.add(food);
+  }
+ };
 }
 function cookLine(scene){
  box(scene,'#809194',-3.8,.61,.32,3.43,1.17,.79);
@@ -132,7 +144,8 @@ function diningRoom(scene,shopColor){
  box(scene,shopColor,0,.51,.20,13.04,.98,.68);
  box(scene,'#b68a64',0,.19,-.15,13.06,.16,.055);
  for(let x=-6.2;x<=6.2;x+=.40)box(scene,'#fff0d6',x,.62,-.133,.016,.48,.015);
- prepRail(scene);cookLine(scene);register(scene);
+ const setStock=prepRail(scene);
+ cookLine(scene);register(scene);
  for(const x of [-6.50,6.52]){
   drum(scene,'#b38b64',x,.21,1.40,.27,.41);
   for(let n=0;n<4;n++)ball(scene,'#719774',x+Math.sin(n*2)*.164,.62+n*.055,1.42+Math.cos(n*2)*.20,.15,.27,.16);
@@ -145,7 +158,7 @@ function diningRoom(scene,shopColor){
   hit.userData.station=placard.panel.userData.station=station.id;
   return {hit,panel:placard.panel};
  });
- return {shopSign,targets:boards.flatMap(board=>[board.panel,board.hit])};
+ return {shopSign,setStock,targets:boards.flatMap(board=>[board.panel,board.hit])};
 }
 
 const skin=['#a67856','#e7b388','#79513d','#b88764','#d4956b','#edba96'];
@@ -183,33 +196,6 @@ function patron(scene,style){
  return {root,legs,arms};
 }
 
-function preparedFood(root,meal,draft){
- root.clear();
- if(!meal||!draft?.parts.length)return;
- drum(root,'#f6dfb6',0,.02,0,.35,.033);
- if(meal.shape==='fries'||meal.shape==='pieces'){
-  for(let i=0;i<9;i++){
-   const x=((i*7)%11-5)*.046,z=((i*13)%9-4)*.045;
-   if(meal.shape==='fries')box(root,'#edb855',x,.09+(i%3)*.02,z,.09,.06,.21).rotation.y=i*.9;
-   else ball(root,'#c88847',x,.10+(i%3)*.013,z,.09,.053,.074);
-  }
-  return;
- }
- if(meal.shape==='pizza'){
-  drum(root,'#d5a45e',0,.08,0,.29,.075);
-  if(draft.parts.includes('marinara'))drum(root,'#b85c43',0,.126,0,.265,.033);
-  if(draft.parts.some(part=>part==='mozz'||part==='cheese'))drum(root,'#f7d992',0,.153,0,.249,.035);
-  if(draft.parts.includes('pepperoni'))for(let i=0;i<6;i++)drum(root,'#b85645',Math.sin(i*1.06)*.157,.178,Math.cos(i*1.06)*.157,.048,.019);
-  return;
- }
- draft.parts.forEach((part,index)=>{
-  const color=INGREDIENTS[part].color,h=.042+index*.025;
-  const wide=['sub','wrap','taco'].includes(meal.shape);
-  if(wide)box(root,color,0,h,0,.52,.061,.21);
-  else drum(root,color,0,h,0,.255-index*.004,.043);
- });
-}
-
 export function kitchen(canvas){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
  renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
@@ -224,9 +210,9 @@ export function kitchen(canvas){
  interior.position.set(4,4,-6);scene.add(interior);
  const camera=new THREE.PerspectiveCamera(60,1,.05,39);
  const shopColor=new THREE.MeshStandardMaterial({color:'#699985',roughness:.74});
- const {targets,shopSign}=diningRoom(scene,shopColor);
+ const {targets,shopSign,setStock}=diningRoom(scene,shopColor);
  const display=new THREE.Group();
- display.position.set(3.80,1.20,-.10);scene.add(display);
+ display.position.set(3.80,1.13,-.23);scene.add(display);
  const bag=new THREE.Group();
  bag.position.set(.82,1.09,.19);
  box(bag,'#c79c61',0,.18,0,.39,.36,.25);
@@ -239,11 +225,14 @@ export function kitchen(canvas){
   shop(restaurant){
    shopColor.color.set(restaurant.color);
    shopSign.update(restaurant.name,restaurant.color,'#fff8e4',80);
+   setStock(restaurant);
   },
   food(meal,draft){
    const key=JSON.stringify([meal?.name,draft?.parts,draft?.heat]);
    if(key===lastFood)return;
-   lastFood=key;preparedFood(display,meal,draft);
+   lastFood=key;
+   display.clear();
+   if(meal)display.add(foodTray(meal,draft));
   },
   resize(){
    const {clientWidth:w,clientHeight:h}=canvas;

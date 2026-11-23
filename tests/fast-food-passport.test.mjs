@@ -3,6 +3,30 @@ import {test} from 'node:test';
 import {INGREDIENTS,RESTAURANTS,HEAT,pantry} from '../public/games/fast-food-passport/menus.js';
 import {TICKETS,restore,emptyProfile,newShift,customer,ticket,takeOrder,togglePart,startCooking,stopCooking,setPacked,serve,nextCustomer} from '../public/games/fast-food-passport/rules.js';
 import {START,LIMITS,STATIONS,nearStation,move,relative,turnToward} from '../public/games/fast-food-passport/space.js';
+import {ingredientModel,foodTray} from '../public/games/fast-food-passport/food-models.js';
+import {Box3,Vector3} from '../public/vendor/three.module.js';
+
+test('every ingredient and menu item has a viewable, correctly bounded prep model',()=>{
+ for(const [id,{name}] of Object.entries(INGREDIENTS)){
+  const model=ingredientModel(id),bounds=new Box3().setFromObject(model);
+  assert.equal(model.name,name);
+  assert(!bounds.isEmpty(),name);
+  const size=bounds.getSize(new Vector3());
+  assert([size.x,size.y,size.z].every(value=>Number.isFinite(value)&&value>0&&value<1),name);
+ }
+ for(const shop of RESTAURANTS)for(const meal of shop.menu){
+  const tray=foodTray(meal,{parts:meal.parts,heat:'perfect'});
+  assert(tray.children.length>2,meal.name);
+  assert(!new Box3().setFromObject(tray).isEmpty(),meal.name);
+ }
+ const burger=RESTAURANTS[0].menu[0];
+ const undercooked=ingredientModel('double','early').children[0].material.color;
+ const cooked=ingredientModel('double','perfect').children[0].material.color;
+ assert(!undercooked.equals(cooked));
+ const partial=foodTray(burger,{parts:['pickle'],heat:null});
+ assert(partial.getObjectByName('Pickles'));
+ assert(!partial.getObjectByName('Lettuce'));
+});
 
 test('all ten kitchens can prepare, cook, and serve every order in a complete shift',()=>{
  assert.deepEqual(RESTAURANTS.map(site=>site.id),['mcd','taco','subway','chick','chipotle','wendys','king','dominos','popeyes','in-n-out']);
