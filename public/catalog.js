@@ -1,6 +1,6 @@
 export const GAMES=[
  {id:'fast-food-passport',name:'Fast Food Shift',category:'Adventure',format:'3D',accent:'#f3cc7b',
-  image:'assets/fast-food-shift-cartoon.jpg',imageAlt:'A colorful cartoon burger and fries on a diner counter with two smiling customers',
+  image:'assets/fast-food-shift-doodle.webp',imageAlt:'A crayon doodle of hands making a crooked burger beside spilled fries and a smiling diner customer',
   tag:'TAKE ORDERS. COOK. SERVE.',
   summary:'Work a first-person shift at one of ten restaurants. Make each order and get feedback and tips from your customers.',
   description:'Work behind the counter at McDonald’s, Taco Bell, Subway, Chick-fil-A, Chipotle, Wendy’s, Burger King, Domino’s, Popeyes, or In-N-Out Burger. Choose a restaurant, take orders from six customers, add ingredients at prep, and watch the timer when food needs grilling, frying, or baking. Pack every item and serve the whole order. Customers rate the food and tell you how to fix mistakes. A good order earns tips, with a quick-service bonus for perfect orders. Shifts save in this browser.',
