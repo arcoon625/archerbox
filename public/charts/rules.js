@@ -1,6 +1,7 @@
 export const DAY=86400000;
 export const PERIODS=[{id:'all-time',name:'All-time'},{id:'monthly',name:'Monthly'},{id:'weekly',name:'Weekly'},{id:'daily',name:'Daily'}];
 export const METRICS=[
+ ['ice-hockey-rush','Matches won',{win:1},6,2],
  ['mini-golf','Full rounds completed',{finish:1},18,3],
  ['fast-food-passport','Food challenges completed',{finish:1},18,4],
  ['fruit-seas','Quests completed',{quest:1},20,3],['pokemon-meadow','Pokémon discovered',{discovery:1},120,30],

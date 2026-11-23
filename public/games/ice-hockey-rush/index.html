@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ice Hockey Rush · Archerbox</title>
+  <link rel="stylesheet" href="style.css?v=hockey1">
+</head>
+<body>
+<main class="game">
+  <header class="gameHeader">
+    <h1><span aria-hidden="true" class="puckIcon"></span> Ice Hockey <em>Rush</em></h1>
+    <div class="headActions">
+      <button id="sound" type="button" aria-pressed="true">Sound on</button>
+      <button id="view" type="button" aria-pressed="false">Top view</button>
+      <button id="options" type="button">Rink options</button>
+    </div>
+  </header>
+  <div class="layout">
+    <section class="stage" aria-label="3D ice hockey rink">
+      <canvas id="world" role="img" tabindex="0" aria-label="Ice rink. Skate with WASD or arrows, hold Space to shoot, E to pass, F to poke check, and Q to switch players."></canvas>
+      <div id="scoreboard" class="scoreboard" aria-label="Match score">
+        <div class="team own"><span id="homeName">Aurora</span><strong id="homeScore">0</strong></div>
+        <div class="gameClock"><small id="period">Period 1</small><strong id="clock">0:45</strong></div>
+        <div class="team away"><strong id="awayScore">0</strong><span id="awayName">Forge</span></div>
+      </div>
+      <span id="rinkName" class="rinkName">Frostline Arena</span>
+      <div id="announcement" class="announcement" hidden></div>
+      <div id="stick" class="stick" aria-label="Touch skating joystick"><i></i></div>
+      <section id="result" class="result" aria-labelledby="resultTitle" hidden>
+        <div>
+          <p id="finalLabel">Final score</p>
+          <h2 id="resultTitle"></h2>
+          <strong id="finalScore"></strong>
+          <p id="matchStats"></p>
+          <button id="rematch" class="primary" type="button">Play again →</button>
+          <button id="resultOptions" class="secondary" type="button">Rink options</button>
+        </div>
+      </section>
+    </section>
+    <aside class="bench" aria-label="Team, match, and controls">
+      <section id="setup" class="panel setup">
+        <h2>Choose your match</h2>
+        <p>Three skaters and a goalie on each team.</p>
+        <button id="play" class="primary" type="button">Play match →</button>
+        <button id="practice" class="secondary" type="button">Practice shots</button>
+        <p id="record">Win a match to start your record.</p>
+      </section>
+      <section class="panel controls">
+        <div class="controlHeading"><h2>On the ice</h2><span id="possession" class="possession">Ready</span></div>
+        <div id="charge" class="charge" aria-hidden="true"><span></span></div>
+        <button id="shoot" class="primary" type="button">Shoot <kbd>SPACE</kbd></button>
+        <div class="actionGrid">
+          <button id="pass" type="button">Pass <kbd>E</kbd></button>
+          <button id="poke" type="button">Poke check <kbd>F</kbd></button>
+          <button id="swap" type="button">Switch <kbd>Q</kbd></button>
+          <button id="aim" type="button" aria-pressed="true">Auto aim</button>
+        </div>
+        <p class="desktopTip">Use WASD or arrows to skate. Click the ice to aim, then hold Space to shoot.</p>
+        <p class="touchTip">Skate with the joystick. Tap the ice to aim, then hold Shoot for power.</p>
+      </section>
+      <section id="stats" class="panel stats" aria-label="Your team stats" hidden>
+        <div><span>Shots</span><strong id="shots">0</strong></div>
+        <div><span>Goalie saves</span><strong id="saves">0</strong></div>
+      </section>
+    </aside>
+  </div>
+  <p id="status" class="srOnly" role="status"></p>
+</main>
+<dialog id="menu" aria-labelledby="menuTitle">
+  <div class="menuHead"><h2 id="menuTitle">Rink options</h2><button id="close" type="button" aria-label="Close options">×</button></div>
+  <p id="arenaNote"></p>
+  <label for="arena">Arena</label><select id="arena"></select>
+  <label for="team">Your team</label><select id="team"></select>
+  <label for="difficulty">Difficulty</label>
+  <select id="difficulty"><option value="rookie">Rookie</option><option value="pro">Pro</option></select>
+  <div class="menuButtons">
+    <button id="menuPlay" class="primary" type="button">New match →</button>
+    <button id="menuPractice" class="secondary" type="button">Practice shots</button>
+  </div>
+</dialog>
+<script type="module" src="game.js?v=hockey1"></script>
+<script type="module" src="../../bridge.js"></script>
+</body>
+</html>

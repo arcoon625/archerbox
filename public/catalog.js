@@ -1,4 +1,12 @@
 export const GAMES=[
+ {id:'ice-hockey-rush',name:'Ice Hockey Rush',category:'Sports',format:'3D',accent:'#99ecf3',
+  image:'assets/ice-hockey-gameplay.jpg',imageAlt:'Gameplay screenshot of the blue Aurora and red Forge skaters on Summit Rink',
+  tag:'SKATE. PASS. SCORE.',
+  summary:'Play quick 3v3 hockey with CPU teammates, goalies, and three 3D rinks.',
+  description:'Pick a team and skate three short periods with three skaters and a goalie on each side. Pass, switch skaters, use a poke check to recover the puck, and hold Shoot to charge your shot. Bank the puck around a defender or aim for an open corner. Play at Frostline Arena, Harbor Ice Pavilion, or Summit Rink. Pick Rookie or Pro and warm up against a goalie in Practice Shots. Match wins count toward the leaderboard, player XP, and rare Archcoins. Your win record is saved in this browser.',
+  features:['3v3 with goalies','Three rinks','Rookie and Pro','Shooting practice'],
+  controls:[['WASD / ARROWS','Skate'],['SHIFT','Sprint'],['HOLD SPACE / SHOOT','Charge a shot and release'],['CLICK / TAP ICE','Aim at a spot'],['E / F / Q','Pass / poke check / switch skaters'],['TOUCH JOYSTICK','Skate on a phone or tablet']],
+  label:'Solo CPU matches',emoji:'◒'},
  {id:'mini-golf',name:'Mini Golf Mayhem',category:'Sports',format:'3D',accent:'#d7ee95',
   image:'assets/mini-golf-gameplay.jpg',imageAlt:'Gameplay screenshot of a miniature putting green, golf ball, and red flag on a ship at sea',
   tag:'MAKE EVERY PUTT COUNT',

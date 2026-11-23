@@ -1,6 +1,6 @@
 import {friendAction} from '../friends.js?v=glitchdrop1';
-import {PERIODS,metricFor} from './rules.js?v=golf1';
-import {flushStats} from './client.js?v=golf1';
+import {PERIODS,metricFor} from './rules.js?v=hockey1';
+import {flushStats} from './client.js?v=hockey1';
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>Number(n||0).toLocaleString();
 const spark=values=>{const max=Math.max(1,...values),points=values.map((v,i)=>[i*22,35-v/max*30]);return `<svg class="chartSpark" viewBox="0 0 132 40" role="img" aria-label="Daily player counts: ${values.join(', ')}"><path class="sparkArea" d="M0 40 L${points.map(p=>p.join(' ')).join(' L')} L132 40Z"/><path d="M${points.map(p=>p.join(' ')).join(' L')}"/></svg>`};

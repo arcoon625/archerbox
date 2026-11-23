@@ -1,5 +1,6 @@
 // Every reward is earned by playing. Avatar items and Ranger Supply purchases share one wallet.
 export const REWARDS=[
+ ['ice-hockey-rush','Ice Hockey Rush','win','Hockey match won','Win a full 3v3 match against CPU skaters.',24],
  ['mini-golf','Mini Golf Mayhem','finish','Golf round completed','Play all six holes in a full round.',20],
  ['fast-food-passport','Fast Food Shift','finish','Food challenge completed','Serve six customers to finish a restaurant shift.',24],
  ['fruit-seas','Fruit Seas','quest','Pirate quest','Complete a five-enemy island quest and collect your reward from its captain.',24],

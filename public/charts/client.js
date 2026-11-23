@@ -1,4 +1,4 @@
-import {metricFor,scoreEvent,validRun} from './rules.js?v=golf1';
+import {metricFor,scoreEvent,validRun} from './rules.js?v=hockey1';
 // Scores use the signed-in arcade profile, never a name or identity supplied by a game.
 export function createTracker({fetcher=globalThis.fetch,storage=globalThis.localStorage,setTimer=globalThis.setTimeout,clearTimer=globalThis.clearTimeout,onSynced=()=>{}}={}){
  let identity=null,profilePromise=null,queue=[],flushing=null,retry=null;const sessions=new Map();

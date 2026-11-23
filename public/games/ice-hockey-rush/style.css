@@ -1,0 +1,103 @@
+:root {
+  color-scheme: dark;
+  font: 15px/1.42 system-ui,sans-serif;
+  --ink: #edf8ff;
+  --muted: #a6bcd3;
+  --panel: #162338;
+  --stroke: #344a64;
+  --aqua: #99ecf3;
+  --warm: #ffd898;
+}
+* { box-sizing: border-box }
+body { margin: 0; background: #0d1726; color: var(--ink) }
+h1,h2,p { margin: 0 }
+button,select { font: inherit }
+button,select { border: 1px solid #415970; border-radius: 8px; color: var(--ink); background: #20334a; padding: 8px 12px; font-weight: 740 }
+button { cursor: pointer; touch-action: manipulation }
+button:disabled { opacity: .5; cursor: default }
+button:hover:not(:disabled) { filter: brightness(1.15) }
+button:focus-visible,select:focus-visible,canvas:focus-visible { outline: 2px solid var(--warm); outline-offset: -3px }
+[hidden] { display: none !important }
+.gameHeader { height: 60px; background: #111e30; border-bottom: 1px solid var(--stroke); padding: 6px clamp(9px,2vw,24px); display: flex; justify-content: space-between; align-items: center; gap: 8px }
+h1,h2 { letter-spacing: -.052em; line-height: 1.04; font-weight: 860 }
+h1 { font-size: clamp(24px,4vw,38px); display:flex; align-items:center; gap: .21em }
+h1 em { color: var(--aqua); font-style: normal }
+.puckIcon { display: inline-block; background: #0d1a2b; border: 2px solid #9ce8f2; width: .79em; height: .52em; border-radius: 50% 50% 40% 42%; transform: rotate(-19deg); box-shadow: inset 0 -.095em 0 #55a4c7; margin-right: .11em }
+.headActions { display: flex; flex: none; gap: 5px }
+.layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(226px,24%); gap: 12px; padding: 11px }
+.stage { position: relative; height: calc(100dvh - 82px); min-height: 410px; overflow: hidden; border-radius: 13px; border: 1px solid #52677b; background: #47627b }
+canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair }
+.scoreboard { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: stretch; border: 1px solid #8296aa77; border-radius: 11px; overflow: hidden; box-shadow: 0 3px 17px #08182d65; color: #fff; pointer-events: none }
+.team { display: flex; align-items: center; gap: 9px; padding: 5px 11px; background: var(--team,#13639c); white-space: nowrap }
+.team span { font-size: 13px; font-weight: 800 }
+.team strong { font-size: 24px; line-height: 1 }
+.gameClock { min-width: 66px; background: #121f30; text-align: center; padding: 3px 7px }
+.gameClock small { display: block; color: #bed3e9; font-size: 10px; font-weight: 780; white-space: nowrap }
+.gameClock strong { font-size: 18px; font-variant-numeric: tabular-nums; line-height: 1.05 }
+.rinkName { position: absolute; left: 11px; bottom: 10px; padding: 5px 9px; border-radius: 6px; background: #14243cbf; font-size: 11px; font-weight: 730; color: #eefaff; pointer-events: none }
+.announcement { position: absolute; left: 50%; top: 19%; transform: translateX(-50%); border: 1px solid #acd9ef88; border-radius: 11px; background: #13273edc; padding: 7px 22px; font-size: clamp(17px,3vw,28px); font-weight: 850; text-align: center; line-height: 1.1; pointer-events: none; max-width: 92% }
+.bench { display: grid; align-content: start; gap: 9px }
+.panel { padding: 13px; border: 1px solid var(--stroke); border-radius: 12px; background: var(--panel) }
+h2 { font-size: 24px }
+.panel p { color: var(--muted); font-size: 12px; margin: 7px 0 8px }
+.setup #record { margin-bottom: 0 }
+.primary { background: var(--aqua); color: #103344; border-color: #b5eff6; min-height: 42px; width: 100%; font-weight: 880; font-size: 16px }
+.secondary { width: 100%; margin-top: 5px }
+.controlHeading { display: flex; justify-content: space-between; gap: 5px; align-items: center; margin-bottom: 8px }
+.possession { color: #bfe4f3; font-size: 11px; font-weight: 760; text-align: right }
+.possession.active { color: #9df1e4 }
+.charge { height: 5px; border-radius: 10px; background: #2c415a; overflow: hidden; margin: 5px 0 6px }
+.charge span { width: 0; display: block; height: 100%; background: linear-gradient(90deg,#7ee3ee,#ffd596) }
+.actionGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px }
+.actionGrid button { padding: 6px 4px; font-size: 13px }
+kbd { background: #344c6c99; color: #e8f7ff; border-radius: 4px; padding: 2px 4px; font: bold 10px/1.3 system-ui,sans-serif; margin-left: 2px }
+.primary kbd { background: #21495824; color: #173b49 }
+.stats { display: flex; justify-content: space-around; gap: 8px; text-align: center; padding: 9px }
+.stats span { display: block; color: var(--muted); font-size: 11px }
+.stats strong { font-size: 21px; font-variant-numeric: tabular-nums }
+.stick { display: none; position: absolute; width: 80px; height: 80px; border: 1px solid #b4e2f8a6; border-radius: 50%; background: #1e416c70; left: 13px; bottom: 37px; touch-action: none }
+.stick i { display: block; position: absolute; width: 33px; height: 33px; left: 23px; top: 23px; border-radius: 50%; background: #d1f2fdcf; pointer-events: none }
+.result { position: absolute; inset: 0; display: grid; place-items: center; background: #121f35a1; padding: 11px }
+.result > div,dialog { background: #16273d; border: 1px solid #769bb4; border-radius: 14px; color: var(--ink); padding: clamp(15px,3vw,27px) }
+.result > div { text-align: center; width: min(340px,100%); box-shadow: 0 12px 44px #0b162c9e }
+.result h2,dialog h2 { font-size: clamp(27px,4vw,36px) }
+#finalLabel { font-size: 12px; font-weight: 760; color: var(--aqua); margin-bottom: 5px }
+#finalScore { display: block; font-size: 31px }
+#matchStats { margin: 3px 0 12px; font-size: 13px; color: var(--muted) }
+dialog { width: min(94vw,440px); max-height: 94dvh }
+dialog::backdrop { background: #081523aa }
+.menuHead { display: flex; justify-content: space-between; align-items: start; gap: 7px }
+.menuHead button { padding: 2px 9px; font-size: 20px }
+dialog p { min-height: 2.9em; color: var(--muted); margin-block: 5px }
+dialog label { display: block; font-weight: 760; margin: 7px 0 4px }
+dialog select { display: block; width: 100% }
+.menuButtons { margin-top: 11px }
+.srOnly { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; white-space: nowrap }
+.panel .touchTip { display: none }
+@media (pointer: coarse) {
+  .stick { display: block }
+  kbd { display: none }
+  .panel .touchTip { display: block }
+  .panel .desktopTip { display: none }
+}
+@media (max-width: 690px) {
+  .gameHeader { height: 49px; padding: 5px 7px }
+  h1 { font-size: clamp(16px,4.7vw,25px) }
+  .headActions button { padding: 4px 5px; font-size: 10px }
+  .layout { display: block; padding: 5px }
+  .stage { height: clamp(263px,55dvh,480px); min-height: 0 }
+  .bench { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; margin-top: 5px }
+  .panel { padding: 7px }
+  .panel h2 { font-size: 17px }
+  .panel p { font-size: 11px; margin: 4px 0 5px }
+  .primary { min-height: 35px; padding: 5px; font-size: 13px }
+  .secondary { padding: 4px; font-size: 12px }
+  .controlHeading { margin-bottom: 5px }
+  .actionGrid button { font-size: 11px }
+  .team { padding: 4px 6px; gap: 5px }
+  .team span { font-size: 11px }
+  .team strong { font-size: 19px }
+  .gameClock { min-width: 57px }
+  kbd { display: none }
+  .stick { display: block }
+}

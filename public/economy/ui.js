@@ -1,5 +1,5 @@
-import {REWARDS} from './rules.js?v=golf1';
-import {readWallet,subscribeWallet} from './wallet.js?v=golf1';
+import {REWARDS} from './rules.js?v=hockey1';
+import {readWallet,subscribeWallet} from './wallet.js?v=hockey1';
 let shop=()=>{};
 export const coinButton=()=>'<button class="coinWallet" data-coin-wallet aria-label="Archcoins and how to earn them"><span class="coinMark" aria-hidden="true">✦</span><b data-coin-balance>'+readWallet().balance.toLocaleString()+'</b><span class="coinWord">Archcoins</span></button>';
 export function bindCoinButtons(root=document){root.querySelectorAll('[data-coin-wallet]').forEach(b=>b.onclick=showCoinGuide);updateBalances(readWallet())}
