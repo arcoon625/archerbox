@@ -7,6 +7,11 @@ const $=id=>document.getElementById(id), canvas=$('world'), menu=$('menu');
 const coinRun=createCoinRun('tennis-rally'), STEP=1/120;
 const SAVE='archerbox-tennis-record-v1';
 const opponents={rookie:'Maya',club:'Kai',pro:'Jules'};
+const difficultyNotes={
+  rookie:'Slower returns give you more time.',
+  club:'Faster rallies and deeper shots.',
+  pro:'Quick reactions and shots near the lines.',
+};
 const surfaceNotes=[
   'A steady bounce and medium pace beside the lake.',
   'A higher bounce and a slower ball off the ground.',
@@ -96,7 +101,9 @@ function setup(nextMode){
   $('venue').textContent=info.name;
   $('opponent').textContent=opponents[difficulty];
   $('surfaceNote').textContent=surfaceNotes[surface];
-  $('matchFormat').textContent=(bestOf===3?'Best of three sets':'One set')+' · '+LEVELS[difficulty].name+' · CPU opponent';
+  $('matchFormat').textContent=(bestOf===3?'Best of three sets':'One set')+' · CPU opponent';
+  document.querySelector(`[name="startingDifficulty"][value="${difficulty}"]`).checked=true;
+  $('difficultyHelp').textContent=difficultyNotes[difficulty];
   $('startPanel').hidden=mode!=='preview';
   $('result').hidden=true;
   accumulator=0;
@@ -115,7 +122,9 @@ function hud(){
   const rallying=game.phase==='flight';
   const ready=rallying&&canHit(game,0);
   const set=game.sets[0]+game.sets[1]+1;
-  $('scoring').textContent=mode==='practice'?'Practice':mode==='finished'?'Final':score.label||'Set '+set;
+  const level=LEVELS[game.difficulty].name;
+  const marker=mode==='practice'?'Practice':mode==='finished'?'Final':score.label||'Set '+set;
+  $('scoring').textContent=playing?marker+' · '+level:marker;
   $('pointsA').textContent=game.practice?game.practiceHits:score.left;
   $('pointsB').textContent=game.practice?'–':score.right;
   for(const [side,letter] of ['A','B'].entries()){
@@ -179,6 +188,10 @@ function bind(){
   for(const id of ['format','courtChoice','difficulty'])$(id).onchange=()=>{
     $('surfaceNote').textContent=surfaceNotes[Number($('courtChoice').value)];
     if(mode==='preview')setup('preview');
+  };
+  for(const choice of document.querySelectorAll('[name="startingDifficulty"]'))choice.onchange=()=>{
+    $('difficulty').value=choice.value;
+    $('difficulty').dispatchEvent(new Event('change'));
   };
   const open=()=>{
     if(!menu.open){clearInput();menu.showModal();}

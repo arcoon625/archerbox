@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tennis Rally · Archerbox</title>
-  <link rel="stylesheet" href="./style.css?v=tennis1">
+  <link rel="stylesheet" href="./style.css?v=difficulty1">
 </head>
 <body>
 <main class="tennis">
@@ -36,7 +36,16 @@
     <aside class="side" aria-label="Score and controls">
       <section id="startPanel" class="panel">
         <h2>Singles tennis</h2>
-        <p id="matchFormat">One set · Rookie · CPU opponent</p>
+        <p id="matchFormat">One set · CPU opponent</p>
+        <fieldset class="difficultyPicker" aria-describedby="difficultyHelp">
+          <legend>Choose difficulty</legend>
+          <div class="difficultyOptions">
+            <label><input type="radio" name="startingDifficulty" value="rookie" checked><span>Rookie</span></label>
+            <label><input type="radio" name="startingDifficulty" value="club"><span>Club</span></label>
+            <label><input type="radio" name="startingDifficulty" value="pro"><span>Pro</span></label>
+          </div>
+          <p id="difficultyHelp" class="small">Slower returns give you more time.</p>
+        </fieldset>
         <button id="play" class="primary" type="button">Start match →</button>
         <button id="practice" class="secondary" type="button">Practice rallies</button>
         <p id="record" class="small"></p>
@@ -80,7 +89,7 @@
     <button id="menuPractice" class="secondary" type="button">Practice rallies</button>
   </div>
 </dialog>
-<script type="module" src="./game.js?v=tennis1"></script>
+<script type="module" src="./game.js?v=difficulty1"></script>
 <script type="module" src="../../bridge.js"></script>
 </body>
 </html>
