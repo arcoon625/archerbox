@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {createGame,lineup,snap,step,action,endPlay,throwPass,punt,beginPlaceKick,PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey,direction} from '../public/games/touchdown-rush/rules.js';
+import {CPU_DEFENSE_CALL_SECONDS,createGame,lineup,snap,step,action,endPlay,throwPass,punt,beginPlaceKick,PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey,direction} from '../public/games/touchdown-rush/rules.js';
 import {makeRoom,readyPlayer,tickRoom,event,encodeRoom,publicRoom,safeInput} from '../server/matches.js';
 
 const added=PLAYS.filter(p=>p.new);
@@ -54,7 +54,7 @@ for(const team of [0,1]){
 // CPU play calling reaches every addition; fourth-down kick logic is preserved
 // by the separate football-kicks and football-placekicks regressions.
 for(const play of added){
- const g=createGame('rookie');g.offense=1;lineup(g);g.clock=120+SCRIMMAGE_PLAYS.findIndex(p=>p.id===play.id)-g.down;step(g,{},2.01);assert.equal(g.play,play.id);assert.equal(g.phase,'live');
+ const g=createGame('rookie');g.offense=1;lineup(g);g.clock=120+SCRIMMAGE_PLAYS.findIndex(p=>p.id===play.id)-g.down;step(g,{},CPU_DEFENSE_CALL_SECONDS+.01);assert.equal(g.play,play.id);assert.equal(g.phase,'live');
  if(play.kind==='run'){advance(g,1.3);assert.equal(g.ball,null,'CPU runs stay running plays');}
 }
 

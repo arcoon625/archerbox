@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {createGame,lineup,snap,step,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,direction} from '../public/games/touchdown-rush/rules.js';
+import {CPU_DEFENSE_CALL_SECONDS,createGame,lineup,snap,step,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,direction} from '../public/games/touchdown-rush/rules.js';
 import {GOALPOST,KICK_CLEARANCE,kickVelocity,goalCrossing,kickIsGood} from '../public/games/touchdown-rush/kicking.js';
 import {makeRoom,readyPlayer,tickRoom,event,encodeRoom,publicRoom,safeInput} from '../server/matches.js';
 const advance=(g,seconds)=>{for(let t=0;t<seconds;t+=1/120)step(g,{},1/120);};
@@ -27,7 +27,7 @@ for(const team of [0,1]){
  const h=setup(0);h.scores[0]=14;touchdown(h);assert.equal(h.scores[0],20);assert(!h.ended);advance(h,2.6);strikePlaceKick(h,0,.8);fly(h);assert.equal(h.scores[0],21);assert(h.ended);
  const last=setup(0);last.clock=0;last.scores[1]=7;touchdown(last);assert(!last.ended,'the extra point is still available with no time left');advance(last,2.6);strikePlaceKick(last,0,.8);fly(last);assert.deepEqual(last.scores,[7,7]);assert(!last.ended,'a tying extra point goes to overtime');
  const miss=setup(0);miss.clock=0;miss.scores[1]=7;touchdown(miss);advance(miss,2.6);strikePlaceKick(miss,1,.8);fly(miss);assert(miss.ended);assert.equal(miss.scores[0],6);
- const cpu=setup(1);cpu.down=4;advance(cpu,2.1);assert.equal(cpu.phase,'placekick-aim');advance(cpu,1.9);assert.equal(cpu.phase,'placekick-flight');fly(cpu);assert.equal(cpu.scores[1],3);
+ const cpu=setup(1);cpu.down=4;advance(cpu,CPU_DEFENSE_CALL_SECONDS+.1);assert.equal(cpu.phase,'placekick-aim');advance(cpu,1.9);assert.equal(cpu.phase,'placekick-flight');fly(cpu);assert.equal(cpu.scores[1],3);
  const practice=createGame();assert(practicePlaceKicks(practice));for(let i=0;i<8;i++){strikePlaceKick(practice,0,.8);fly(practice);advance(practice,2.6);}assert.equal(practice.scores[0],24);assert(!practice.ended);assert.equal(practice.clock,180);
 }
 // The server owns aim, scoring, and possession. Guest views preserve world

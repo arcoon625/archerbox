@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {TEAM_SIZE,PASS_TARGETS,lineup,createGame,snap,step,throwPass,action,endPlay,direction,switchDefender,strikePlaceKick} from '../public/games/touchdown-rush/rules.js';
+import {CPU_DEFENSE_CALL_SECONDS,TEAM_SIZE,PASS_TARGETS,lineup,createGame,snap,step,throwPass,action,endPlay,direction,switchDefender,strikePlaceKick} from '../public/games/touchdown-rush/rules.js';
 import {TEAMS,findTeams,jerseyNumber,rosterNumbers,captainNumber,defaultNumbers,teamById} from '../public/games/touchdown-rush/teams.js';
 import {ROSTERS,teamRoster,realNumbers} from '../public/games/touchdown-rush/rosters.js';
 const advance=(g,seconds,input={})=>{for(let t=0;t<seconds;t+=1/120)step(g,input,1/120)};
@@ -39,7 +39,7 @@ function convert(g){advance(g,2.6);assert.equal(g.phase,'placekick-aim');strikeP
  const scores=[];for(const mode of ['rookie','pro','allstar']){const g=createGame(mode);snap(g,'deep');throwPass(g,1);advance(g,10,{z:-1,sprint:true});scores.push(g.scores[0])}
  assert.equal(scores[0],6);assert.equal(scores[1],0);assert.equal(scores[2],0,'elite defense stops the old straight pass-and-sprint touchdown');
  for(const mode of ['rookie','pro','allstar'])for(const play of ['deep','slant','run']){
-  const g=createGame(mode);g.offense=1;g.line=-30;g.goal=-20;lineup(g);advance(g,2.1);assert.equal(g.phase,'live');advance(g,8);for(const a of g.actors){assert(Number.isFinite(a.x)&&Number.isFinite(a.z));assert(Math.abs(a.x)<=25.3&&Math.abs(a.z)<=58)}assert(g.clock<180,'CPU plays advance the match');
+  const g=createGame(mode);g.offense=1;g.line=-30;g.goal=-20;lineup(g);advance(g,CPU_DEFENSE_CALL_SECONDS+.1);assert.equal(g.phase,'live');advance(g,8);for(const a of g.actors){assert(Number.isFinite(a.x)&&Number.isFinite(a.z));assert(Math.abs(a.x)<=25.3&&Math.abs(a.z)<=58)}assert(g.clock<180,'CPU plays advance the match');
  }
 }
 {

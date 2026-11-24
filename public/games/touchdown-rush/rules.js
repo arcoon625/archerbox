@@ -7,6 +7,8 @@ import {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane} from './playbook.js?
 export {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey} from './playbook.js?v=runlanes1';
 import {GOALPOST,KICK_CLEARANCE,KICK_DROP,POINTS_TO_WIN,kickVelocity,kickPosition,goalCrossing,kickIsGood,kickDistance} from './kicking.js?v=placekicks1';
 export {kickDistance} from './kicking.js?v=placekicks1';
+import {DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defensiveAlignment,zoneTarget} from './defense.js?v=defense1';
+export {DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defenseForKey} from './defense.js?v=defense1';
 export const TEAM_SIZE=11;
 export const PASS_TARGETS=[1,2,3,4,5];
 export const JERSEYS=[12,7,21,11,88,26,72,65,56,68,77,8,24,31,18,44,27,90,53,59,22,33];
@@ -47,18 +49,31 @@ function assignSpecialTeams(g,kind){
   substituteUnit(g,team,plans).forEach((plan,i)=>setIdentity(g,g.actors[team*TEAM_SIZE+i],plan,'specialTeams'));
  }
 }
+const defenseCall=g=>g.defenseCalls?.[1-g.offense]||'man';
+function alignDefense(g){
+ const d=direction(g.offense),team=1-g.offense,call=defenseCall(g),front=g.defensiveFront??0;
+ for(let slot=0;slot<TEAM_SIZE;slot++){
+  const a=g.actors[team*TEAM_SIZE+slot],[x,depth]=defensiveAlignment(call,front,slot);
+  a.x=x;a.z=call==='man'?g.line+d*depth:clamp(g.line+d*depth,-49,49);a.yaw=d<0?Math.PI:0;
+ }
+}
+export function chooseDefense(g,play,team=0){
+ if(g.ended||g.phase!=='ready'||team!==1-g.offense||!DEFENSIVE_PLAYS.some(call=>call.id===play))return false;
+ g.defenseCalls??=['man','man'];
+ g.defenseCalls[team]=play;
+ alignDefense(g);
+ return true;
+}
 export function lineup(g){
- const d=direction(g.offense),o=g.offense*TEAM_SIZE,f=(1-g.offense)*TEAM_SIZE;
+ const d=direction(g.offense),o=g.offense*TEAM_SIZE;
  const ox=[0,-19,19,-10,10,2,-5.6,-2.8,0,2.8,5.6],oz=[-5,0,0,-.8,0,-7,-.7,-.7,-.7,-.7,-.7],or=['QB','WR','WR','WR','TE','RB','LT','LG','C','RG','RT'];
  // Fronts vary between downs. Wide fronts leave room inside; pinched fronts
  // invite a cut outside. Every defender remains an ordinary, solid player.
  g.defensiveFront=(g.snapSerial||0)%4;
- const front=[[-6,-2,2,6],[-7.2,-3.7,3.7,7.2],[-5.2,-1.1,1.1,5.2],[-6.8,-3.3,3.3,6.8]][g.defensiveFront];
- const dx=[...front,10,0,-10,-19,19,-8,8],dz=[1.8,1.8,1.8,1.8,6,7,6,3.8,3.8,16,16],dr=['DE','DT','DT','DE','LB','LB','LB','CB','CB','S','S'];
  for(let i=0;i<TEAM_SIZE;i++){
   const a=g.actors[o+i];a.x=ox[i];a.z=g.line+d*oz[i];a.yaw=d<0?0:Math.PI;a.role=or[i];
-  const b=g.actors[f+i];b.x=dx[i];b.z=g.line+d*dz[i];b.yaw=d<0?Math.PI:0;b.role=dr[i];
  }
+ alignDefense(g);
  assignPlayers(g);g.finishContact=null;g.tacklePose=null;g.finishAttempted=false;g.runFit=null;g.scramble=null;g.returnPlay=null;g.placeKick=null;g.passResult=null;
  g.carrier=o;g.control=g.offense===0?0:closestDefender(g);if(g.multiplayer){g.controls=[0,0];for(const team of [0,1])g.controls[team]=team===g.offense?o:closestDefender(g,team);g.control=g.controls[0];}g.selected=o+1;g.ball=null;g.playTime=0;g.phaseTime=0;g.phase='ready';
 }
@@ -191,7 +206,7 @@ export function closestDefender(g,team=0){const a=g.actors[g.carrier];return g.a
 export function switchDefender(g,team=0){if(g.offense===team)return;const id=closestDefender(g,team);if(g.multiplayer){g.controls[team]=id;g.control=g.controls[0]}else g.control=id}
 export function action(g,team=0){const control=g.multiplayer?g.controls[team]:g.control;
  if(g.phase==='placekick-aim'){if(g.offense===team)strikePlaceKick(g);return;}
- if(g.phase==='ready'){if(g.offense===team)snap(g,g.play);return}
+ if(g.phase==='ready'){if(g.offense===team)snap(g,g.play);else if(!g.multiplayer&&team===0)callCpuOffense(g);return}
  if(g.phase!=='live')return;
  if(g.offense===team){if(passing(g))throwPass(g);else{const a=g.actors[control];if(a.cooldown<=0){a.juke=Math.max(a.juke,DIFFICULTIES[g.difficulty].jukeDuration);a.cooldown=2.4;g.event='JUKE!';g.detail='A quick burst past the defense.'}}}
  else{const a=g.actors[control],b=g.actors[g.carrier];if(a.cooldown<=0){a.cooldown=.65;if(distance(a,b)<3.3*tackleFactor(a)&&b.juke<=0&&tackleClear(g,a,b)){attemptTackle(g,a)}else{g.event=a.blockedBy!=null?'BLOCKED!':'GET CLOSER';g.detail='Work around the blockers, then tackle within three yards.'}}}
@@ -383,13 +398,23 @@ function cpuQuarterback(g,cfg,qb,defenders,d){
  return elapsed>=cfg.throwTime&&throwPass(g,cpuReceiver(g,defenders,d));
 }
 
+function callCpuOffense(g){
+ if(g.down===4){
+  if(kickDistance(g.line,direction(g.offense))<=58)beginPlaceKick(g);
+  else punt(g);
+ }else snap(g,SCRIMMAGE_PLAYS[(g.down+Math.floor(g.clock))%SCRIMMAGE_PLAYS.length].id);
+}
+
 export function step(g,input,dt){
  if(g.ended)return;g.phaseTime+=dt;
  if(['placekick-aim','placekick-flight'].includes(g.phase)){stepPlaceKick(g,dt);return;}
  if(g.phase==='kick'){stepKick(g,dt);return}
- if(g.phase==='ready'){if(!g.multiplayer&&g.offense===1&&g.phaseTime>2){if(g.down===4){if(kickDistance(g.line,direction(g.offense))<=58)beginPlaceKick(g);else punt(g);}else snap(g,SCRIMMAGE_PLAYS[(g.down+Math.floor(g.clock))%SCRIMMAGE_PLAYS.length].id);}return}
+ if(g.phase==='ready'){
+  if(!g.multiplayer&&g.offense===1&&g.phaseTime>=CPU_DEFENSE_CALL_SECONDS)callCpuOffense(g);
+  return;
+ }
  if(g.phase==='dead'){if(g.phaseTime>2.5){if(g.practiceKicks){practicePlaceKicks(g);return;}if(g.pendingTry){beginPlaceKick(g,'extraPoint');return;}if(g.pendingKickoff){kickoff(g);return}g.offense=g.nextOffense;g.line=g.nextLine;g.down=g.nextDown;g.goal=g.nextGoal;lineup(g);g.event=g.offense===0?'YOUR BALL':'DEFEND YOUR END ZONE';g.detail=g.offense===0?'Pick a play to snap the ball.':g.teamNames[1]+' are calling a play. Get ready!'}return}
- g.clock=Math.max(0,g.clock-dt);g.playTime+=dt;ageBlocks(g,dt);const cfg=DIFFICULTIES[g.difficulty],d=direction(g.offense),o=g.offense*TEAM_SIZE,f=(1-g.offense)*TEAM_SIZE,carrier=g.actors[g.carrier],blockers=blockingUnit(g),defenders=g.actors.slice(f,f+TEAM_SIZE),targets=blockAssignments(g,blockers,defenders),before=g.actors.map(a=>({x:a.x,z:a.z})),run=RUN_PLAYS[g.play];
+ g.clock=Math.max(0,g.clock-dt);g.playTime+=dt;ageBlocks(g,dt);const cfg=DIFFICULTIES[g.difficulty],call=defenseCall(g),d=direction(g.offense),o=g.offense*TEAM_SIZE,f=(1-g.offense)*TEAM_SIZE,carrier=g.actors[g.carrier],blockers=blockingUnit(g),defenders=g.actors.slice(f,f+TEAM_SIZE),targets=blockAssignments(g,blockers,defenders),before=g.actors.map(a=>({x:a.x,z:a.z})),run=RUN_PLAYS[g.play];
  for(const a of g.actors){a.juke=Math.max(0,a.juke-dt);a.cooldown=Math.max(0,a.cooldown-dt);a.moving=0}
  for(const control of g.multiplayer?g.controls:[g.control]){const user=g.actors[control],controls=typeof input==='function'?input(user.team):input;let ix=controls.x||0,iz=controls.z||0,l=Math.max(1,Math.hypot(ix,iz));ix/=l;iz/=l;const sprint=controls.sprint&&user.stamina>0&&Math.hypot(ix,iz)>.1;user.stamina=clamp(user.stamina+(sprint?-22:17)*dt,0,100);const speed=cfg.playerSpeed*(sprint?1.28:1)*(user.juke>0?1.2:1);
  if(g.phase==='live'||g.offense===1||(g.multiplayer&&user.team!==g.offense)){const movePlayer=user.team===g.offense?move:moveDefender;movePlayer(user,user.x+ix*10,user.z+iz*10,speed*(run&&user.id===g.carrier?1.06:1),dt,blockers);}}
@@ -410,13 +435,17 @@ export function step(g,input,dt){
    else {const k=a.id-o,speed=g.offense===0?7.2:cfg.cpuRunnerSpeed,route=routePoint(g.play,k,g.playTime,speed*speedFactor(a));let tx=[0,-21,21,-10,10,5][k],tz=g.line+d*Math.min(43,g.playTime*speed*speedFactor(a));if(k===5){tx=-6;tz=g.line+d*Math.min(14,g.playTime*4)}if(k===4)tz=g.line+d*Math.min(30,g.playTime*6.2);if(g.play==='slant'){tx=[0,7,-7,13,-4,6][k];tz=g.line+d*Math.min(27,g.playTime*6.6)}if(route){tx=route.x;tz=g.line+d*route.depth;}if(g.phase==='flight'&&g.ball?.target===a.id&&(g.ball.spread<.5||g.ball.elapsed>.22)){tx=g.ball.to.x;tz=g.ball.to.z}move(a,tx,tz,speed,dt)}
   }else{
    if(g.playTime<(g.offense===0?cfg.reaction:.28))continue;const k=a.id%TEAM_SIZE,predict=g.offense===0?cfg.pursuit:.25;let target;
-   if(g.phase==='flight'){target=g.ball.to;}
+   const blitz=call==='blitz'&&k<7,zone=call==='zone'&&k>=4;
+   const pursuit={x:clamp(carrier.x+carrier.vx*predict,-24,24),z:carrier.z+carrier.vz*predict};
+   if(g.phase==='flight')target=zone?zoneTarget(k,g.line,d,g.ball.to):g.ball.to;
+   else if(blitz)target=pursuit;
    else if(run&&g.runFit&&g.playTime<g.runFit.readTime&&k<=6){
     const wide=g.runFit.front%2===1,pinch=g.runFit.front===2,lanes=wide?[-7,-3.8,3.8,7,10,4,-10]:[-6,-2,2,6,pinch?5:8,0,pinch?-5:-8];
     if(g.play==='qbSneak'&&wide)lanes[5]=g.runFit.front===1?1.2:-.8;
     target={x:lanes[k],z:g.line+d*(k<4?-.3:g.play==='qbSneak'&&wide&&k===5?6.5:4.5)};
    }
-   else if(g.carrier!==o||g.scramble?.committed||(run&&g.playTime>.45)||g.playTime>4.2||k<4){target={x:clamp(carrier.x+carrier.vx*predict,-24,24),z:carrier.z+carrier.vz*predict};}
+   else if(g.carrier!==o||g.scramble?.committed||(run&&g.playTime>.45)||k<4||(!zone&&g.playTime>4.2)||(zone&&(carrier.z-g.line)*d>1))target=pursuit;
+   else if(zone)target=zoneTarget(k,g.line,d);
    else if(k>=9){const r=g.actors[o+(k===9?1:2)];target={x:r.x*.65,z:Math.max(-49,Math.min(49,r.z+d*7))};}
    else {const assignment={4:4,5:5,6:3,7:1,8:2},r=g.actors[o+assignment[k]];target={x:clamp(r.x+r.vx*predict,-24,24),z:r.z+d*(g.offense===0&&g.difficulty!=='rookie'?.6:2.2)}}
    const ds=g.offense===0?cfg.defenderSpeed:cfg.teammateSpeed,path=detour(a,target,blockers);moveDefender(a,path.x,path.z,ds,dt,blockers);
