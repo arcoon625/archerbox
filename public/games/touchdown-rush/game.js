@@ -12,7 +12,7 @@ import {injuryTraining,isUnavailable} from './injuries.js?v=injuries1';
 import {connectMatch} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
-import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead} from './rules.js?v=athletes2';
+import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead} from './rules.js?v=scramble1';
 import {GOALPOST,KICK_CLEARANCE,kickVelocity,kickPosition,goalCrossing,kickIsGood} from './kicking.js?v=seasons1';
 import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=athletes2';
 import {TEAMS,DEFAULT_TEAM_ID,DEFAULT_OPPONENT_ID,findTeams,teamById,rosterNumbers,captainNumber} from './teams.js?v=realism2026';
@@ -218,7 +218,7 @@ function updateActors(time){
   m.position.set(a.x,0,a.z);m.rotation.set(0,a.yaw,0);
   animatePlayer(m,a,time,{
    ready:game.phase==='ready',blocking:a.blocking!=null||a.blockedBy!=null,carrier:hasBall,
-   quarterback:hasBall&&a.role==='QB'&&!RUN_PLAYS[game.play],
+   quarterback:hasBall&&a.role==='QB'&&!RUN_PLAYS[game.play]&&!game.scramble,
    catchReach:hasCatch?1:THREE.MathUtils.smoothstep(incoming,.54,.82),
    catchHeight:((hasCatch?result.y:pass?.y??1.6)-1.45)*1.15,
    catchTuck:hasCatch?THREE.MathUtils.smoothstep(game.phaseTime,.04,.33):0,
@@ -239,7 +239,7 @@ function updateActors(time){
   ball.position.set(pass.x,pass.y,pass.z).lerp(passOrigin,1-physicsWeight);
   flightDirection.set(pass.to.x-pass.from.x,-1.65+Math.cos(along*Math.PI)*Math.PI*pass.arc,pass.to.z-pass.from.z).normalize();
   ball.quaternion.setFromUnitVectors(spiralAxis,flightDirection);ball.rotateZ(Math.max(0,pass.elapsed-.19)*35);
- }else if(game.ball){ball.position.set(game.ball.x,game.ball.y,game.ball.z);ball.rotation.set(time*9,0,Math.PI/4)}else if(game.placeKick){ball.position.set(game.placeKick.from.x,.28,game.placeKick.from.z);ball.rotation.set(.12,0,Math.PI/2);}else{const m=views[game.carrier].mesh;m.updateMatrixWorld(true);m.userData.ballGrip.getWorldPosition(ball.position);ball.rotation.set(.25,m.rotation.y+(carrier.role==='QB'&&!RUN_PLAYS[game.play]?Math.PI/2:0),Math.PI/3)}
+ }else if(game.ball){ball.position.set(game.ball.x,game.ball.y,game.ball.z);ball.rotation.set(time*9,0,Math.PI/4)}else if(game.placeKick){ball.position.set(game.placeKick.from.x,.28,game.placeKick.from.z);ball.rotation.set(.12,0,Math.PI/2);}else{const m=views[game.carrier].mesh;m.updateMatrixWorld(true);m.userData.ballGrip.getWorldPosition(ball.position);ball.rotation.set(.25,m.rotation.y+(carrier.role==='QB'&&!RUN_PLAYS[game.play]&&!game.scramble?Math.PI/2:0),Math.PI/3)}
  if(celebration)renderCelebration();
  ring.visible=state!=='menu'&&!celebration&&!game.placeKick;ring.position.set(game.actors[game.control].x,.085,game.actors[game.control].z);ring.scale.setScalar(carrier.juke>0?1.25:1);scrimmage.visible=firstDown.visible=state!=='menu'&&!celebration&&game.phase!=='kick'&&!game.returnPlay&&!game.placeKick;
 }

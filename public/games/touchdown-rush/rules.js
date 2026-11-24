@@ -18,7 +18,7 @@ export const DIFFICULTIES={
 export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const direction=team=>team===0?-1:1;
 export const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
-const passing=g=>g.carrier===g.offense*TEAM_SIZE&&!RUN_PLAYS[g.play];
+const passing=g=>g.carrier===g.offense*TEAM_SIZE&&!RUN_PLAYS[g.play]&&!g.scramble?.committed;
 const statsFor=(g,team)=>g.statsByTeam?.[team]||(team===0?g.stats:null);
 const addStat=(g,team,key,amount=1)=>{const stats=statsFor(g,team);if(stats)stats[key]=(stats[key]||0)+amount;};
 const roundYards=n=>Math.round(n*10)/10;
@@ -59,7 +59,7 @@ export function lineup(g){
   const a=g.actors[o+i];a.x=ox[i];a.z=g.line+d*oz[i];a.yaw=d<0?0:Math.PI;a.role=or[i];
   const b=g.actors[f+i];b.x=dx[i];b.z=g.line+d*dz[i];b.yaw=d<0?Math.PI:0;b.role=dr[i];
  }
- assignPlayers(g);g.finishContact=null;g.tacklePose=null;g.finishAttempted=false;g.runFit=null;g.returnPlay=null;g.placeKick=null;g.passResult=null;
+ assignPlayers(g);g.finishContact=null;g.tacklePose=null;g.finishAttempted=false;g.runFit=null;g.scramble=null;g.returnPlay=null;g.placeKick=null;g.passResult=null;
  g.carrier=o;g.control=g.offense===0?0:closestDefender(g);if(g.multiplayer){g.controls=[0,0];for(const team of [0,1])g.controls[team]=team===g.offense?o:closestDefender(g,team);g.control=g.controls[0];}g.selected=o+1;g.ball=null;g.playTime=0;g.phaseTime=0;g.phase='ready';
 }
 export function snap(g,play='deep'){
@@ -73,19 +73,19 @@ export function snap(g,play='deep'){
 }
 // Arcade special teams: automatic catches put the player straight into the return.
 export function punt(g){
- if(g.ended||g.returnPlay||!['ready','live'].includes(g.phase)||g.carrier!==g.offense*TEAM_SIZE||(g.phase==='live'&&RUN_PLAYS[g.play]))return false;
+ if(g.ended||g.returnPlay||!['ready','live'].includes(g.phase)||g.carrier!==g.offense*TEAM_SIZE||(g.phase==='live'&&(RUN_PLAYS[g.play]||g.scramble?.committed)))return false;
  return kick(g,'punt');
 }
 export function kickoff(g){return g.ended?false:kick(g,'kickoff')}
 export function beginPlaceKick(g,kind='fieldGoal'){
  if(g.ended||!['fieldGoal','extraPoint'].includes(kind))return false;
- if(kind==='fieldGoal'&&(g.returnPlay||!['ready','live'].includes(g.phase)||g.carrier!==g.offense*TEAM_SIZE||(g.phase==='live'&&RUN_PLAYS[g.play])))return false;
+ if(kind==='fieldGoal'&&(g.returnPlay||!['ready','live'].includes(g.phase)||g.carrier!==g.offense*TEAM_SIZE||(g.phase==='live'&&(RUN_PLAYS[g.play]||g.scramble?.committed))))return false;
  if(kind==='extraPoint'&&(!g.pendingTry||g.phase!=='dead'))return false;
  const team=g.offense,d=direction(team),o=team*TEAM_SIZE;if(kind==='extraPoint')g.line=d*35;
  startMedicalPlay(g);assignSpecialTeams(g,kind);
  const from={x:kind==='extraPoint'?0:clamp(g.actors[g.carrier].x,-3.1,3.1),z:g.line-d*KICK_DROP};
  g.kickSequence=(g.kickSequence||0)+1;g.placeKick={id:g.kickSequence,kind,team,direction:d,kicker:o,holder:o+5,longSnapper:o+8,from,goalZ:d*GOALPOST.z,distance:kickDistance(g.line,d),aim:clamp(Math.atan2(d*from.x,Math.abs(d*GOALPOST.z-from.z))/.23,-1,1),power:.8};
- g.pendingTry=false;g.pendingKickoff=false;g.returnPlay=null;g.ball=null;g.carrier=o;g.phase='placekick-aim';g.phaseTime=0;
+ g.pendingTry=false;g.pendingKickoff=false;g.returnPlay=null;g.scramble=null;g.ball=null;g.carrier=o;g.phase='placekick-aim';g.phaseTime=0;
  for(const a of g.actors){a.blocking=a.blockedBy=null;a.blockRemaining=a.blockCooldown=a.moving=a.vx=a.vz=0;}
  for(let i=0;i<TEAM_SIZE;i++){const a=g.actors[o+i];a.x=(i-5)*1.5;a.z=g.line-d*.5;a.yaw=d<0?0:Math.PI;const b=g.actors[(1-team)*TEAM_SIZE+i];b.x=(i-5)*1.8;b.z=g.line+d*2;b.yaw=d<0?Math.PI:0;}
  Object.assign(g.actors[o],{x:from.x-2*d,z:from.z-d*2.6});Object.assign(g.actors[o+5],{x:from.x+d*.65,z:from.z-d*.25});Object.assign(g.actors[o+8],{x:from.x,z:g.line-d*.5});
@@ -119,7 +119,7 @@ function kick(g,kind){
  g.finishContact=null;g.finishAttempted=false;
  const team=g.offense,d=direction(team),receivingTeam=1-team,returner=receivingTeam*TEAM_SIZE+1,kicker=team*TEAM_SIZE;
  startMedicalPlay(g);assignSpecialTeams(g,kind);
- g.placeKick=null;g.pendingTry=false;
+ g.placeKick=null;g.scramble=null;g.pendingTry=false;
  for(const a of g.actors){a.blocking=a.blockedBy=null;a.blockRemaining=a.blockCooldown=0;a.shedBlock=false;}
  if(kind==='kickoff'){g.line=-d*15;for(const a of g.actors){a.x=(a.id%TEAM_SIZE-5)*4;a.z=a.team===team?g.line-d*(a.id%2)*2:d*(25+(a.id%4)*5)}}
  const from=kind==='punt'?{x:g.actors[kicker].x,z:g.actors[kicker].z}:{x:0,z:g.line},to={x:kind==='punt'?clamp(from.x,-16,16):-8,z:kind==='punt'?g.line+d*45:d*47},r=g.actors[returner];r.x=to.x;r.z=clamp(to.z,-49,49);
@@ -152,7 +152,7 @@ export function throwPass(g,target=g.selected){
  g.passSequence=(g.passSequence||0)+1;const seed=g.passSequence*11+g.down*13,spread=rainSpread(g.weather,(read.pressure*8+moving*2.1+range*3.2)*accuracyFactor(a)+Math.max(0,75-(a.traits?.accuracy??75))*.035*(.35+range));
  const to={x:idealTo.x+Math.sin(seed*3.71+1.2)*spread,z:idealTo.z+Math.cos(seed*5.13+.7)*spread*.6*d};
  g.ball={kind:'pass',id:g.passSequence,fromTeam:g.offense,from:{x:a.x,z:a.z},idealTo,to,pressure:read.pressure,spread,arc:clamp(1.2+distance(a,to)*.11,1.7,6.5),target,elapsed:0,duration,x:a.x,y:1.65,z:a.z};
- addStat(g,g.offense,'passAttempts');g.passResult=null;g.phase='flight';g.phaseTime=0;g.event='BALL IN THE AIR';g.detail=read.pressure>.3?'PRESSURE! This throw may be off target.':read.risk==='RISKY'?'Risky throw — watch the defender in the passing lane!':'Watch your receiver make the catch.';return true;
+ addStat(g,g.offense,'passAttempts');g.scramble=null;g.passResult=null;g.phase='flight';g.phaseTime=0;g.event='BALL IN THE AIR';g.detail=read.pressure>.3?'PRESSURE! This throw may be off target.':read.risk==='RISKY'?'Risky throw — watch the defender in the passing lane!':'Watch your receiver make the catch.';return true;
 }
 function resolvePass(g,b,kind,point,receiver=null,defender=null,cause='ground'){
  if(b.resolved)return;b.resolved=true;const team=b.fromTeam??g.offense;
@@ -255,11 +255,16 @@ function tackleClear(g,a,carrier){
  const dx=carrier.x-a.x,dz=carrier.z-a.z,length=dx*dx+dz*dz;if(length<.001)return true;
  return !blockingUnit(g).some(b=>{const t=((b.x-a.x)*dx+(b.z-a.z)*dz)/length;return t>.05&&t<.95&&Math.hypot(b.x-a.x-dx*t,b.z-a.z-dz*t)<.57;});
 }
-function stopTackle(g,defender){addStat(g,defender.team,'tackles');endPlay(g,passing(g)?'sack':'tackle',defender);return true;}
+function stopTackle(g,defender){
+ const carrier=g.actors[g.carrier],behindLine=(carrier.z-g.line)*direction(g.offense)<0;
+ addStat(g,defender.team,'tackles');
+ endPlay(g,passing(g)||g.scramble&&behindLine?'sack':'tackle',defender);
+ return true;
+}
 export function attemptTackle(g,defender){
  if(g.phase!=='live'||g.ended)return false;
  if(g.finishContact){if(g.finishContact.defender===defender.id)return false;return stopTackle(g,defender);}
- const carrier=g.actors[g.carrier],running=RUN_PLAYS[g.play]||g.passResult?.kind==='complete'||g.returnPlay;
+ const carrier=g.actors[g.carrier],running=RUN_PLAYS[g.play]||g.scramble?.committed||g.passResult?.kind==='complete'||g.returnPlay;
  if(!g.finishAttempted&&running&&(carrier.z-g.line)*direction(g.offense)>=0){
   g.finishAttempted=true;const yards=finishYards(g,carrier,defender);
   if(yards){g.finishContact={carrier:carrier.id,defender:defender.id,fromZ:carrier.z,yards,started:g.playTime};g.event='FIGHTING FOR YARDS!';g.detail=carrier.shortName+' can drive for up to '+yards+' extra yards. Keep moving forward! A second defender can stop the run.';return false;}
@@ -294,6 +299,90 @@ export function endPlay(g,reason,tackler=null){
  g.returnPlay=null;
  if(reason!=='touchdown')finishMatch(g);
 }
+// Rate the best passing option with the same coverage and route checks the
+// player sees. An escape lane scores its narrowest point, not just its exit.
+function cpuReceiver(g,defenders,d,openOnly=false){
+ const o=g.offense*TEAM_SIZE;
+ let target=null,best=-Infinity;
+ for(const slot of PASS_TARGETS){
+  const r=g.actors[o+slot],depth=(r.z-g.line)*d,screen=g.play==='screen'&&slot===5;
+  if(openOnly&&(depth<3&&!screen||passRead(g,r.id).risk!=='OPEN'))continue;
+  const quality=Math.min(...defenders.map(a=>distance(a,r)))+depth*.12+(screen?6:0);
+  if(quality>best){best=quality;target=r.id;}
+ }
+ return target;
+}
+
+function escapeLane(qb,defenders,d){
+ let best=null;
+ for(const side of [-1,1]){
+  const x=clamp(qb.x+side*6.7,-21,21),z=qb.z-d*1.3;
+  if(Math.abs(x-qb.x)<4)continue;
+  let space=Infinity,upfield=Infinity;
+  for(const a of defenders){
+   const shield=a.blockedBy==null?0:1.1;
+   for(const t of [.32,.64,1]){
+    const lead=.54*t;
+    const dx=qb.x+(x-qb.x)*t-a.x-a.vx*lead;
+    const dz=qb.z+(z-qb.z)*t-a.z-a.vz*lead;
+    space=Math.min(space,Math.hypot(dx,dz)+shield);
+   }
+   upfield=Math.min(upfield,Math.hypot(x-a.x,z+d*4-a.z)+shield);
+  }
+  if(space<1.85||upfield<1.4)continue;
+  const score=space+Math.min(8,upfield)*.36;
+  if(!best||score>best.score)best={x,z,score};
+ }
+ return best;
+}
+
+// Only solo CPU passers use this. They keep their passing options during the
+// rollout, then become a regular runner once they commit upfield.
+function cpuQuarterback(g,cfg,qb,defenders,d){
+ const elapsed=g.playTime,athleticism=qb.traits?.speed??75;
+ const willingRunner=athleticism>=83||(g.snapSerial+g.down)%3===0;
+ if(g.scramble){
+  const escape=g.scramble,age=elapsed-escape.since;
+  const nearExit=Math.abs(qb.x-escape.x)<3.85;
+  const runRoom=nearExit&&defenders.every(a=>a.blockedBy!=null||(a.z-qb.z)*d<1||Math.abs(a.x-escape.x)>3.1-(athleticism-75)*.045);
+  if((qb.z-g.line)*d>=0||age>=.37&&runRoom&&willingRunner){
+   escape.upfield=true;escape.committed=true;
+   g.event='QB TAKES OFF!';
+   g.detail=qb.shortName+' tucks the ball and runs. Close the lane and make the tackle!';
+   return false;
+  }
+  if(Math.abs(qb.x-escape.x)<1.55||age>.76)escape.upfield=true;
+  if(age>=.23&&elapsed>=escape.nextRead){
+   escape.nextRead=elapsed+.11;
+   const open=cpuReceiver(g,defenders,d,true);
+   if(open!==null)return throwPass(g,open);
+   const rush=defenders.some(a=>a.blockedBy==null&&distance(qb,a)<2.65);
+   if(age>1.65||rush&&elapsed>=cfg.throwTime-.44)return throwPass(g,cpuReceiver(g,defenders,d));
+  }
+  return false;
+ }
+ const threatRadius=5.24+(athleticism-75)*.071+(willingRunner?.22:0);
+ const threatened=elapsed>=Math.max(.56,cfg.throwTime*.42)&&defenders.some(a=>{
+  const lead=a.blockedBy==null?.31:.13;
+  const dx=a.x+a.vx*lead-qb.x,dz=a.z+a.vz*lead-qb.z;
+  return Math.hypot(dx,dz)<threatRadius-(a.blockedBy==null?0:.55);
+ });
+ if(threatened){
+  if(elapsed>=cfg.throwTime*.71){
+   const open=cpuReceiver(g,defenders,d,true);
+   if(open!==null)return throwPass(g,open);
+  }
+  const lane=escapeLane(qb,defenders,d);
+  if(lane){
+   g.scramble={x:lane.x,z:lane.z,since:elapsed,nextRead:elapsed+.23,upfield:false,committed:false};
+   g.event='QB SCRAMBLE!';
+   g.detail=qb.shortName+' escapes the pocket. Stay with the receivers or close the running lane.';
+   return false;
+  }
+ }
+ return elapsed>=cfg.throwTime&&throwPass(g,cpuReceiver(g,defenders,d));
+}
+
 export function step(g,input,dt){
  if(g.ended)return;g.phaseTime+=dt;
  if(['placekick-aim','placekick-flight'].includes(g.phase)){stepPlaceKick(g,dt);return;}
@@ -307,8 +396,11 @@ export function step(g,input,dt){
  for(const a of g.actors){
   if(g.multiplayer?g.controls.includes(a.id):a.id===g.control)continue;
   if(a.team===g.offense){
-   if(a.id===g.carrier&&(g.carrier!==o||run)){if(g.play==='qbDraw'&&g.playTime<.45){move(a,0,g.line-d*5,3,dt);continue;}const near=[...defenders].filter(b=>b.blockedBy==null).sort((b,c)=>distance(a,b)-distance(a,c))[0];let tx=run&&(a.z-g.line)*d<5?runLane(g.play,g.playTime):a.x;if(near&&distance(a,near)<5)tx=clamp(a.x+(a.x>=near.x?5:-5),-22,22);move(a,tx,a.z+d*10,(g.offense===0?7.3:cfg.cpuRunnerSpeed)*(run?1.06:1),dt)}
-   else if(a.id===o){move(a,0,g.line-d*5,3,dt)}
+   if(a.id===g.carrier&&(g.carrier!==o||run||g.scramble?.upfield)){if(g.play==='qbDraw'&&g.playTime<.45){move(a,0,g.line-d*5,3,dt);continue;}const near=[...defenders].filter(b=>b.blockedBy==null).sort((b,c)=>distance(a,b)-distance(a,c))[0];let tx=run&&(a.z-g.line)*d<5?runLane(g.play,g.playTime):a.x;if(near&&distance(a,near)<5)tx=clamp(a.x+(a.x>=near.x?5:-5),-22,22);move(a,tx,a.z+d*10,(g.offense===0?7.3:cfg.cpuRunnerSpeed)*(run?1.06:1),dt)}
+   else if(a.id===o){
+    if(g.scramble)move(a,g.scramble.x,g.scramble.z,cfg.cpuRunnerSpeed*.98,dt);
+    else move(a,0,g.line-d*5,3,dt);
+   }
    else if(targets.has(a.id)){
     const enemy=targets.get(a.id),k=a.id-o-6;
     if(a.blocking!=null){const length=Math.max(.01,distance(a,enemy));move(a,enemy.x-(enemy.x-a.x)/length*BODY_DISTANCE,enemy.z-(enemy.z-a.z)/length*BODY_DISTANCE,.65,dt);}
@@ -324,7 +416,7 @@ export function step(g,input,dt){
     if(g.play==='qbSneak'&&wide)lanes[5]=g.runFit.front===1?1.2:-.8;
     target={x:lanes[k],z:g.line+d*(k<4?-.3:g.play==='qbSneak'&&wide&&k===5?6.5:4.5)};
    }
-   else if(g.carrier!==o||(run&&g.playTime>.45)||g.playTime>4.2||k<4){target={x:clamp(carrier.x+carrier.vx*predict,-24,24),z:carrier.z+carrier.vz*predict};}
+   else if(g.carrier!==o||g.scramble?.committed||(run&&g.playTime>.45)||g.playTime>4.2||k<4){target={x:clamp(carrier.x+carrier.vx*predict,-24,24),z:carrier.z+carrier.vz*predict};}
    else if(k>=9){const r=g.actors[o+(k===9?1:2)];target={x:r.x*.65,z:Math.max(-49,Math.min(49,r.z+d*7))};}
    else {const assignment={4:4,5:5,6:3,7:1,8:2},r=g.actors[o+assignment[k]];target={x:clamp(r.x+r.vx*predict,-24,24),z:r.z+d*(g.offense===0&&g.difficulty!=='rookie'?.6:2.2)}}
    const ds=g.offense===0?cfg.defenderSpeed:cfg.teammateSpeed,path=detour(a,target,blockers);moveDefender(a,path.x,path.z,ds,dt,blockers);
@@ -332,7 +424,7 @@ export function step(g,input,dt){
  }
  resolveBlocks(g,blockers,defenders,dt);for(const a of g.actors){a.vx=(a.x-before[a.id].x)/dt;a.vz=(a.z-before[a.id].z)/dt;a.moving=Math.hypot(a.vx,a.vz);}
  if(g.phase==='flight'){stepPass(g,dt,before);return;}
- if(!g.multiplayer&&g.offense===1&&passing(g)&&g.playTime>cfg.throwTime){const options=PASS_TARGETS.map(k=>o+k);options.sort((a,b)=>{const quality=id=>Math.min(...defenders.map(r=>distance(r,g.actors[id])))+(g.actors[id].z-g.line)*d*.12+(g.play==='screen'&&id===o+5?6:0);return quality(b)-quality(a)});throwPass(g,options[0]);return}
+ if(!g.multiplayer&&g.offense===1&&passing(g)&&cpuQuarterback(g,cfg,carrier,defenders,d))return;
  const ballCarrier=g.actors[g.carrier];
  if(g.finishContact){const limit=g.finishContact.fromZ+d*g.finishContact.yards;if((ballCarrier.z-limit)*d>0)ballCarrier.z=limit;}
  if(ballCarrier.z*d>=50){endPlay(g,'touchdown');return}
