@@ -62,6 +62,7 @@ function backPanel(w,h,y,u0=0,v0=0,u1=1,v1=1,lift=.004){
 
 export function addHelmet(head,options,materials,canvasTexture){
  const {helmet,rubber,white,skin,cage}=materials,mark=options.mark||'AB',shellColor=options.helmetColor??options.teamColor;
+ const openMask=['QB','WR','CB','S','K','PK','P'].includes(options.role);
  const maskColors={DAL:0x7f8992,KC:0xe5e7e2,BUF:0xe5e7e2,IND:0x68747c,LV:0x626a70,NYJ:0x125740,LAC:0xffc20e,NO:0x20262b};
  const mask=new THREE.MeshStandardMaterial({color:maskColors[mark]??0x343e47,roughness:.40,metalness:.23});
  const stripe=new THREE.MeshStandardMaterial({color:mark==='DAL'?options.teamColor:mark==='KC'?0xf2f1e9:options.accent??0xf2f1e9,roughness:.32,metalness:.10});
@@ -71,7 +72,10 @@ export function addHelmet(head,options,materials,canvasTexture){
  const tube=(points,radius,material)=>add(cachedGeometry('tube:'+radius+':'+JSON.stringify(points),()=>new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),Math.max(8,points.length>20?points.length:points.length*4),radius,8,false)),material);
  const strap=(points,material)=>{for(let i=1;i<points.length;i++){const a=new THREE.Vector3(...points[i-1]),b=new THREE.Vector3(...points[i]),delta=b.clone().sub(a),m=add(new THREE.BoxGeometry(.024,delta.length(),.007),material);m.position.copy(a.add(b).multiplyScalar(.5));m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());}};
  shellTemplate??=shellGeometry();const shell=add(shellTemplate.shell.clone(),helmet);shell.name='Molded helmet shell with open ear ports and crown vents';add(shellTemplate.lining.clone(),pad);add(shellTemplate.rim.clone(),rubber);
- add(cachedGeometry('stripe:center',()=>paintStripe(0,.026)),stripe);for(const side of [-1,1])add(cachedGeometry('stripe:'+side,()=>paintStripe(side*.022,.005)),white);
+  if(options.custom||['DAL','KC','GB','PIT','BUF','CLE','MIA','NO','IND','LV','SF'].includes(mark)){
+  add(cachedGeometry('stripe:center',()=>paintStripe(0,.026)),stripe);
+  if(['DAL','BUF','SF','CLE','MIA'].includes(mark))for(const side of [-1,1])add(cachedGeometry('stripe:'+side,()=>paintStripe(side*.022,.005)),white);
+ }
  for(const side of [-1,1]){const edge=[];for(let i=0;i<=36;i++){const a=i/36*Math.PI*2,y=-.065+Math.cos(a)*.046,z=.014+Math.sin(a)*.052,x=side*(.268*Math.sqrt(1-((y-.015)/.292)**2-(z/(z>0?.347:.330))**2)+.0015);edge.push([x,y,z]);}tube(edge,.0035,rubber);}
  for(const vent of vents){const edge=[];for(let i=0;i<=28;i++){const a=i/28*Math.PI*2,x=vent.x+Math.cos(a)*vent.rx,z=vent.z+Math.sin(a)*vent.rz,y=.015+.292*Math.sqrt(1-(x/.268)**2-(z/(z>0?.347:.330))**2)+.0015;edge.push([x,y,z]);}tube(edge,.0025,rubber);}
  // Fitted interior padding sits behind the cutouts, not on top of the paint.
@@ -84,9 +88,9 @@ export function addHelmet(head,options,materials,canvasTexture){
  tube([[-.14,.137,-.275],[0,.144,-.305],[.14,.137,-.275]],.014,white);
  // Powder-coated cage: a large clear eye opening, curved cheek and chin rails.
  tube([[-.245,.065,-.125],[-.235,.108,-.25],[-.13,.115,-.337],[0,.118,-.352],[.13,.115,-.337],[.235,.108,-.25],[.245,.065,-.125]],.012,mask);
- for(const [y,z] of [[-.085,-.371],[-.19,-.356]])tube([[-.243,.025,-.14],[-.255,y+.025,-.26],[-.14,y,z],[0,y-.005,z-.012],[.14,y,z],[.255,y+.025,-.26],[.243,.025,-.14]],.012,mask);
+ for(const [y,z] of [[openMask?-.118:-.085,-.371],[-.19,-.356]])tube([[-.243,.025,-.14],[-.255,y+.025,-.26],[-.14,y,z],[0,y-.005,z-.012],[.14,y,z],[.255,y+.025,-.26],[.243,.025,-.14]],.012,mask);
  for(const side of [-1,1]){
-  tube([[side*.175,.113,-.318],[side*.185,-.032,-.35],[side*.175,-.19,-.35]],.011,mask);
+  tube(openMask?[[side*.228,.108,-.271],[side*.200,-.036,-.33],[side*.174,-.19,-.35]]:[[side*.175,.113,-.318],[side*.185,-.032,-.35],[side*.175,-.19,-.35]],.011,mask);
   tube([[side*.25,.035,-.155],[side*.267,-.082,-.19],[side*.225,-.177,-.275]],.011,mask);
   if(['LT','LG','C','RG','RT','DT','DE','LB'].includes(options.role))tube([[side*.075,-.088,-.381],[side*.08,-.195,-.369]],.010,mask);
   // Mask clips, slotted screws and four flat chin straps with snap fasteners.
@@ -102,7 +106,10 @@ export function addHelmet(head,options,materials,canvasTexture){
   const dark=new THREE.Color(shellColor??0x101820).getHSL({}).l>.48;c.fillStyle=dark?'#12263b':'#f4f4ed';c.textAlign='center';c.textBaseline='middle';c.font='900 82px Arial';c.fillText(mark,128,128,224);
   c.fillStyle='#18262e';c.font='900 35px Arial';c.fillText(mark,384,64,224);
  });
- if(atlas&&options.custom)teamLogoImage(options).then(image=>{if(image&&!atlas.userData.disposed){const c=atlas.image.getContext('2d');c.clearRect(0,0,256,256);drawTeamLogo(c,image,12,12,232,232);atlas.needsUpdate=true;}});
- if(atlas){const decal=new THREE.MeshStandardMaterial({map:atlas,transparent:true,depthWrite:false,roughness:.42,polygonOffset:true,polygonOffsetFactor:-1});for(const side of [-1,1])add(cachedGeometry('decal:'+side,()=>sideDecal(side)),decal);add(cachedGeometry('bumper:decal',()=>backPanel(.21,.028,-.128,.5,.5,1,1,.005)),decal);}
+ if(atlas)teamLogoImage(options).then(image=>{if(image&&!atlas.userData.disposed){const c=atlas.image.getContext('2d');c.clearRect(0,0,256,256);drawTeamLogo(c,image,12,12,232,232);atlas.needsUpdate=true;}});
+ if(atlas){const decal=new THREE.MeshStandardMaterial({map:atlas,transparent:true,depthWrite:false,roughness:.42,polygonOffset:true,polygonOffsetFactor:-1});for(const side of [-1,1]){
+  const logo=add(cachedGeometry('decal:'+side,()=>sideDecal(side)),decal);logo.castShadow=false;
+ }
+ const bumperText=add(cachedGeometry('bumper:decal',()=>backPanel(.21,.028,-.128,.5,.5,1,1,.005)),decal);bumperText.castShadow=false;}
  return {shell,mask};
 }

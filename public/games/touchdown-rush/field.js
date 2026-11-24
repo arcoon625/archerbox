@@ -45,8 +45,14 @@ export function makeField(cfg,home){
  const turf=new THREE.Mesh(new THREE.PlaneGeometry(64,132),new THREE.MeshStandardMaterial({map:texture,roughness:1}));turf.rotation.x=-Math.PI/2;turf.position.y=.014;turf.receiveShadow=true;turf.name='Striped grass, painted home end zones and regulation markings';root.add(turf);
  // A tiny repeating height map keeps the surface from reading as glossy paint.
  const fibers=document.createElement('canvas');fibers.width=fibers.height=128;const f=fibers.getContext('2d');f.fillStyle='#888';f.fillRect(0,0,128,128);
- for(let i=0;i<2500;i++){const x=(i*73)%128,y=(i*47)%128;f.fillStyle=i%2?'#b1b1b1':'#5d5d5d';f.fillRect(x,y,1,2);}
- const bump=new THREE.CanvasTexture(fibers);bump.wrapS=bump.wrapT=THREE.RepeatWrapping;bump.repeat.set(32,66);turf.material.bumpMap=bump;turf.material.bumpScale=.012;
+ let fiberSeed=1381;
+ const fiberRandom=()=>{fiberSeed=(Math.imul(fiberSeed,1664525)+1013904223)>>>0;return fiberSeed/4294967296;};
+ for(let i=0;i<3900;i++){
+  const x=fiberRandom()*128,y=fiberRandom()*128,length=1+fiberRandom()*3;
+  f.fillStyle=i%3===0?'#b3b3b3':i%3===1?'#797979':'#9b9b9b';
+  f.fillRect(x,y,.7,length);
+ }
+ const bump=new THREE.CanvasTexture(fibers);bump.wrapS=bump.wrapT=THREE.RepeatWrapping;bump.anisotropy=4;bump.repeat.set(32,66);turf.material.bumpMap=bump;turf.material.bumpScale=.008;
  const orange=new THREE.MeshStandardMaterial({color:0xf16c18,roughness:.92});
  for(const x of [-FIELD.width/2,FIELD.width/2])for(const z of [-60,-50,50,60]){const pylon=new THREE.Mesh(new THREE.BoxGeometry(1/6,.5,1/6),orange);pylon.position.set(x,.25,z);pylon.name='Foam end-zone pylon';root.add(pylon);}
  return root;

@@ -65,4 +65,16 @@ for(const team of [0,1])for(const play of added){
  const view=publicRoom(room,team?'b':'a').match;assert.equal(view.play,play.id);assert.equal(view.offense,0);assert.equal(view.carrier,play.kind==='run'?RUN_PLAYS[play.id].runner:0);assert.equal(view.control,view.carrier);if(play.kind==='pass')assert.equal(view.selected,play.target);
  const now=room.updatedAt+150;room.players.forEach(p=>p.seen=now);tickRoom(room,now);assert(room.match.actors.every(a=>Number.isFinite(a.x)&&Number.isFinite(a.z)));
 }
+{
+ const room=makeRoom(crypto.randomUUID(),{id:'a',name:'Archer'},{id:'b',name:'Nova'},0,10000,'touchdown-rush');
+ readyPlayer(room,'a',{},10000);readyPlayer(room,'b',{},10000);
+ room.players.forEach(p=>{p.seen=room.startAt;p.input=safeInput({},room.game);});
+ tickRoom(room,room.startAt);
+ const match=room.match;assert(snap(match,'qbSneak'));
+ const defender=match.actors.find(a=>a.team===1);
+ endPlay(match,'tackle',defender);
+ assert.deepEqual(publicRoom(room,'a').match.tacklePose,{carrier:0,tackler:defender.id});
+ assert.deepEqual(publicRoom(room,'b').match.tacklePose,{carrier:11,tackler:defender.id-11});
+ lineup(match);assert.equal(match.tacklePose,null);
+}
 console.log('New football plays passed: 14 preserved/expanded calls, seven distinct additions, unchanged old keys, curved pass leads/catches, QB keeper controls and tackles, counter paths, CPU calls and both friend seats.');

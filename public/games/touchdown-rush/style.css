@@ -50,3 +50,8 @@
 @media(max-width:800px){#athleteStudio{background:linear-gradient(180deg,#102b25a8,transparent 24%),linear-gradient(0deg,#102b25f5,transparent 65%)}#athleteStudio aside>label[for="studioPose"]{display:block;grid-column:1;margin:8px 0;align-self:center}#studioPose{display:block;grid-column:2;align-self:center;padding:7px}}
 
 @media(max-width:800px) and (max-height:740px){#hud:has(#playbook:not([hidden])) #broadcastCaption,#hud:has(#receivers:not([hidden])) #broadcastCaption{display:none}}
+
+#athleteStudio aside{max-height:calc(100% - 164px);overflow:auto;overflow-x:hidden;pointer-events:auto;padding-right:4px;scrollbar-width:thin}
+@media(max-width:800px){#athleteStudio aside{max-height:50%;padding-right:0}#athleteStudio aside>label[for="studioHelmet"]{display:block;grid-column:1;margin:8px 0;align-self:center}#studioHelmet{grid-column:2;align-self:center;padding:7px}}
+
+@media(min-width:801px) and (max-height:780px){#athleteStudio aside{top:130px;max-height:calc(100% - 150px)}#athleteStudio aside>label{margin:10px 0 5px}#athleteStudio h3{margin:16px 0 6px}#studioMeasurements{margin:12px 0 2px}.studioRotate{margin-top:9px}}

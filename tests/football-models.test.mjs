@@ -18,6 +18,18 @@ for(const [i,t] of TEAMS.entries()){
  dispose(model);
 }
 const runner=makePlayer(0x003594,88,{role:'WR'}),lineman=makePlayer(0x003594,73,{role:'LT'});assert(lineman.userData.bulk>runner.userData.bulk);
+const rig=runner.userData,grip=new Vector3();
+animatePlayer(runner,{moving:0,role:'QB'},2,{quarterback:true,throwTime:.085});
+rig.ballGrip.getWorldPosition(grip);const windup=grip.clone();
+animatePlayer(runner,{moving:0,role:'QB'},2.12,{throwTime:.205});
+rig.ballGrip.getWorldPosition(grip);assert(grip.z<windup.z-.24,'the hand carries the ball forward from a windup to release');
+animatePlayer(runner,{moving:7,role:'WR'},3,{catchReach:1,catchHeight:.7});
+rig.ballGrip.getWorldPosition(grip);const reaching=grip.clone();
+animatePlayer(runner,{moving:7,role:'WR'},3.25,{catchReach:1,catchHeight:.7,catchTuck:1});
+rig.ballGrip.getWorldPosition(grip);assert(reaching.z<grip.z-.08,'the receiver brings the ball back toward their chest');
+animatePlayer(runner,{moving:0,role:'WR'},4,{tackle:{time:.62,side:1,role:'carrier'}});
+assert(runner.rotation.x<-1,'the tackle follows through toward the turf');
+runner.rotation.set(0,0,0);runner.position.y=0;
 const game=createGame(),snapshot=JSON.stringify(game);
 for(const celebration of CELEBRATIONS)for(let t=0;t<=6;t+=.15){const p=celebrationPose(celebration.id,t);celebrationJoints(runner,celebration.id,t);for(let i=0;i<2;i++){runner.userData.arms[i].rotation.set(...p.arms[i]);runner.userData.legs[i].rotation.set(...p.legs[i]);}runner.updateMatrixWorld(true);runner.userData.ballGrip.getWorldPosition(new Vector3());assert(runner.userData.elbows.every(e=>Number.isFinite(e.rotation.x)));}
 assert.equal(JSON.stringify(game),snapshot);dispose(runner);dispose(lineman);

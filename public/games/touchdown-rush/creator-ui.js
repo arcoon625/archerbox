@@ -1,5 +1,5 @@
 import {MAX_TEAMS,MAX_PLAYERS,CRESTS,POSITIONS,SKIN_TONES,PALETTES,newId,crestUrl,normalizeTeam,normalizePlayer,allTeams,resolveTeam,validatePlayerSlot,createdTraits} from './creator-data.js?v=accuracy1';
-import {createPreview} from './creator-preview.js?v=preview2';
+import {createPreview} from './creator-preview.js?v=athletes2';
 
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function setupCreators({getData,getTeam,commit,onSelectTeam,onSpotlight,onOpen=()=>{},onClose=()=>{}}){

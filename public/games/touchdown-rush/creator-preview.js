@@ -1,6 +1,6 @@
 import * as THREE from '../../vendor/three.module.js';
-import {makePlayer,animatePlayer} from './players.js?v=creators1';
-import {dispose} from './scene.js?v=creators1';
+import {makePlayer,animatePlayer} from './players.js?v=athletes2';
+import {dispose} from './scene.js?v=athletes2';
 import {playerProfile} from './creator-data.js?v=accuracy1';
 
 // Keep one renderer for this canvas. Tabs pause it instead of destroying its

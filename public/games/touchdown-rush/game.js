@@ -6,21 +6,21 @@ import {createCoinRun} from '../../economy/wallet.js?v=rarecoins1';
 let coinRun=createCoinRun('touchdown-rush');
 import {setupBroadcast} from './broadcast-ui.js?v=studio3';
 import {playerTraits,traitStrengths,traitWeaknesses,TRAITS_CHECKED} from './traits.js?v=realism2026';
-import {athleteProfile} from './athlete-detail.js?v=realism2026';
+import {athleteProfile} from './athlete-detail.js?v=athletes2';
 import {gameRoster} from './classic.js?v=traits1';
 import {injuryTraining,isUnavailable} from './injuries.js?v=injuries1';
 import {connectMatch} from '../../multiplayer/client.js?v=restart1';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
-import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead} from './rules.js?v=seasons1';
+import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead} from './rules.js?v=athletes2';
 import {GOALPOST,KICK_CLEARANCE,kickVelocity,kickPosition,goalCrossing,kickIsGood} from './kicking.js?v=seasons1';
-import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=creators1';
+import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=athletes2';
 import {TEAMS,DEFAULT_TEAM_ID,DEFAULT_OPPONENT_ID,findTeams,teamById,rosterNumbers,captainNumber} from './teams.js?v=realism2026';
 import {teamRoster,realNumbers,ROSTER_CHECKED} from './rosters.js?v=injuries1';
 import {SPECIAL_TEAMS_CHECKED} from './special-teams.js?v=specialists1';
 import {CELEBRATIONS,CELEBRATION_DURATION,celebrationById,celebrationPose} from './celebrations.js?v=1';
 import {readCreations,saveCreations,restoreCreations,allTeams,resolveTeam,rosterForTeam} from './creator-data.js?v=accuracy1';
-import {setupCreators} from './creator-ui.js?v=preview2';
+import {setupCreators} from './creator-ui.js?v=athletes2';
 let creations;try{creations=readCreations(localStorage);}catch{creations=restoreCreations({});}let creators=null,remoteCreations=null;
 const creationData=()=>remoteCreations||creations;
 const escapeHtml=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -33,7 +33,23 @@ canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();graphicsLost=t
 canvas.addEventListener('webglcontextrestored',()=>{graphicsLost=false;clearTimeout(graphicsRecoveryTimer);last=performance.now();});
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.98;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,350),ambient=new THREE.HemisphereLight(0xe5f1ff,0x536b46,2.2);scene.add(ambient);
-const sun=new THREE.DirectionalLight(0xffeed1,3.1);sun.position.set(-28,65,35);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.normalBias=.035;Object.assign(sun.shadow.camera,{left:-65,right:65,top:85,bottom:-85,far:160});scene.add(sun);
+const sun=new THREE.DirectionalLight(0xffeed1,3.1),sunOffset=new THREE.Vector3(-28,65,35);
+sun.position.copy(sunOffset);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+sun.shadow.normalBias=.016;sun.shadow.bias=-.00016;
+Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,near:1,far:135});sun.shadow.camera.updateProjectionMatrix();
+const bounce=new THREE.DirectionalLight(0xdce9ff,.34);bounce.position.set(18,12,-30);
+scene.add(sun,sun.target,bounce);
+
+let shadowRadius=65;
+function focusShadows(x,z,radius){
+ const step=radius*2/2048;
+ sun.target.position.set(Math.round(x/step)*step,0,Math.round(z/step)*step);
+ sun.position.copy(sun.target.position).add(sunOffset);
+ if(radius===shadowRadius)return;
+ shadowRadius=radius;
+ Object.assign(sun.shadow.camera,{left:-radius,right:radius,top:radius,bottom:-radius});
+ sun.shadow.camera.updateProjectionMatrix();
+}
 let park=0,playerTeam=teamById(DEFAULT_TEAM_ID),cpuTeam=teamById(DEFAULT_OPPONENT_ID),numbers=realNumbers(DEFAULT_TEAM_ID),customNumbers={},renderedOffense=0,difficulty='pro',world,views=[],game=createGame(),state='menu',keys={},touch={x:0,z:0,sprint:false},last=performance.now(),accumulator=0,lastEvent='',audio,cameraMode=0;let poseTime=0;
 const weatherScene=makeWeatherScene(scene,renderer,ambient,sun);
 let seasonClub=null,seasonFixtureId=null,seasonSaveTime=0;
@@ -48,8 +64,8 @@ function studioPlayers(){const r=selectedRoster(),all=[...r.offense,...r.defense
 function studioAthlete(){
  if(studioModel){scene.remove(studioModel);dispose(studioModel);}
  const p=studioPlayers().find(p=>p.id===$('studioPlayer').value)||studioPlayers()[0],number=p.id===selectedRoster().offense[0].id?numbers[0]:p.number;
- studioModel=makePlayer(playerTeam.color,number,{...playerTeam,playerId:p.id,playerName:p.name,role:p.position,customProfile:p.customProfile});studioModel.position.set(0,0,35);scene.add(studioModel);
- const profile=p.customProfile||athleteProfile(p.id,p.position);document.querySelector('#athleteStudio aside>small').textContent=p.created?'Your created player measurements':'2026 roster measurements';$('studioName').textContent=p.name;$('studioPosition').textContent=playerTeam.name+' · '+p.position+' · #'+number;
+ studioModel=makePlayer(playerTeam.color,number,{...playerTeam,playerId:p.id,playerName:p.name,role:p.position,customProfile:p.customProfile,spotlight:true});studioModel.position.set(0,0,35);scene.add(studioModel);
+ const profile=p.customProfile||athleteProfile(p.id,p.position);document.querySelector('#athleteStudio aside>small').textContent=p.created?'Your created player measurements':profile.measured?'2026 roster measurements':'Estimated measurements';$('studioName').textContent=p.name;$('studioPosition').textContent=playerTeam.name+' · '+p.position+' · #'+number;
  $('studioMeasurements').textContent=Math.floor(profile.height/12)+"′ "+profile.height%12+'″  /  '+profile.weight+' LB';studioYaw=Math.PI+.3;studioZoom=0;$('studioZoom').value='0';
 }
 function openStudio(){if(net)return;broadcast.suspend();keys={};state='studio';$('menu').hidden=true;$('hud').hidden=true;$('overlay').hidden=true;$('athleteStudio').hidden=false;$('studioPlayer').innerHTML=studioPlayers().map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} · ${escapeHtml(p.position)}</option>`).join('');studioAthlete();$('closeStudio').focus();}
@@ -63,7 +79,20 @@ function closeStudio(){
 function renderStudio(time){
  for(const v of views){v.mesh.visible=false;v.tag.hidden=true;}ball.visible=ring.visible=scrimmage.visible=firstDown.visible=false;
  if(!studioModel)return;const pose=$('studioPose').value,height=studioModel.userData.profile.heightYards;
- animatePlayer(studioModel,{id:0,moving:pose==='run'?7.5:0,role:studioModel.userData.role},time,{quarterback:pose==='throw',carrier:pose==='throw',throwTime:pose==='throw'?(time%2.5<.4?time%2.5:undefined):undefined});studioModel.rotation.y=studioYaw;
+ const t=time%2.6,rig=studioModel.userData,helmetOn=$('studioHelmet').value==='on';
+ rig.helmetRig.visible=helmetOn;rig.hairRig.visible=!helmetOn;
+ studioModel.position.set(0,0,35);studioModel.rotation.set(0,studioYaw,0);
+ animatePlayer(studioModel,{id:0,moving:pose==='run'?7.5:0,role:rig.role},time,{
+  quarterback:pose==='throw',carrier:pose==='throw',
+  throwTime:pose==='throw'&&t<.62?t:undefined,
+  catchReach:pose==='catch'?THREE.MathUtils.smoothstep(t,.25,.56):0,
+  catchHeight:.46,catchTuck:THREE.MathUtils.smoothstep(t,.68,1.15),
+  tackle:pose==='tackle'?{time:Math.max(0,t-.45),side:1,role:'tackler'}:null
+ });
+ if(pose==='throw'&&t<.205||pose==='catch'&&t>.57){
+  ball.visible=true;studioModel.updateMatrixWorld(true);rig.ballGrip.getWorldPosition(ball.position);
+  ball.rotation.set(.3,studioYaw,1);
+ }
  const fit=Math.max(1,.78/camera.aspect),z=(3.35*(1-studioZoom)+1.12*studioZoom)*fit,target=height*(.49*(1-studioZoom)+.88*studioZoom)-(innerWidth<800?.35*(1-studioZoom)+.15*studioZoom:0);
  camera.position.set(.14, target+.14,35+z);camera.lookAt(0,target,35);camera.updateMatrixWorld();
 }
@@ -173,13 +202,42 @@ $('injuryToggle').onclick=()=>{$('injuryPanel').hidden=!$('injuryPanel').hidden;
 $('closeInjuries').onclick=()=>{$('injuryPanel').hidden=true;$('injuryToggle').setAttribute('aria-expanded','false');$('injuryToggle').focus();};
 $('practiceInjury').onclick=()=>{if(net)return;start(true);if(injuryTraining(game)){$('injuryPanel').hidden=false;$('injuryToggle').setAttribute('aria-expanded','true');hud();updateActors(0);}};
 
+const spiralAxis=new THREE.Vector3(0,0,1),flightDirection=new THREE.Vector3(),passOrigin=new THREE.Vector3();
 function updateActors(time){
- game.actors.forEach((a,i)=>{const v=views[i];v.mesh.visible=!celebration||i===celebration.actor;v.mesh.position.set(a.x,0,a.z);v.mesh.rotation.set(0,a.yaw,0);animatePlayer(v.mesh,a,time,{ready:game.phase==='ready',blocking:a.blocking!=null||a.blockedBy!=null,carrier:a.id===game.carrier&&!game.ball,quarterback:a.id===game.carrier&&a.role==='QB'&&!game.ball&&!RUN_PLAYS[game.play],catching:(game.phase==='flight'&&game.ball.target===a.id&&game.ball.elapsed>game.ball.duration*.65)||(game.passResult?.kind==='interception'&&game.passResult.defender===a.id&&game.phase==='dead'&&game.phaseTime<.45),throwTime:game.phase==='flight'&&a.id===game.offense*TEAM_SIZE?game.ball.elapsed:undefined,kickTime:game.phase==='kick'&&a.id===game.carrier?game.ball.elapsed:undefined});
-  const injured=game.phase==='dead'&&isUnavailable(game,a.team,a.playerId);if(injured){const r=v.mesh.userData;v.mesh.position.y=-.42;r.upperBody.rotation.x=-.12;r.legs[0].rotation.x=.9;r.knees[0].rotation.x=-1.7;r.legs[1].rotation.x=-.2;r.knees[1].rotation.x=-.75;}
-  const p=new THREE.Vector3(a.x,2.75,a.z).project(camera);v.tag.hidden=state==='menu'||!!celebration||p.z<0||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1||(game.weather?.kind==='snow'&&Math.hypot(a.x-camera.position.x,a.z-camera.position.z)>26);v.tag.className='nameTag'+(a.id===game.control?' you':a.id===game.selected&&game.offense===0?' selected':'')+(a.blocking!=null?' blocking':'');v.tag.textContent=(a.id===game.control?'★ ':!game.specialTeams&&a.id===game.selected&&game.offense===0?'['+(a.id%TEAM_SIZE)+'] ':'')+a.shortName+' #'+a.jerseyNumber+(a.specialRole?' · '+a.specialRole:'')+(injured?' · SIDELINE':a.backupFor?' · SUB':a.blocking!=null?' · BLOCK':'');if(!v.tag.hidden){v.tag.style.left=(p.x+1)*innerWidth/2+'px';v.tag.style.top=(-p.y+1)*innerHeight/2+'px'}
+ const pass=game.ball?.kind==='pass'?game.ball:null,result=game.passResult;
+ const tackle=game.phase==='dead'&&!celebration?game.tacklePose:null;
+ const contactSide=tackle?Math.sign(game.actors[tackle.tackler].x-game.actors[tackle.carrier].x)||1:1;
+ game.actors.forEach((a,i)=>{
+  const v=views[i],m=v.mesh,hasBall=a.id===game.carrier&&!game.ball;
+  const hasCatch=(result?.kind==='complete'||result?.kind==='interception')&&hasBall&&game.phaseTime<.65;
+  const incoming=pass?.target===a.id?pass.elapsed/pass.duration:0;
+  const contactRole=a.id===tackle?.carrier?'carrier':a.id===tackle?.tackler?'tackler':null;
+  m.visible=!celebration||i===celebration.actor;
+  m.position.set(a.x,0,a.z);m.rotation.set(0,a.yaw,0);
+  animatePlayer(m,a,time,{
+   ready:game.phase==='ready',blocking:a.blocking!=null||a.blockedBy!=null,carrier:hasBall,
+   quarterback:hasBall&&a.role==='QB'&&!RUN_PLAYS[game.play],
+   catchReach:hasCatch?1:THREE.MathUtils.smoothstep(incoming,.54,.82),
+   catchHeight:((hasCatch?result.y:pass?.y??1.6)-1.45)*1.15,
+   catchTuck:hasCatch?THREE.MathUtils.smoothstep(game.phaseTime,.04,.33):0,
+   throwTime:pass&&a.id===game.offense*TEAM_SIZE?pass.elapsed:undefined,
+   kickTime:game.phase==='kick'&&a.id===game.carrier?game.ball.elapsed:undefined,
+   tackle:contactRole?{time:game.phaseTime,side:contactRole==='carrier'?-contactSide:contactSide,role:contactRole}:null
+  });
+  const injured=game.phase==='dead'&&isUnavailable(game,a.team,a.playerId);if(injured){const r=v.mesh.userData;v.mesh.position.y=-.30;v.mesh.rotation.x=v.mesh.rotation.z=0;r.upperBody.rotation.x=-.12;r.legs[0].rotation.x=.9;r.knees[0].rotation.x=-1.7;r.legs[1].rotation.x=-.2;r.knees[1].rotation.x=-.75;}
+  const labelHeight=contactRole?m.userData.profile.heightYards*(1-.67*THREE.MathUtils.smoothstep(game.phaseTime,.13,.64))+.35:m.userData.profile.heightYards+.38;
+  const p=new THREE.Vector3(a.x,labelHeight,a.z).project(camera);v.tag.hidden=state==='menu'||!!celebration||p.z<0||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1||(game.weather?.kind==='snow'&&Math.hypot(a.x-camera.position.x,a.z-camera.position.z)>26);v.tag.className='nameTag'+(a.id===game.control?' you':a.id===game.selected&&game.offense===0?' selected':'')+(a.blocking!=null?' blocking':'');v.tag.textContent=(a.id===game.control?'★ ':!game.specialTeams&&a.id===game.selected&&game.offense===0?'['+(a.id%TEAM_SIZE)+'] ':'')+a.shortName+' #'+a.jerseyNumber+(a.specialRole?' · '+a.specialRole:'')+(injured?' · SIDELINE':a.backupFor?' · SUB':a.blocking!=null?' · BLOCK':'');if(!v.tag.hidden){v.tag.style.left=(p.x+1)*innerWidth/2+'px';v.tag.style.top=(-p.y+1)*innerHeight/2+'px'}
  });
- if(game.placeKick){const p=game.placeKick;for(const id of [p.kicker,p.holder]){const a=game.actors[id],m=views[id].mesh;animatePlayer(m,a,time,{holdingKick:id===p.holder,kickTime:id===p.kicker&&game.ball?.placeKick?Math.max(0,game.ball.elapsed+.30):undefined});if(id===p.holder)m.position.y=-.36;}}
- const carrier=game.actors[game.carrier];if(game.phase==='dead'&&game.passResult?.kind==='incomplete'){const r=game.passResult,t=game.phaseTime;ball.position.set(r.x,.14+Math.max(0,r.y-.14)*Math.exp(-t*6)+Math.abs(Math.sin(t*10))*.35*Math.exp(-t*3),r.z);ball.rotation.set(.3,t*3,Math.PI/3);}else if(game.ball){ball.position.set(game.ball.x,game.ball.y,game.ball.z);ball.rotation.set(time*9,0,Math.PI/4)}else if(game.placeKick){ball.position.set(game.placeKick.from.x,.28,game.placeKick.from.z);ball.rotation.set(.12,0,Math.PI/2);}else{const m=views[game.carrier].mesh;m.updateMatrixWorld(true);m.userData.ballGrip.getWorldPosition(ball.position);ball.rotation.set(.25,m.rotation.y+(carrier.role==='QB'&&!RUN_PLAYS[game.play]?Math.PI/2:0),Math.PI/3)}
+ if(game.placeKick){const p=game.placeKick;for(const id of [p.kicker,p.holder]){const a=game.actors[id],m=views[id].mesh;animatePlayer(m,a,time,{holdingKick:id===p.holder,kickTime:id===p.kicker&&game.ball?.placeKick?Math.max(0,game.ball.elapsed+.30):undefined});}}
+ const carrier=game.actors[game.carrier];if(game.phase==='dead'&&game.passResult?.kind==='incomplete'){const r=game.passResult,t=game.phaseTime;ball.position.set(r.x,.14+Math.max(0,r.y-.14)*Math.exp(-t*6)+Math.abs(Math.sin(t*10))*.35*Math.exp(-t*3),r.z);ball.rotation.set(.3,t*3,Math.PI/3);}else if(pass){
+  const along=pass.elapsed/pass.duration;
+  const physicsWeight=THREE.MathUtils.smoothstep(pass.elapsed,.19,.36);
+  const thrower=views[game.offense*TEAM_SIZE].mesh;
+  thrower.userData.ballGrip.getWorldPosition(passOrigin);
+  ball.position.set(pass.x,pass.y,pass.z).lerp(passOrigin,1-physicsWeight);
+  flightDirection.set(pass.to.x-pass.from.x,-1.65+Math.cos(along*Math.PI)*Math.PI*pass.arc,pass.to.z-pass.from.z).normalize();
+  ball.quaternion.setFromUnitVectors(spiralAxis,flightDirection);ball.rotateZ(Math.max(0,pass.elapsed-.19)*35);
+ }else if(game.ball){ball.position.set(game.ball.x,game.ball.y,game.ball.z);ball.rotation.set(time*9,0,Math.PI/4)}else if(game.placeKick){ball.position.set(game.placeKick.from.x,.28,game.placeKick.from.z);ball.rotation.set(.12,0,Math.PI/2);}else{const m=views[game.carrier].mesh;m.updateMatrixWorld(true);m.userData.ballGrip.getWorldPosition(ball.position);ball.rotation.set(.25,m.rotation.y+(carrier.role==='QB'&&!RUN_PLAYS[game.play]?Math.PI/2:0),Math.PI/3)}
  if(celebration)renderCelebration();
  ring.visible=state!=='menu'&&!celebration&&!game.placeKick;ring.position.set(game.actors[game.control].x,.085,game.actors[game.control].z);ring.scale.setScalar(carrier.juke>0?1.25:1);scrimmage.visible=firstDown.visible=state!=='menu'&&!celebration&&game.phase!=='kick'&&!game.returnPlay&&!game.placeKick;
 }
@@ -197,7 +255,12 @@ function frame(now){requestAnimationFrame(frame);if(document.hidden||graphicsLos
  if(state==='playing'||state==='finished'||(state==='celebrating'&&!celebration?.preview))broadcast.observe(game);
  if(state==='celebrating'){celebration.elapsed+=dt;$('celebrationProgress').style.width=Math.max(0,100*(1-celebration.elapsed/CELEBRATION_DURATION))+'%';if(!net&&celebration.elapsed>=CELEBRATION_DURATION)endCelebration();}
  if(!['menu','studio','stadium'].includes(state))updateCamera(dt);
- if(state!=='paused')poseTime+=dt;if(state==='studio')renderStudio(poseTime);else if(state==='stadium')renderStadiumTour();else{ball.visible=true;updateActors(poseTime);}animateStadium(world,poseTime,game,reducedCrowdMotion.matches);weatherScene.update(game.weather,poseTime,camera,park,{active:['playing','paused','celebrating','finished'].includes(state),reducedMotion:reducedCrowdMotion.matches});renderer.render(scene,camera);frameRecovery.frameSucceeded();
+ if(state!=='paused')poseTime+=dt;if(state==='studio')renderStudio(poseTime);else if(state==='stadium')renderStadiumTour();else{ball.visible=true;updateActors(poseTime);}animateStadium(world,poseTime,game,reducedCrowdMotion.matches);weatherScene.update(game.weather,poseTime,camera,park,{active:['playing','paused','celebrating','finished'].includes(state),reducedMotion:reducedCrowdMotion.matches});const focus=game.actors[game.control];
+ if(state==='studio')focusShadows(0,35,11);
+ else if(state==='stadium'||cameraMode===2)focusShadows(0,0,65);
+ else if(state==='menu')focusShadows(0,35,31);
+ else focusShadows(game.ball?.x??focus.x,game.ball?.z??focus.z,43);
+ renderer.render(scene,camera);frameRecovery.frameSucceeded();
 }
 function celebrationButtons(){return CELEBRATIONS.map((c,i)=>`<button type="button" data-celebration="${c.id}" aria-pressed="${(celebration?.id||favoriteCelebration)===c.id}"><span>${c.icon}</span><b>${c.name}</b><kbd>${i+1}</kbd></button>`).join('')}
 function celebrationMenu(){

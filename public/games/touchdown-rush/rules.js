@@ -59,7 +59,7 @@ export function lineup(g){
   const a=g.actors[o+i];a.x=ox[i];a.z=g.line+d*oz[i];a.yaw=d<0?0:Math.PI;a.role=or[i];
   const b=g.actors[f+i];b.x=dx[i];b.z=g.line+d*dz[i];b.yaw=d<0?Math.PI:0;b.role=dr[i];
  }
- assignPlayers(g);g.finishContact=null;g.finishAttempted=false;g.runFit=null;g.returnPlay=null;g.placeKick=null;g.passResult=null;
+ assignPlayers(g);g.finishContact=null;g.tacklePose=null;g.finishAttempted=false;g.runFit=null;g.returnPlay=null;g.placeKick=null;g.passResult=null;
  g.carrier=o;g.control=g.offense===0?0:closestDefender(g);if(g.multiplayer){g.controls=[0,0];for(const team of [0,1])g.controls[team]=team===g.offense?o:closestDefender(g,team);g.control=g.controls[0];}g.selected=o+1;g.ball=null;g.playTime=0;g.phaseTime=0;g.phase='ready';
 }
 export function snap(g,play='deep'){
@@ -267,7 +267,9 @@ export function attemptTackle(g,defender){
  return stopTackle(g,defender);
 }
 export function endPlay(g,reason,tackler=null){
- if(g.ended||g.phase==='dead')return;g.finishContact=null;completeMedicalPlay(g,reason,tackler);const a=g.actors[g.carrier],d=direction(g.offense);g.phase='dead';g.phaseTime=0;g.ball=null;g.nextOffense=g.offense;g.nextLine=clamp(a.z,-49,49);g.nextDown=g.down+1;g.nextGoal=g.goal;
+ if(g.ended||g.phase==='dead')return;g.finishContact=null;completeMedicalPlay(g,reason,tackler);const a=g.actors[g.carrier],d=direction(g.offense);g.phase='dead';g.phaseTime=0;g.ball=null;
+ g.tacklePose=tackler&&(reason==='tackle'||reason==='sack')?{carrier:a.id,tackler:tackler.id}:null;
+ g.nextOffense=g.offense;g.nextLine=clamp(a.z,-49,49);g.nextDown=g.down+1;g.nextGoal=g.goal;
  const returnPlay=g.returnPlay;
  if(!returnPlay&&!['incomplete','interception','sack'].includes(reason)){
   const yards=roundYards((clamp(a.z,-50,50)-g.line)*d),caught=g.passResult?.kind==='complete';
