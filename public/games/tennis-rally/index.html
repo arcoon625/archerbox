@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tennis Rally · Archerbox</title>
+  <link rel="stylesheet" href="./style.css?v=tennis1">
+</head>
+<body>
+<main class="tennis">
+  <header class="header">
+    <h1><span class="ballIcon" aria-hidden="true"></span> Tennis <em>Rally</em></h1>
+    <div class="headerActions">
+      <button id="sound" type="button" aria-pressed="true">Sound on</button>
+      <button id="view" type="button" aria-pressed="false">High view</button>
+      <button id="options" type="button">Court options</button>
+    </div>
+  </header>
+  <div class="layout">
+    <section class="stage" aria-label="3D tennis court">
+      <canvas id="world" role="img" tabindex="0" aria-label="Tennis court. Move with WASD or the arrow keys, press Space to serve or swing, and E to lob."></canvas>
+      <div class="venue"><span id="surface">Hard</span><strong id="venue">Lakeside Hardcourt</strong></div>
+      <p id="courtNotice" class="courtNotice" hidden></p>
+      <div id="stick" class="stick" aria-label="Movement joystick"><i></i></div>
+      <section id="result" class="result" aria-labelledby="resultTitle" hidden>
+        <div>
+          <p id="resultLabel">Match complete</p>
+          <h2 id="resultTitle"></h2>
+          <strong id="resultScore"></strong>
+          <p id="resultStats"></p>
+          <button id="rematch" class="primary" type="button">Play again →</button>
+          <button id="resultOptions" class="secondary" type="button">Court options</button>
+        </div>
+      </section>
+    </section>
+    <aside class="side" aria-label="Score and controls">
+      <section id="startPanel" class="panel">
+        <h2>Singles tennis</h2>
+        <p id="matchFormat">One set · Rookie · CPU opponent</p>
+        <button id="play" class="primary" type="button">Start match →</button>
+        <button id="practice" class="secondary" type="button">Practice rallies</button>
+        <p id="record" class="small"></p>
+      </section>
+      <section class="panel" aria-label="Tennis scoreboard">
+        <div class="panelHead"><h2>Scoreboard</h2><span id="scoring" class="badge">Set 1</span></div>
+        <table aria-label="Singles score">
+          <thead><tr><th scope="col">Player</th><th scope="col">Sets</th><th scope="col">Games</th><th scope="col">Points</th></tr></thead>
+          <tbody>
+            <tr class="own"><th scope="row"><span class="server" id="yourServe" hidden aria-label="Serving"></span>You</th><td id="setsA">0</td><td id="gamesA">0</td><td id="pointsA">0</td></tr>
+            <tr class="other"><th scope="row"><span class="server" id="theirServe" hidden aria-label="Serving"></span><span id="opponent">Maya</span></th><td id="setsB">0</td><td id="gamesB">0</td><td id="pointsB">0</td></tr>
+          </tbody>
+        </table>
+        <p id="matchNote" class="small">Six games to win a set, by two. Tiebreak at 6–6.</p>
+      </section>
+      <section class="panel controls">
+        <div class="panelHead"><h2>On court</h2><span id="rally" class="badge"></span></div>
+        <button id="hit" class="primary" type="button">Serve <kbd>SPACE</kbd></button>
+        <div class="actions">
+          <button id="lob" type="button">Lob <kbd>E</kbd></button>
+          <button id="resetAim" type="button" aria-pressed="true">Auto aim</button>
+        </div>
+        <label class="assist"><input id="assist" type="checkbox" checked> Help me move to the ball</label>
+        <p id="hint" class="small">Move with WASD or the joystick. Tap the far court to aim.</p>
+      </section>
+    </aside>
+  </div>
+  <div id="status" class="srOnly" role="status"></div>
+</main>
+<dialog id="menu" aria-labelledby="menuTitle">
+  <div class="menuHead"><h2 id="menuTitle">Court options</h2><button id="close" type="button" aria-label="Close court options">×</button></div>
+  <label for="courtChoice">Court</label>
+  <select id="courtChoice"></select>
+  <p id="surfaceNote" class="small"></p>
+  <label for="difficulty">Difficulty</label>
+  <select id="difficulty"><option value="rookie">Rookie</option><option value="club">Club</option><option value="pro">Pro</option></select>
+  <label for="format">Match format</label>
+  <select id="format"><option value="1">One set</option><option value="3">Best of three sets</option></select>
+  <div class="menuActions">
+    <button id="menuPlay" class="primary" type="button">Start new match →</button>
+    <button id="menuPractice" class="secondary" type="button">Practice rallies</button>
+  </div>
+</dialog>
+<script type="module" src="./game.js?v=tennis1"></script>
+<script type="module" src="../../bridge.js"></script>
+</body>
+</html>

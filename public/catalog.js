@@ -1,4 +1,12 @@
 export const GAMES=[
+ {id:'tennis-rally',name:'Tennis Rally',category:'Sports',format:'3D',accent:'#e3f69b',
+  image:'assets/tennis-rally-gameplay.jpg',imageAlt:'Gameplay screenshot of two tennis players rallying across the net at Lakeside Hardcourt',
+  tag:'SERVE. RALLY. WIN THE SET.',
+  summary:'Play singles tennis with regular scoring on hard, clay, and grass courts.',
+  description:'Play a singles match against a computer opponent with 15–30–40 scoring, deuce, advantage, diagonal service boxes, second serves, and a tiebreak at six games all. Choose one set or best of three and Rookie, Club, or Pro. Hardcourts give a steady bounce, clay slows the ball, and grass keeps the ball lower and faster. Aim a groundstroke or lob by clicking or tapping a spot on the far court. Hold Swing when the ball comes your way, with optional help moving into reach. Practice rallies without a match score. Match wins count toward the leaderboard, player XP, and rare Archcoins.',
+  features:['Singles matches','Hard, clay, and grass','Regular tennis scoring','Practice rallies'],
+  controls:[['WASD / ARROWS','Move'],['SHIFT','Sprint'],['SPACE / SERVE','Start the point'],['HOLD SPACE / SWING','Return the ball when it is in reach'],['E / LOB','Hit a higher shot'],['CLICK / TAP FAR COURT','Aim your shot'],['TOUCH JOYSTICK','Move on a phone or tablet']],
+  label:'Solo tennis',emoji:'🎾'},
  {id:'ice-hockey-rush',name:'Ice Hockey Rush',category:'Sports',format:'3D',accent:'#99ecf3',
   image:'assets/ice-hockey-gameplay.jpg',imageAlt:'Gameplay screenshot of the blue Aurora and red Forge skaters on Summit Rink',
   tag:'SKATE. PASS. SCORE.',

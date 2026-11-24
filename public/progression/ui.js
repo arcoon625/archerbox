@@ -1,6 +1,6 @@
 import {createLevelClient} from './client.js?v=levels1';
-import {XP_REWARDS,LEVEL_TITLES} from './rules.js?v=hockey1';
-import {REWARDS} from '../economy/rules.js?v=hockey1';
+import {XP_REWARDS,LEVEL_TITLES} from './rules.js?v=tennis1';
+import {REWARDS} from '../economy/rules.js?v=tennis1';
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number=n=>Number(n).toLocaleString();
 const meter=label=>`<div class="playerXPTrack" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>`;

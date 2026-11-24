@@ -4,7 +4,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {GAMES,CATEGORIES,findGames} from '../public/catalog.js';
 const dist=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../public');
-assert.equal(GAMES.length,24);assert.equal(new Set(GAMES.map(g=>g.id)).size,24);
+assert.equal(GAMES.length,25);assert.equal(new Set(GAMES.map(g=>g.id)).size,25);
 for(const id of ['outpost-maze','basketball-stars']){
  assert(!GAMES.some(g=>g.id===id),id+' is retired from the catalog');
  assert(!fs.existsSync(path.join(dist,'games',id)),id+' is absent from the published assets');
@@ -14,7 +14,7 @@ for(const g of GAMES){const dir=path.join(dist,'games',g.id),html=fs.readFileSyn
  for(const match of html.matchAll(/(?:src|href)="([^"]+)"/g)){const target=match[1];if(target.startsWith('data:')||target.startsWith('https:'))continue;assert(fs.existsSync(path.resolve(dir,target.split('?')[0])),g.name+' missing '+target)}
  console.log(g.name+': complete entry point, local modules and lobby bridge.');
 }
-assert(fs.existsSync(path.join(dist,'vendor/LICENSE.txt')));assert.equal(findGames({query:'baseball'})[0].id,'baseball-blast');assert.equal(findGames({query:'RACING'}).length,2);assert.equal(findGames({query:'unknown-game'}).length,0);assert.equal(findGames({query:'  color  '})[0].id,'color-rush');assert.equal(findGames({view:'favorites',favorites:['neon-clash']})[0].id,'neon-clash');assert.deepEqual(findGames({view:'recent',recent:['baseball-blast','floor-is-lava','missing']}).map(g=>g.id),['baseball-blast','floor-is-lava']);assert.equal(findGames({view:'recent',recent:['baseball-blast','floor-is-lava'],category:'Sports'}).length,1);for(const c of CATEGORIES.slice(1))assert.equal(findGames({category:c}).length,c==='Adventure'?3:c==='Sports'?5:c==='Action'?6:c==='Obby'?3:c==='Racing'?2:c==='Party'?3:1);assert.equal(findGames({query:'football'})[0].id,'touchdown-rush');
+assert(fs.existsSync(path.join(dist,'vendor/LICENSE.txt')));assert.equal(findGames({query:'baseball'})[0].id,'baseball-blast');assert.equal(findGames({query:'RACING'}).length,2);assert.equal(findGames({query:'unknown-game'}).length,0);assert.equal(findGames({query:'  color  '})[0].id,'color-rush');assert.equal(findGames({view:'favorites',favorites:['neon-clash']})[0].id,'neon-clash');assert.deepEqual(findGames({view:'recent',recent:['baseball-blast','floor-is-lava','missing']}).map(g=>g.id),['baseball-blast','floor-is-lava']);assert.equal(findGames({view:'recent',recent:['baseball-blast','floor-is-lava'],category:'Sports'}).length,1);for(const c of CATEGORIES.slice(1))assert.equal(findGames({category:c}).length,c==='Adventure'?3:c==='Sports'?6:c==='Action'?6:c==='Obby'?3:c==='Racing'?2:c==='Party'?3:1);assert.equal(findGames({query:'football'})[0].id,'touchdown-rush');
 assert.equal(findGames({query:'shark'})[0].id,'shark-racing');
 console.log('Search, all categories, favorites and recent-game ordering passed.');
 
@@ -46,3 +46,4 @@ assert.equal(findGames({query:'pokemon'})[0].id,'pokemon-meadow');
 assert.equal(findGames({query:'pirate'})[0].id,'fruit-seas');
 assert.equal(findGames({query:'mini golf'})[0].id,'mini-golf');
 assert.equal(findGames({query:'hockey'})[0].id,'ice-hockey-rush');
+assert.equal(findGames({query:'tennis'})[0].id,'tennis-rally');

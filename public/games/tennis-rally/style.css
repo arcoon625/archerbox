@@ -1,0 +1,99 @@
+:root {
+  color-scheme: dark;
+  font: 15px/1.4 system-ui,sans-serif;
+  --ink: #f3f7e9;
+  --muted: #b4c6c3;
+  --panel: #172c32;
+  --edge: #36545a;
+  --lime: #e3f69b;
+}
+* { box-sizing: border-box }
+body { margin: 0; background: #101f25; color: var(--ink) }
+[hidden] { display: none !important }
+h1,h2,p { margin: 0 }
+h1,h2 { font-weight: 870; line-height: 1.05; letter-spacing: -.049em }
+button,select { font: inherit; color: var(--ink); border: 1px solid #4c686b; border-radius: 8px; background: #223c43; padding: 8px 11px; font-weight: 760 }
+button { cursor: pointer; touch-action: manipulation }
+button:hover:not(:disabled) { filter: brightness(1.13) }
+button:disabled { opacity: .53; cursor: default }
+button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible { outline: 2px solid #ffdd8b; outline-offset: -3px }
+.header { display: flex; min-height: 58px; padding: 6px clamp(8px,2vw,24px); gap: 10px; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--edge); background: #14262e }
+h1 { display: flex; align-items: center; gap: .22em; font-size: clamp(22px,3.5vw,36px); white-space: nowrap }
+h1 em { font-style: normal; color: var(--lime) }
+.ballIcon { position: relative; width: .66em; height: .66em; overflow: hidden; border-radius: 50%; background: var(--lime); border: 1px solid #f4ffba; margin-right: .1em }
+.ballIcon::after { content: ""; position: absolute; inset: 28% -45%; border-radius: 50%; border: 1px solid #8a9b62; transform: rotate(-35deg) }
+.headerActions { display: flex; gap: 5px; flex: none }
+.layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(242px,26%); gap: 12px; padding: 11px; align-items: start }
+.stage { height: calc(100dvh - 80px); min-height: 390px; background: #628e8c; border: 1px solid #6a8b85; border-radius: 14px; position: relative; overflow: hidden }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair }
+.venue,.courtNotice { position: absolute; border: 1px solid #b5e2d970; background: #142d32ed; padding: 6px 10px; border-radius: 8px; pointer-events: none }
+.venue { top: 10px; left: 10px; display: grid; gap: 1px }
+.venue span { color: var(--lime); font-size: 10px; font-weight: 820; letter-spacing: .09em; text-transform: uppercase }
+.venue strong { font-size: clamp(13px,2.1vw,20px); letter-spacing: -.034em }
+.courtNotice { bottom: 11px; left: 50%; transform: translateX(-50%); color: var(--ink); font-size: clamp(13px,2.3vw,19px); font-weight: 830; width: max-content; max-width: 88%; text-align: center }
+.courtNotice.good { color: var(--lime); border-color: #c9ea95 }
+.side { display: grid; gap: 9px; align-content: start }
+.panel { padding: 11px; border: 1px solid var(--edge); border-radius: 12px; background: var(--panel) }
+h2 { font-size: 22px }
+#matchFormat,.small { color: var(--muted); font-size: 12px; margin-block: 6px 8px }
+#record,#matchNote,#hint { margin-bottom: 0 }
+.primary { width: 100%; min-height: 40px; background: var(--lime); border-color: #f0fdb3; color: #283a21; font-weight: 860; font-size: 15px }
+#hit.swingNow { outline: 2px solid #f7e9a3; outline-offset: 2px }
+.secondary { width: 100%; margin-top: 5px }
+.panelHead { display: flex; justify-content: space-between; align-items: center; gap: 5px; margin-bottom: 7px }
+.badge { color: var(--lime); text-align: right; font-size: 11px; font-weight: 750 }
+table { border-collapse: separate; border-spacing: 0 2px; width: 100%; font-variant-numeric: tabular-nums; font-size: 13px }
+th,td { padding: 5px 5px; text-align: center }
+th:first-child { text-align: left }
+thead { color: var(--muted); font-size: 10px }
+tbody tr { background: #213d45 }
+tbody tr.own { color: #f0f9dd }
+tbody tr.other { color: #ffd6c6 }
+tbody th { border-radius: 6px 0 0 6px; white-space: nowrap }
+tbody td:last-child { border-radius: 0 6px 6px 0; font-weight: 860 }
+.server { display: inline-block; width: 7px; height: 7px; margin: 0 5px 1px 0; border-radius: 100%; background: var(--lime) }
+.actions { display: grid; grid-template-columns: .9fr 1fr; gap: 5px; margin-top: 5px }
+.actions button { font-size: 12px; padding: 6px 3px }
+.kbd,kbd { font: 750 10px/1.7 system-ui,sans-serif; border-radius: 4px; margin-left: 3px; padding: 1px 4px; background: #89a1a42c }
+.primary kbd { background: #3e592331 }
+.assist { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 12px; font-weight: 660 }
+.assist input { accent-color: #cfed91 }
+.stick { display: none; position: absolute; left: 12px; bottom: 32px; width: 73px; height: 73px; border: 1px solid #d2ece8a2; border-radius: 100%; background: #163c526e; touch-action: none }
+.stick i { position: absolute; left: 22px; top: 22px; width: 28px; height: 28px; border-radius: 50%; background: #e6f8e1b8; pointer-events: none }
+.result { position: absolute; inset: 0; padding: 10px; display: grid; place-items: center; background: #12242ca1 }
+.result > div,dialog { border: 1px solid #86a4a7; border-radius: 15px; background: #1b333d; color: var(--ink); padding: clamp(16px,3vw,25px) }
+.result > div { text-align: center; width: min(100%,336px); box-shadow: 0 10px 42px #0c151a79 }
+.result h2,dialog h2 { font-size: clamp(26px,4vw,39px) }
+#resultLabel { color: var(--lime); font-size: 12px; margin-bottom: 4px; font-weight: 780 }
+#resultScore { display: block; font-size: 25px; margin-block: 6px }
+#resultStats { font-size: 13px; color: var(--muted); margin-bottom: 11px }
+dialog { width: min(94vw,433px); max-height: 94dvh }
+dialog::backdrop { background: #0a1c25ba }
+.menuHead { display: flex; align-items: start; justify-content: space-between; gap: 7px }
+.menuHead button { font-size: 20px; padding: 3px 9px }
+dialog label { display: block; font-weight: 780; margin: 8px 0 4px }
+dialog select { width: 100% }
+.menuActions { margin-top: 13px }
+.srOnly { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; white-space: nowrap }
+@media (pointer: coarse) {
+  .stick { display: block }
+  kbd { display: none }
+}
+@media (max-width: 690px) {
+  .header { min-height: 49px; padding: 5px 8px; gap: 4px }
+  h1 { font-size: clamp(19px,5vw,25px) }
+  .header button { font-size: 10px; padding: 4px 5px }
+  .layout { display: block; padding: 5px }
+  .stage { min-height: 0; height: clamp(255px,52dvh,440px) }
+  .side { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 5px; margin-top: 5px }
+  #startPanel { grid-column: 1 / -1 }
+  .panel { padding: 6px }
+  h2 { font-size: 16px }
+  .panelHead { margin-bottom: 4px }
+  .small { font-size: 10px }
+  th,td { padding: 3px 2px; font-size: 11px }
+  thead th { font-size: 9px }
+  .primary { min-height: 35px; font-size: 13px; padding: 4px }
+  .secondary { padding: 4px; font-size: 12px }
+  kbd { display: none }
+}

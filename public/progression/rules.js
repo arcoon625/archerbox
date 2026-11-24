@@ -1,5 +1,6 @@
 // XP comes from completed game achievements, never purchases or time spent in a menu.
 export const XP_REWARDS = [
+  ['tennis-rally','win',100],
   ['ice-hockey-rush','win',90],
   ['mini-golf','finish',90],
   ['fast-food-passport','finish',75],
