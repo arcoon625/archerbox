@@ -5,7 +5,7 @@ import {playerAppearance} from './appearance.js?v=appearance1';
 import {athleteProfile,addPortraitFace,headSections} from './athlete-detail.js?v=athletes2';
 
 import {portraitHair} from './hair.js?v=athletes2';
-import {animatePlayer} from './motion.js?v=athletes2';
+import {animatePlayer} from './motion.js?v=hurdle1';
 export {animatePlayer};
 const lines=new Set(['LT','LG','C','RG','RT','DT','DE']);
 const pantsColors={DAL:0xb3bdc2,SF:0xc6ad77,LV:0xb2b9be,TB:0x777065,PIT:0xe8b82c,NO:0xc6ae79,GB:0xeec12b,SEA:0x1d3042,NE:0x1b3044,JAX:0x192329};

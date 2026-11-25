@@ -62,6 +62,7 @@ export function event(room,seat,type,args={},now=Date.now()){if(isKart(room))ret
   if(type==='celebration'&&room.celebration?.seat===seat){const id=celebrationById(args.id).id;room.celebration={...room.celebration,id,started:now,elapsed:0};return;}if(type==='skipCelebration'&&room.celebration){room.celebration.started=now-6001;return;}if(room.celebration||g.ended)return;
   if(type==='kickAim'&&g.offense===seat)football.aimPlaceKick(g,args.aim,args.power);if(type==='placeKick'&&g.offense===seat)football.strikePlaceKick(g,args.aim,args.power);if(type==='fieldGoal'&&g.offense===seat)football.beginPlaceKick(g);if(type==='punt'&&g.offense===seat)football.punt(g);if(type==='action')football.action(g,seat);if(type==='switch')football.switchDefender(g,seat);if(type==='play'&&g.offense===seat)football.snap(g,football.PLAYS.some(p=>p.id===args.play)?args.play:'deep');if(type==='target'&&g.offense===seat)football.selectReceiver(g,integer(args.target,1,5));
   if(type==='defense')football.chooseDefense(g,args.play,seat);
+  if(type==='hurdle')football.hurdle(g,seat);
  }
  if(room.game==='neon-clash')rivalAction(room,seat,type);
 }

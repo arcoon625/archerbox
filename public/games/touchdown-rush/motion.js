@@ -77,6 +77,19 @@ function takeContact(root,rig,contact){
  root.position.y=root.scale.y*.21*fall;
 }
 
+function hurdleStride(rig,progress){
+ const lift=Math.sin(Math.PI*progress);
+ rig.upperBody.rotation.x-=.20*lift;
+ rig.arms[0].rotation.x=mix(rig.arms[0].rotation.x,1.04,lift);
+ rig.elbows[0].rotation.x=mix(rig.elbows[0].rotation.x,.70,lift);
+ const hips=[1.46,-.54],knees=[-1.06,-1.59];
+ for(let i=0;i<2;i++){
+  rig.legs[i].rotation.x=mix(rig.legs[i].rotation.x,hips[i],lift);
+  rig.knees[i].rotation.x=mix(rig.knees[i].rotation.x,knees[i],lift);
+  rig.ankles[i].rotation.x=mix(rig.ankles[i].rotation.x,.20,lift);
+ }
+}
+
 export function animatePlayer(root,actor,time,context={}){
  const rig=root.userData;if(!rig.elbows)return;
  const speed=clamp(actor.moving||0,0,11),run=clamp(speed/8.4,0,1),id=actor.id||0;
@@ -134,5 +147,6 @@ export function animatePlayer(root,actor,time,context={}){
   const kick=Math.sin(context.kickTime/.65*Math.PI);
   rig.legs[1].rotation.x=kick*1.42;rig.knees[1].rotation.x=-.15-kick*.2;rig.upperBody.rotation.x=kick*.10;
  }
+ if(context.hurdle!=null)hurdleStride(rig,context.hurdle);
  if(context.tackle)takeContact(root,rig,context.tackle);
 }

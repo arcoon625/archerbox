@@ -27,6 +27,8 @@ animatePlayer(runner,{moving:7,role:'WR'},3,{catchReach:1,catchHeight:.7});
 rig.ballGrip.getWorldPosition(grip);const reaching=grip.clone();
 animatePlayer(runner,{moving:7,role:'WR'},3.25,{catchReach:1,catchHeight:.7,catchTuck:1});
 rig.ballGrip.getWorldPosition(grip);assert(reaching.z<grip.z-.08,'the receiver brings the ball back toward their chest');
+animatePlayer(runner,{moving:8,role:'WR'},3.5,{carrier:true,hurdle:.5});
+assert(rig.legs[0].rotation.x>1.4&&rig.knees[1].rotation.x<-1.5,'a hurdle raises the lead leg and tucks the trailing leg');
 animatePlayer(runner,{moving:0,role:'WR'},4,{tackle:{time:.62,side:1,role:'carrier'}});
 assert(runner.rotation.x<-1,'the tackle follows through toward the turf');
 runner.rotation.set(0,0,0);runner.position.y=0;

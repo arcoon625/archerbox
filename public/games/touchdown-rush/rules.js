@@ -21,6 +21,24 @@ export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const direction=team=>team===0?-1:1;
 export const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const passing=g=>g.carrier===g.offense*TEAM_SIZE&&!RUN_PLAYS[g.play]&&!g.scramble?.committed;
+const HURDLE_SECONDS=.62,HURDLE_STAMINA=22,HURDLE_HEIGHT=.84,HURDLE_CLEARANCE=.56;
+export function hurdleProgress(actor){return actor.hurdle>0?clamp(1-actor.hurdle/HURDLE_SECONDS,0,1):null;}
+export function hurdleHeight(actor){
+ const progress=hurdleProgress(actor);
+ return progress===null?0:4*HURDLE_HEIGHT*progress*(1-progress);
+}
+export function canHurdle(g,team=0){
+ if(g.ended||g.phase!=='live'||g.offense!==team||passing(g)||g.finishContact)return false;
+ const control=g.multiplayer?g.controls[team]:g.control,runner=g.actors[g.carrier];
+ return control===g.carrier&&runner.stamina>=HURDLE_STAMINA&&runner.cooldown<=0&&!runner.hurdle;
+}
+export function hurdle(g,team=0){
+ if(!canHurdle(g,team))return false;
+ const runner=g.actors[g.carrier];
+ runner.hurdle=HURDLE_SECONDS;runner.stamina-=HURDLE_STAMINA;runner.cooldown=1.9;
+ g.event='HURDLE!';g.detail='Keep running through the landing.';
+ return true;
+}
 const statsFor=(g,team)=>g.statsByTeam?.[team]||(team===0?g.stats:null);
 const addStat=(g,team,key,amount=1)=>{const stats=statsFor(g,team);if(stats)stats[key]=(stats[key]||0)+amount;};
 const roundYards=n=>Math.round(n*10)/10;
@@ -38,7 +56,7 @@ function assignPlayers(g){
  g.specialTeams=null;g.personnelVersion=(g.personnelVersion||0)+1;
  for(const team of [0,1]){
   const unit=team===g.offense?'offense':'defense',plans=g.teamRosters[team][unit].map((p,i)=>({player:p,role:(unit==='offense'?offenseRoles:defenseRoles)[i],depthSlot:p.depthSlot,number:unit==='offense'?(g.offenseNumbers[team]?.[i]??p.number):p.number}));
-  substituteUnit(g,team,plans).forEach((plan,i)=>{const a=g.actors[team*TEAM_SIZE+i];setIdentity(g,a,plan,unit);a.stamina=100;a.juke=a.cooldown=a.moving=a.vx=a.vz=0;a.blocking=a.blockedBy=null;a.blockRemaining=a.blockCooldown=0;a.shedBlock=false;});
+  substituteUnit(g,team,plans).forEach((plan,i)=>{const a=g.actors[team*TEAM_SIZE+i];setIdentity(g,a,plan,unit);a.stamina=100;a.hurdle=a.juke=a.cooldown=a.moving=a.vx=a.vz=0;a.blocking=a.blockedBy=null;a.blockRemaining=a.blockCooldown=0;a.shedBlock=false;});
  }
 }
 function assignSpecialTeams(g,kind){
@@ -217,7 +235,7 @@ export function action(g,team=0){const control=g.multiplayer?g.controls[team]:g.
   return;
  }
  const defender=g.actors[control],carrier=g.actors[g.carrier];
- if(defender.cooldown>0||distance(defender,carrier)>BODY_DISTANCE)return;
+ if(defender.cooldown>0||distance(defender,carrier)>BODY_DISTANCE||hurdleHeight(carrier)>=HURDLE_CLEARANCE)return;
  if(!tackleClear(g,defender,carrier)){
   g.event='BLOCKED!';
   g.detail='Get around the blocker, then touch the ball carrier and press Space.';
@@ -306,7 +324,7 @@ export function attemptTackle(g,defender){
  return stopTackle(g,defender);
 }
 export function endPlay(g,reason,tackler=null){
- if(g.ended||g.phase==='dead')return;g.finishContact=null;completeMedicalPlay(g,reason,tackler);const a=g.actors[g.carrier],d=direction(g.offense);g.phase='dead';g.phaseTime=0;g.ball=null;
+ if(g.ended||g.phase==='dead')return;g.finishContact=null;completeMedicalPlay(g,reason,tackler);const a=g.actors[g.carrier],d=direction(g.offense);g.phase='dead';g.phaseTime=0;g.ball=null;a.hurdle=0;
  g.tacklePose=tackler&&(reason==='tackle'||reason==='sack')?{carrier:a.id,tackler:tackler.id}:null;
  g.nextOffense=g.offense;g.nextLine=clamp(a.z,-49,49);g.nextDown=g.down+1;g.nextGoal=g.goal;
  const returnPlay=g.returnPlay;
@@ -434,7 +452,7 @@ export function step(g,input,dt){
  }
  if(g.phase==='dead'){if(g.phaseTime>2.5){if(g.practiceKicks){practicePlaceKicks(g);return;}if(g.pendingTry){beginPlaceKick(g,'extraPoint');return;}if(g.pendingKickoff){kickoff(g);return}g.offense=g.nextOffense;g.line=g.nextLine;g.down=g.nextDown;g.goal=g.nextGoal;lineup(g);g.event=g.offense===0?'YOUR BALL':'DEFEND YOUR END ZONE';g.detail=g.offense===0?'Pick a play to snap the ball.':g.teamNames[1]+' are calling a play. Get ready!'}return}
  g.clock=Math.max(0,g.clock-dt);g.playTime+=dt;ageBlocks(g,dt);const cfg=DIFFICULTIES[g.difficulty],call=defenseCall(g),d=direction(g.offense),o=g.offense*TEAM_SIZE,f=(1-g.offense)*TEAM_SIZE,carrier=g.actors[g.carrier],blockers=blockingUnit(g),defenders=g.actors.slice(f,f+TEAM_SIZE),targets=blockAssignments(g,blockers,defenders),before=g.actors.map(a=>({x:a.x,z:a.z})),run=RUN_PLAYS[g.play];
- for(const a of g.actors){a.juke=Math.max(0,a.juke-dt);a.cooldown=Math.max(0,a.cooldown-dt);a.moving=0}
+ for(const a of g.actors){a.juke=Math.max(0,a.juke-dt);a.hurdle=Math.max(0,(a.hurdle||0)-dt);a.cooldown=Math.max(0,a.cooldown-dt);a.moving=0}
  for(const control of g.multiplayer?g.controls:[g.control]){const user=g.actors[control],controls=typeof input==='function'?input(user.team):input;let ix=controls.x||0,iz=controls.z||0,l=Math.max(1,Math.hypot(ix,iz));ix/=l;iz/=l;const sprint=controls.sprint&&user.stamina>0&&Math.hypot(ix,iz)>.1;user.stamina=clamp(user.stamina+(sprint?-22:17)*dt,0,100);const speed=cfg.playerSpeed*(sprint?1.28:1)*(user.juke>0?1.2:1);
  if(g.phase==='live'||g.offense===1||(g.multiplayer&&user.team!==g.offense)){const movePlayer=user.team===g.offense?move:moveDefender;movePlayer(user,user.x+ix*10,user.z+iz*10,speed*(run&&user.id===g.carrier?1.06:1),dt,blockers);}}
  for(const a of g.actors){
@@ -478,6 +496,6 @@ export function step(g,input,dt){
  if(ballCarrier.z*d>=50){endPlay(g,'touchdown');return}
  if(Math.abs(ballCarrier.x)>=25.25){endPlay(g,'bounds');return}
  if(g.finishContact){const c=g.finishContact;if((ballCarrier.z-c.fromZ)*d>=c.yards||g.playTime-c.started>=.7){stopTackle(g,g.actors[c.defender]);return;}}
- if(ballCarrier.juke<=0&&g.playTime>(g.play==='qbSneak'?.2:.5)){for(const a of defenders)if(!(g.multiplayer?g.controls.includes(a.id):a.id===g.control)&&distance(a,ballCarrier)<(g.offense===0&&g.difficulty==='allstar'?1.8:1.5)*tackleFactor(a)&&tackleClear(g,a,ballCarrier)){attemptTackle(g,a);if(g.phase==='dead')return;}}
+ if(ballCarrier.juke<=0&&hurdleHeight(ballCarrier)<HURDLE_CLEARANCE&&g.playTime>(g.play==='qbSneak'?.2:.5)){for(const a of defenders)if(!(g.multiplayer?g.controls.includes(a.id):a.id===g.control)&&distance(a,ballCarrier)<(g.offense===0&&g.difficulty==='allstar'?1.8:1.5)*tackleFactor(a)&&tackleClear(g,a,ballCarrier)){attemptTackle(g,a);if(g.phase==='dead')return;}}
  if(g.playTime>22)endPlay(g,'tackle');
 }
