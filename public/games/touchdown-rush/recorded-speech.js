@@ -1,4 +1,4 @@
-import {STUDIO_CLIPS} from './studio-clips.js?v=studio3';
+import {STUDIO_CLIPS} from './studio-clips.js?v=football27';
 
 // Complete, locally hosted calls: no device TTS, live service or stitched words.
 // The director still owns football facts. This channel owns audio and freshness.

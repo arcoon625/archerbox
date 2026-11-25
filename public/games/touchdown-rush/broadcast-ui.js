@@ -1,5 +1,5 @@
 import {CommentaryDirector} from './commentary.js?v=broadcast4';
-import {RecordedChannel} from './recorded-speech.js?v=studio3';
+import {RecordedChannel} from './recorded-speech.js?v=football27';
 
 const KEY='archerbox-football-broadcast-v1';
 export function setupBroadcast({getGame,getTeams,getHomeIndex,active}){

@@ -5,7 +5,7 @@ export const FRIEND_GAMES=[
  {id:'hide-and-seek',name:'Hide and Seek',arenas:['After-school Hideout','Maplewood Mansion','Sunset City Park'],detail:'1 friend seeks, 1 hides + 4 CPU hiders'},
  {id:'shark-racing',name:'Shark Racing',arenas:['Coral Cove','Shipwreck Run','Glow Trench'],detail:'2 friends + 4 CPU sharks'},
  {id:'color-rush',name:'Color Rush',arenas:['Prism Plaza','Neon Night','Skyline Deck'],detail:'2 friends + 6 CPU rivals'},
- {id:'touchdown-rush',name:'Touchdown Rush',arenas:['Sunday Field','Friday Lights','Harbor Stadium'],detail:'Opposing teams · 11v11 · CPU teammates'},
+ {id:'touchdown-rush',name:'NFL Football 27',arenas:['Sunday Field','Friday Lights','Harbor Stadium'],detail:'Opposing teams · 11v11 · CPU teammates'},
  {id:'mini-golf',name:'Mini Golf Mayhem',arenas:['All six holes',...COURSES.map(course=>course.name)],detail:'Two friends · Take turns · Lowest total wins'},
  {id:'neon-clash',name:'Rivals',arenas:['Original Arena','Skyline Rooftops','Orbital Station','Construction Clash','Desert Outpost','Frost Fortress','Metro Mayhem'],detail:'Versus or team up · 1v1–4v4'}
 ];

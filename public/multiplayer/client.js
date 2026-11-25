@@ -1,6 +1,6 @@
 import {createPlayback} from './playback.js';
 import {createMatchTransport} from './transport.js?v=restart1';
-import {friendGame} from './catalog.js?v=golf-friends1';
+import {friendGame} from './catalog.js?v=football27';
 export const escapeText=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function connectMatch({game,onRoom,onWaiting,input=()=>({}),ready=()=>({}),startButton='start',mount=null,onClosed=()=>{}}){
  const id=new URLSearchParams(location.search).get('room');if(!id||!/^[a-f0-9-]{36}$/.test(id))return null;

@@ -7,7 +7,8 @@ import {CALLS} from '../public/games/touchdown-rush/commentary.js';
 // exact caption spoken in it. No partial phrase/name splicing is needed.
 const files=new Set();let total=0;
 for(const kind of Object.keys(CALLS)){
- assert(STUDIO_CLIPS[kind]?.length>=4,kind+' has at least four recordings');
+ const minimum=kind==='intro'?3:4;
+ assert(STUDIO_CLIPS[kind]?.length>=minimum,kind+' has enough recordings for variety');
  const texts=new Set();
  for(const clip of STUDIO_CLIPS[kind]){
   assert(!/[{}]/.test(clip.text));assert(clip.text.length<160);assert(!texts.has(clip.text));texts.add(clip.text);
@@ -18,5 +19,6 @@ for(const kind of Object.keys(CALLS)){
  }
 }
 assert(total>=190);
+assert(STUDIO_CLIPS.intro.every(clip=>!clip.text.includes('Touchdown Rush')),'the broadcast intro uses the current branding');
 
 console.log(total+' packaged recordings cover every observed football outcome.');

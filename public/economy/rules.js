@@ -14,7 +14,7 @@ export const REWARDS=[
  ['disaster-island','Disaster Island','survive','Disaster survived','Survive a full disaster round on the island.',24],
  ['laser-maze','Laser Maze','finish','Maze escaped','Collect both keycards and reach the maze exit.',30],
  ['battle-arena','Battle Arena','round-win','Battle round won','Win a duel round, team round, or survival wave.',54],
- ['touchdown-rush','Touchdown Rush','touchdown','Touchdown','Score a touchdown with your team.',75],
+ ['touchdown-rush','NFL Football 27','touchdown','Touchdown','Score a touchdown with your team.',75],
  ['baseball-blast','Baseball Blast','home-run','Home run','Hit a home run.',60],
  ['neon-clash','Rivals','elimination','Elimination','Eliminate an opponent yourself.',180],
  ['turbo-kart-racing','Turbo Kart Racing','finish','Race finished','Cross the finish line after all three laps.',24],

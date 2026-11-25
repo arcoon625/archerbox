@@ -1,4 +1,4 @@
-import {FRIEND_GAMES,friendGame} from './multiplayer/catalog.js?v=golf-friends1';
+import {FRIEND_GAMES,friendGame} from './multiplayer/catalog.js?v=football27';
 import {CATEGORIES,itemById,readSavedLook,STORAGE_KEY} from './avatar/catalog.js?v=glitchdrop1';
 import {initFriendChat} from './friend-chat.js?v=chat1';
 const $=id=>document.getElementById(id),escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

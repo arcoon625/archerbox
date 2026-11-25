@@ -1,4 +1,4 @@
-import {REWARDS} from './rules.js?v=tennis1';
+import {REWARDS} from './rules.js?v=football27';
 import {readWallet,subscribeWallet} from './wallet.js?v=tennis1';
 let shop=()=>{};
 export const coinButton=()=>'<button class="coinWallet" data-coin-wallet aria-label="Archcoins and how to earn them"><span class="coinMark" aria-hidden="true">✦</span><b data-coin-balance>'+readWallet().balance.toLocaleString()+'</b><span class="coinWord">Archcoins</span></button>';
