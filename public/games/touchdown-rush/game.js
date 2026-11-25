@@ -18,7 +18,7 @@ import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animateP
 import {TEAMS,DEFAULT_TEAM_ID,DEFAULT_OPPONENT_ID,findTeams,teamById,rosterNumbers,captainNumber} from './teams.js?v=realism2026';
 import {teamRoster,realNumbers,ROSTER_CHECKED} from './rosters.js?v=injuries1';
 import {SPECIAL_TEAMS_CHECKED} from './special-teams.js?v=specialists1';
-import {CELEBRATIONS,CELEBRATION_DURATION,celebrationById,celebrationPose} from './celebrations.js?v=flex1';
+import {CELEBRATIONS,CELEBRATION_DURATION,celebrationById,celebrationPose} from './celebrations.js?v=flex2';
 import {readCreations,saveCreations,restoreCreations,allTeams,resolveTeam,rosterForTeam} from './creator-data.js?v=accuracy1';
 import {setupCreators} from './creator-ui.js?v=athletes2';
 import {makeOfficials} from './officials.js?v=refs1';

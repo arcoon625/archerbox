@@ -1,6 +1,6 @@
 export const CELEBRATIONS = [
  {id:'spike',name:'Spike the Ball',icon:'↓',detail:'Raise it high. Slam it down.'},
- {id:'flex',name:'Flex',icon:'💪',detail:'Step side to side, flex each arm, then hit a double flex.'},
+ {id:'flex',name:'Flex',icon:'💪',detail:'Raise both arms together and hold one double-biceps pose.'},
  {id:'dance',name:'Touchdown Dance',icon:'★',detail:'Side steps and a spinning finish.'},
  {id:'pose',name:'Victory Pose',icon:'✦',detail:'Flex, point to the sky, take a bow.'},
  {id:'backflip',name:'Backflip',icon:'↶',detail:'One big flip. Stick the landing.'}
@@ -23,27 +23,14 @@ export function celebrationPose(id,seconds){
   break;
  }
  case 'flex':{
-  const beat=(t-.32)*Math.PI*1.36,step=Math.sin(beat);
-  const groove=smooth((t-.32)/.38)*(1-smooth((t-3.6)/.58));
-  const doubleFlex=smooth((t-3.68)/.52);
-  const pop=.10*Math.sin((t-4.2)*Math.PI*3)*smooth((t-4.2)/.18)*(1-smooth((t-4.65)/.34));
-  p.x=step*.49*groove;p.z=-.14*groove;p.y=Math.abs(Math.sin(beat*2))*.046*groove;
-  p.ry=step*.34*groove;p.rz=-step*.12*groove;p.rx=.05*groove-pop;
-  p.elbows=[];p.knees=[];
-  for(let i=0;i<2;i++){
-   const side=i===0?-1:1,flex=doubleFlex+(1-doubleFlex)*groove*smooth((side*step+.22)/1.07);
-   const stepLift=Math.max(0,side*Math.sin(beat*2))*groove;
-   p.arms[i]=[.10+.18*flex,side*.10*flex,side*(.08+1.34*flex)];
-   p.elbows[i]=[.25-.13*flex,-side*.08*flex,side*1.35*flex];
-   p.legs[i]=[stepLift*.24,side*.08,side*(.06+.21*stepLift+.10*doubleFlex)];
-   p.knees[i]=[-.50*stepLift,0,0];
-  }
-  if(t<.32){
-   const lower=smooth(t/.32);
-   p.arms[1]=[.7-.39*lower,0,-.17+.25*lower];p.elbows[1]=[.79-.43*lower,0,0];
-  }else{
-   const drop=t-.32,land=smooth(drop/.30),bounce=drop>.30?Math.abs(Math.sin((drop-.30)*11))*.17*Math.exp(-(drop-.30)*4.6):0;
-   p.ball={...p.ball,hand:false,x:.48+.73*land,y:.24+.98*(1-land)+bounce,z:-.23+.49*land,rx:land*.60,rz:Math.PI/3+land*.54};
+  const release=.22,flex=smooth((t-release)/.58);
+  p.arms=[-1,1].map(side=>[.10+.18*flex,side*.10*flex,side*(.08+1.34*flex)]);
+  p.elbows=[-1,1].map(side=>[.25-.13*flex,-side*.08*flex,side*1.35*flex]);
+  p.legs=[-1,1].map(side=>[0,0,side*.12*flex]);
+  p.knees=[[-.08*flex,0,0],[-.08*flex,0,0]];
+  if(t>=release){
+   const drop=t-release,land=smooth(drop/.30),bounce=drop>.30?Math.abs(Math.sin((drop-.30)*11))*.17*Math.exp(-(drop-.30)*4.6):0;
+   p.ball={...p.ball,hand:false,x:.46+.75*land,y:.24+.90*(1-land)+bounce,z:-.23+.49*land,rx:land*.60,rz:Math.PI/3+land*.54};
   }
   break;
  }
