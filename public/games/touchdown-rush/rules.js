@@ -82,8 +82,8 @@ export function snap(g,play='deep'){
  if(play==='punt')return punt(g);
  if(play==='fieldGoal')return beginPlaceKick(g);
  if(!PLAYS.some(p=>p.id===play))return false;startMedicalPlay(g);g.snapSerial=(g.snapSerial||0)+1;g.play=play;g.phase='live';g.playTime=g.phaseTime=0;g.passResult=null;g.finishContact=null;g.finishAttempted=false;
- if(RUN_PLAYS[play]){const plan=RUN_PLAYS[play];g.runFit={front:g.defensiveFront,readTime:g.defensiveFront%2?1.25:.65,lane:plan.lane};g.carrier=g.offense*TEAM_SIZE+plan.runner;const runner=g.actors[g.carrier];runner.x=(plan.startLane??plan.lane)*.55;runner.z=g.line-direction(g.offense)*(plan.startDepth??(plan.runner===0?5:3.8));runner.juke=play==='qbSneak'?.15:g.difficulty==='rookie'?.65:.35;if(g.multiplayer){g.controls[g.offense]=g.carrier;g.control=g.controls[0];}if(g.offense===0)g.control=g.carrier;g.event=plan.name.toUpperCase()+(plan.runner===0?' · QB KEEPER!':' · HANDOFF!');g.detail=g.offense===0?(play==='counter'?'Start left, then cut right behind your blockers.':play==='qbSneak'?'Quick snap! Follow your center, then cut into a gap.':play==='qbDraw'?'You control the quarterback. Find a lane and run!':'Follow your blockers'+(play==='run'?' through the middle':play==='sweepLeft'?' to the left':' to the right')+'.')+' Shift to sprint · Space to juke.':'Stop the runner! Work around the blocks · Space to tackle.';}
- else {const plan=PLAYS.find(p=>p.id===play);g.selected=g.offense*TEAM_SIZE+(plan.target||1);g.event=g.offense===0?(plan.new?plan.name.toUpperCase():'FIND YOUR RECEIVER'):'PLAY DEFENSE';g.detail=g.offense===0?(plan.new?plan.detail+'. ':'')+'1–5 select a receiver · Space to throw · Watch for the rush!':'Chase the ball carrier · E switches defender · Space tackles'}
+ if(RUN_PLAYS[play]){const plan=RUN_PLAYS[play];g.runFit={front:g.defensiveFront,readTime:g.defensiveFront%2?1.25:.65,lane:plan.lane};g.carrier=g.offense*TEAM_SIZE+plan.runner;const runner=g.actors[g.carrier];runner.x=(plan.startLane??plan.lane)*.55;runner.z=g.line-direction(g.offense)*(plan.startDepth??(plan.runner===0?5:3.8));runner.juke=play==='qbSneak'?.15:g.difficulty==='rookie'?.65:.35;if(g.multiplayer){g.controls[g.offense]=g.carrier;g.control=g.controls[0];}if(g.offense===0)g.control=g.carrier;g.event=plan.name.toUpperCase()+(plan.runner===0?' · QB KEEPER!':' · HANDOFF!');g.detail=g.offense===0?(play==='counter'?'Start left, then cut right behind your blockers.':play==='qbSneak'?'Quick snap! Follow your center, then cut into a gap.':play==='qbDraw'?'You control the quarterback. Find a lane and run!':'Follow your blockers'+(play==='run'?' through the middle':play==='sweepLeft'?' to the left':' to the right')+'.')+' Shift to sprint · Space to juke.':'Touch the ball carrier and press Space to tackle.';}
+ else {const plan=PLAYS.find(p=>p.id===play);g.selected=g.offense*TEAM_SIZE+(plan.target||1);g.event=g.offense===0?(plan.new?plan.name.toUpperCase():'FIND YOUR RECEIVER'):'PLAY DEFENSE';g.detail=g.offense===0?(plan.new?plan.detail+'. ':'')+'1–5 select a receiver · Space to throw · Watch for the rush!':'Touch the ball carrier and press Space to tackle · E switches defender.'}
  return true;
 }
 // Arcade special teams: automatic catches put the player straight into the return.
@@ -208,8 +208,29 @@ export function action(g,team=0){const control=g.multiplayer?g.controls[team]:g.
  if(g.phase==='placekick-aim'){if(g.offense===team)strikePlaceKick(g);return;}
  if(g.phase==='ready'){if(g.offense===team)snap(g,g.play);else if(!g.multiplayer&&team===0)callCpuOffense(g);return}
  if(g.phase!=='live')return;
- if(g.offense===team){if(passing(g))throwPass(g);else{const a=g.actors[control];if(a.cooldown<=0){a.juke=Math.max(a.juke,DIFFICULTIES[g.difficulty].jukeDuration);a.cooldown=2.4;g.event='JUKE!';g.detail='A quick burst past the defense.'}}}
- else{const a=g.actors[control],b=g.actors[g.carrier];if(a.cooldown<=0){a.cooldown=.65;if(distance(a,b)<3.3*tackleFactor(a)&&b.juke<=0&&tackleClear(g,a,b)){attemptTackle(g,a)}else{g.event=a.blockedBy!=null?'BLOCKED!':'GET CLOSER';g.detail='Work around the blockers, then tackle within three yards.'}}}
+ if(g.offense===team){
+  if(passing(g))throwPass(g);
+  else {
+   const a=g.actors[control];
+   if(a.cooldown<=0){a.juke=Math.max(a.juke,DIFFICULTIES[g.difficulty].jukeDuration);a.cooldown=2.4;g.event='JUKE!';g.detail='A quick burst past the defense.';}
+  }
+  return;
+ }
+ const defender=g.actors[control],carrier=g.actors[g.carrier];
+ if(defender.cooldown>0)return;
+ const touching=distance(defender,carrier)<=BODY_DISTANCE;
+ if(!touching||!tackleClear(g,defender,carrier)){
+  const blocked=defender.blockedBy!=null||touching;
+  g.event=blocked?'BLOCKED!':'GET CLOSER';
+  g.detail=blocked?'Get around the blocker, then touch the ball carrier and press Space.':'Touch the ball carrier, then press Space or tap Tackle.';
+  return;
+ }
+ if(carrier.juke>0){
+  g.event='RUNNER DODGED';
+  g.detail='Press Space when you make contact after the juke.';
+  return;
+ }
+ defender.cooldown=.65;attemptTackle(g,defender);
 }
 function move(a,x,z,speed,dt){speed*=speedFactor(a);const dx=x-a.x,dz=z-a.z,l=Math.hypot(dx,dz);if(l<.08){a.moving=a.vx=a.vz=0;return}const amount=Math.min(l,speed*dt),oldX=a.x,oldZ=a.z;a.x=clamp(a.x+dx/l*amount,-25.3,25.3);a.z=clamp(a.z+dz/l*amount,-58,58);a.vx=(a.x-oldX)/dt;a.vz=(a.z-oldZ)/dt;a.yaw=Math.atan2(-dx,-dz);a.moving=amount/dt}
 const BODY_DISTANCE=1.08,BLOCK_DISTANCE=1.28;

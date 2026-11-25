@@ -12,7 +12,7 @@ for(const team of [0,1])for(const dt of [1/120,1/30,.2]){
  let sawHold=false,sawShed=false;
  for(let t=0;t<3.2;t+=dt){step(g,seat=>seat===team?{}:{z:-d,sprint:true},dt);assert.equal(g.phase,'live');assert(distance(b,def)>=1.079,'solid bodies never overlap');assert((def.z-b.z)*d>1.07,'defender cannot cross through the blocker');sawHold ||= def.blockedBy===b.id;sawShed ||= def.shedBlock;}
  assert(sawHold&&sawShed,'engagements hold, then expire');
- carrier.x=0;carrier.z=-d*.7;carrier.juke=0;def.cooldown=0;action(g,1-team);assert.equal(g.phase,'live','no tackle through a blocker even within tackle range');
+ carrier.x=0;carrier.z=-d*.7;carrier.juke=0;def.cooldown=0;action(g,1-team);assert.equal(g.phase,'live','the blocker still keeps the defender away from the runner');
  // A defender who gets around the block can still make a normal tackle.
  def.x=2.8;def.z=0;def.cooldown=0;step(g,()=>({}),.01);carrier.x=2.8;carrier.z=-d*.5;action(g,1-team);assert.equal(g.phase,'dead');assert.equal(g.statsByTeam[1-team].tackles,1);
 }
