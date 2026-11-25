@@ -163,9 +163,14 @@ export function makePlayer(teamColor,number,options={}){
  animatePlayer(root,{moving:0,role},0,{ready:true});return root;
 }
 
-export function celebrationJoints(root,id,time){
+export function celebrationJoints(root,id,time,pose={}){
  const r=root.userData;r.upperBody.position.y=1.04;r.upperBody.rotation.set(0,0,0);r.head.rotation.set(0,0,0);
- for(let i=0;i<2;i++){r.legs[i].position.y=1.025;r.hands[i].rotation.set(0,0,0);r.elbows[i].rotation.set(id==='griddy'?.95:.25,0,0);r.knees[i].rotation.set(id==='backflip'&&time<.7?-.7:id==='griddy'?-Math.max(0,Math.sin(time*9+i*Math.PI))*.45:0,0,0);r.ankles[i].rotation.set(0,0,0);}
+ for(let i=0;i<2;i++){
+  r.legs[i].position.y=1.025;r.hands[i].rotation.set(0,0,0);
+  r.elbows[i].rotation.set(...(pose.elbows?.[i]??[.25,0,0]));
+  r.knees[i].rotation.set(...(pose.knees?.[i]??[id==='backflip'&&time<.7?-.7:0,0,0]));
+  r.ankles[i].rotation.set(0,0,0);
+ }
 }
 
 export function playerEnvironment(sky){

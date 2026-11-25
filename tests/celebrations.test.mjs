@@ -4,6 +4,12 @@ import {createGame,snap,step,strikePlaceKick} from '../public/games/touchdown-ru
 assert.equal(CELEBRATIONS.length,5);
 assert.equal(new Set(CELEBRATIONS.map(c=>c.id)).size,5);
 assert.equal(celebrationById('bad saved preference').id,'spike');
+assert.equal(celebrationById('griddy').id,'flex','old saved preferences follow their replacement');
+assert(!CELEBRATIONS.some(c=>c.id==='griddy'));
+const flexRight=celebrationPose('flex',.69),flexLeft=celebrationPose('flex',1.41),doubleFlex=celebrationPose('flex',4.4);
+assert(flexRight.x>.2&&flexLeft.x<-.2,'Flex has alternating side steps');
+assert(Math.abs(flexRight.elbows[1][2])>1&&Math.abs(flexLeft.elbows[0][2])>1,'each step flexes a different arm');
+assert(doubleFlex.elbows.every(elbow=>Math.abs(elbow[2])>1),'the finish flexes both arms');
 const numbers=value=>typeof value==='number'?[value]:typeof value==='object'?Object.values(value).flatMap(numbers):[];
 for(const c of CELEBRATIONS){
  for(let t=0;t<=CELEBRATION_DURATION;t+=1/120){const p=celebrationPose(c.id,t);assert(numbers(p).every(Number.isFinite),c.name+' has finite animation transforms');assert(p.ball.y>=.2,'the ball stays above the turf');assert.equal(p.arms.length,2);assert.equal(p.legs.length,2);}

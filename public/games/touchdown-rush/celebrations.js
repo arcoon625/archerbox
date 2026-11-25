@@ -1,12 +1,12 @@
 export const CELEBRATIONS = [
  {id:'spike',name:'Spike the Ball',icon:'↓',detail:'Raise it high. Slam it down.'},
- {id:'griddy',name:'Griddy',icon:'♫',detail:'Heel steps, arm swings, victory vibes.'},
+ {id:'flex',name:'Flex',icon:'💪',detail:'Step side to side, flex each arm, then hit a double flex.'},
  {id:'dance',name:'Touchdown Dance',icon:'★',detail:'Side steps and a spinning finish.'},
  {id:'pose',name:'Victory Pose',icon:'✦',detail:'Flex, point to the sky, take a bow.'},
  {id:'backflip',name:'Backflip',icon:'↶',detail:'One big flip. Stick the landing.'}
 ];
 export const CELEBRATION_DURATION=6;
-export const celebrationById=id=>CELEBRATIONS.find(c=>c.id===id)||CELEBRATIONS[0];
+export const celebrationById=id=>CELEBRATIONS.find(c=>c.id===(id==='griddy'?'flex':id))||CELEBRATIONS[0];
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
 const smooth=n=>{const t=clamp(n);return t*t*(3-2*t)};
 // Local player coordinates: feet at zero, front faces -Z. Ball can follow a hand or fly freely.
@@ -22,11 +22,30 @@ export function celebrationPose(id,seconds){
   if(t>1.5){p.rx=0;p.arms[0]=[-2.3,0,-.6];p.arms[1]=[-2.3,0,.6];p.y=Math.max(0,Math.sin((t-1.5)*5))*.12;}
   break;
  }
- case 'griddy':{
-  const beat=t*9,step=Math.sin(beat);p.x=Math.sin(t*2)*.48;p.z=-Math.sin(t*1.3)*.4;p.y=Math.abs(step)*.12;p.rx=.14;p.rz=Math.sin(beat)*.06;
-  p.legs[0]=[step*.62,0,-.08];p.legs[1]=[-step*.62,0,.08];p.arms[0]=[-.5-step*.65,0,-.22];p.arms[1]=[-.5+step*.65,0,.22];
-  if(t>2.1&&t<3){p.arms=[[-2.5,-.35,-.15],[-2.5,.35,.15]];}
-  p.ball={...p.ball,hand:false,x:-1.15,y:.24,z:.3,rx:0,rz:Math.PI/2};break;
+ case 'flex':{
+  const beat=(t-.32)*Math.PI*1.36,step=Math.sin(beat);
+  const groove=smooth((t-.32)/.38)*(1-smooth((t-3.6)/.58));
+  const doubleFlex=smooth((t-3.68)/.52);
+  const pop=.10*Math.sin((t-4.2)*Math.PI*3)*smooth((t-4.2)/.18)*(1-smooth((t-4.65)/.34));
+  p.x=step*.49*groove;p.z=-.14*groove;p.y=Math.abs(Math.sin(beat*2))*.046*groove;
+  p.ry=step*.34*groove;p.rz=-step*.12*groove;p.rx=.05*groove-pop;
+  p.elbows=[];p.knees=[];
+  for(let i=0;i<2;i++){
+   const side=i===0?-1:1,flex=doubleFlex+(1-doubleFlex)*groove*smooth((side*step+.22)/1.07);
+   const stepLift=Math.max(0,side*Math.sin(beat*2))*groove;
+   p.arms[i]=[.10+.18*flex,side*.10*flex,side*(.08+1.34*flex)];
+   p.elbows[i]=[.25-.13*flex,-side*.08*flex,side*1.35*flex];
+   p.legs[i]=[stepLift*.24,side*.08,side*(.06+.21*stepLift+.10*doubleFlex)];
+   p.knees[i]=[-.50*stepLift,0,0];
+  }
+  if(t<.32){
+   const lower=smooth(t/.32);
+   p.arms[1]=[.7-.39*lower,0,-.17+.25*lower];p.elbows[1]=[.79-.43*lower,0,0];
+  }else{
+   const drop=t-.32,land=smooth(drop/.30),bounce=drop>.30?Math.abs(Math.sin((drop-.30)*11))*.17*Math.exp(-(drop-.30)*4.6):0;
+   p.ball={...p.ball,hand:false,x:.48+.73*land,y:.24+.98*(1-land)+bounce,z:-.23+.49*land,rx:land*.60,rz:Math.PI/3+land*.54};
+  }
+  break;
  }
  case 'dance':{
   const beat=t*7;p.x=Math.sin(beat/2)*.65;p.y=Math.abs(Math.sin(beat))*.2;p.rz=Math.sin(beat/2)*.14;p.ry=t>2?Math.PI*2*smooth((t-2)/1.8):0;
@@ -47,6 +66,6 @@ export function celebrationPose(id,seconds){
  }
  }
  for(const k of ['x','y','z','rx','ry','rz'])p[k]*=fade;
- p.arms=p.arms.map(r=>r.map(n=>n*fade));p.legs=p.legs.map(r=>r.map(n=>n*fade));
+ for(const joint of ['arms','legs','elbows','knees'])if(p[joint])p[joint]=p[joint].map(r=>r.map(n=>n*fade));
  return p;
 }

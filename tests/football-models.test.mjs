@@ -31,6 +31,6 @@ animatePlayer(runner,{moving:0,role:'WR'},4,{tackle:{time:.62,side:1,role:'carri
 assert(runner.rotation.x<-1,'the tackle follows through toward the turf');
 runner.rotation.set(0,0,0);runner.position.y=0;
 const game=createGame(),snapshot=JSON.stringify(game);
-for(const celebration of CELEBRATIONS)for(let t=0;t<=6;t+=.15){const p=celebrationPose(celebration.id,t);celebrationJoints(runner,celebration.id,t);for(let i=0;i<2;i++){runner.userData.arms[i].rotation.set(...p.arms[i]);runner.userData.legs[i].rotation.set(...p.legs[i]);}runner.updateMatrixWorld(true);runner.userData.ballGrip.getWorldPosition(new Vector3());assert(runner.userData.elbows.every(e=>Number.isFinite(e.rotation.x)));}
+for(const celebration of CELEBRATIONS)for(let t=0;t<=6;t+=.15){const p=celebrationPose(celebration.id,t);celebrationJoints(runner,celebration.id,t,p);for(let i=0;i<2;i++){runner.userData.arms[i].rotation.set(...p.arms[i]);runner.userData.legs[i].rotation.set(...p.legs[i]);}runner.updateMatrixWorld(true);runner.userData.ballGrip.getWorldPosition(new Vector3());assert(runner.userData.elbows.every(e=>Number.isFinite(e.rotation.x)));}
 assert.equal(JSON.stringify(game),snapshot);dispose(runner);dispose(lineman);
 console.log('Football models passed: 32 team kits, distinct athlete builds, bounded draw calls, finite geometry/normals, articulated run/carry/pass/catch/kick poses, five celebrations, and unchanged rules state.');
