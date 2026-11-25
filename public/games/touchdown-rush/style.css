@@ -57,3 +57,46 @@
 @media(min-width:801px) and (max-height:780px){#athleteStudio aside{top:130px;max-height:calc(100% - 150px)}#athleteStudio aside>label{margin:10px 0 5px}#athleteStudio h3{margin:16px 0 6px}#studioMeasurements{margin:12px 0 2px}.studioRotate{margin-top:9px}}
 
 #defensivePlays button[aria-pressed="true"]{background:#e9c777;color:#20342d;border-color:#f8db96}#defensivePlays button[aria-pressed="true"] small{color:#304b3d}
+
+#playbook.teamPlaybook{width:min(690px,calc(100% - 394px));max-width:none;max-height:none;overflow:visible;background:#142d2cf2;padding:12px 14px}
+.teamPlaybookHeader{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0;margin:0 0 8px}
+.teamPlaybookHeader h2{margin:0;font-size:17px;line-height:1.1;color:#fff5d9}
+.teamPlaybookHeader small{color:#b7ceb9;font-size:10px;text-align:right}
+#playFilters button{font-size:11px;min-width:0;white-space:nowrap}
+#playFilters button span{font-variant-numeric:tabular-nums}
+#playbook.teamPlaybook #plays{grid-template-columns:repeat(3,minmax(0,1fr));max-height:min(230px,37dvh);overflow:auto;overscroll-behavior:contain;padding:3px 4px 3px 3px;scrollbar-color:#759684 #253f37}
+#playbook.teamPlaybook #plays button{grid-column:auto;min-height:86px;padding:6px 8px;display:flex;flex-direction:column}
+#playbook.teamPlaybook #plays button:focus-visible{outline-offset:-2px}
+#plays .playHeading{display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;font-size:11px;min-height:15px}
+#plays .playHeading kbd{margin:0}
+#plays canvas{display:block;width:100%;height:44px;object-fit:contain;border-radius:4px;background:#233f36;margin-top:4px}
+#playbook.teamPlaybook #plays button small{font-size:9px;margin-top:4px}
+#playbook.teamPlaybook .playbookHelp{margin:6px 0 0}
+#replayButton,#replayPanel{position:fixed;z-index:12;color:#fff5d9;border:1px solid #819884;background:#142d2cf5;box-shadow:0 7px 20px #0e252577}
+#replayButton{right:23px;top:112px;padding:9px 11px;border-radius:7px;font-size:11px;font-weight:800}
+#replayButton kbd{margin-left:5px}
+body:has(#injuryPanel:not([hidden])) #replayButton,body:has(#injuryNotice:not([hidden])) #replayButton{right:min(340px,30vw)}
+#replayPanel{bottom:16px;left:50%;transform:translateX(-50%);width:min(490px,calc(100% - 24px));border-radius:12px;padding:13px}
+.replayHeader,.replayTimeline,.replayControls{display:flex;align-items:center;gap:10px}
+.replayHeader{justify-content:space-between}
+.replayHeader small,.replayHeader strong{display:block}
+.replayHeader small{color:#adcbaf;font-size:10px}
+.replayHeader strong{font-size:16px}
+.replayTimeline{margin:9px 0}
+.replayTimeline input{min-width:0;flex:1;accent-color:#ffb96d}
+.replayTimeline output{min-width:89px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums}
+.replayControls label,.replayControls select,.replayControls button,.replayHeader button{font-size:12px}
+.replayControls button,.replayControls select,.replayHeader button{color:#fff4d9;background:#34574b;border:1px solid #829a81;border-radius:5px;padding:6px 10px}
+.isReplaying #replayButton,.isReplaying #hud,.isReplaying #celebrationPanel,.isReplaying #overlay{visibility:hidden}
+@media(max-width:1050px) and (min-width:801px){#playbook.teamPlaybook{width:calc(100% - 365px)}}
+@media(max-width:800px){
+ #playbook.teamPlaybook{width:calc(100% - 24px);max-width:535px;bottom:142px;padding:8px}
+ #playbook.teamPlaybook #plays{max-height:min(190px,max(88px,calc(100dvh - 395px)));grid-template-columns:repeat(2,minmax(0,1fr))}
+ #playbook.teamPlaybook .playbookHelp{display:none}
+ #playFilters button{gap:3px;padding:6px 3px;font-size:10px}
+ .teamPlaybookHeader h2{font-size:14px}
+ .teamPlaybookHeader small{font-size:9px}
+ #replayButton,body:has(#injuryPanel:not([hidden])) #replayButton,body:has(#injuryNotice:not([hidden])) #replayButton{top:139px;right:12px;padding:6px 8px}
+ body:has(#replayButton:not([hidden])) #weatherBadge{max-width:calc(100% - 119px)}
+ #replayButton kbd{display:none}
+}

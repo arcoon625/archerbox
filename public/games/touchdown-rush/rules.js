@@ -3,8 +3,8 @@ import {initMedical,startMedicalPlay,completeMedicalPlay,substituteUnit} from '.
 import {teamRoster} from './rosters.js?v=injuries1';
 import {normalizeWeather,rainSpread} from './weather.js?v=seasons1';
 import {specialTeamUnit} from './personnel.js?v=specialists1';
-import {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane} from './playbook.js?v=runlanes1';
-export {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey} from './playbook.js?v=runlanes1';
+import {RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playById,teamPlaybook,cpuPlay} from './playbook.js?v=replaybook1';
+export {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey,playById} from './playbook.js?v=replaybook1';
 import {GOALPOST,KICK_CLEARANCE,KICK_DROP,POINTS_TO_WIN,kickVelocity,kickPosition,goalCrossing,kickIsGood,kickDistance} from './kicking.js?v=placekicks1';
 export {kickDistance} from './kicking.js?v=placekicks1';
 import {DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defensiveAlignment,zoneTarget} from './defense.js?v=defense1';
@@ -46,6 +46,7 @@ export function createGame(difficulty='pro',options={}){
  const names=Array(TEAM_SIZE*2).fill('');
  if(!DIFFICULTIES[difficulty])difficulty='pro';
  const g={difficulty,actors:names.map((name,i)=>({id:i,name,team:i<TEAM_SIZE?0:1,x:0,z:0,vx:0,vz:0,yaw:0,moving:0,stamina:100,juke:0,cooldown:0,role:''})),offense:0,line:30,goal:20,down:1,scores:[0,0],clock:180,phase:'ready',phaseTime:0,playTime:0,play:'deep',carrier:0,control:0,selected:1,ball:null,passResult:null,passSequence:0,event:'YOUR BALL',detail:'Pick a play. Gain 10 yards for a first down.',stats:{passes:0,passAttempts:0,incompletions:0,interceptions:0,interceptionsThrown:0,tackles:0,touchdowns:0},ended:false};
+ if(options.teamIds)g.teamIds=options.teamIds.slice();
  g.weather=normalizeWeather(options.weather);g.teamNames=options.teamNames||['Dallas Cowboys','Kansas City Chiefs'];g.teamRosters=options.teamRosters||[teamRoster('dallas-cowboys'),teamRoster('kansas-city-chiefs')];g.offenseNumbers=options.offenseNumbers||[null,null];g.playerTraits=options.playerTraits!==false;initMedical(g,options);lineup(g);return g;
 }
 function setIdentity(g,a,plan,unit){
@@ -99,9 +100,9 @@ export function snap(g,play='deep'){
  if(g.phase!=='ready'||g.ended)return false;
  if(play==='punt')return punt(g);
  if(play==='fieldGoal')return beginPlaceKick(g);
- if(!PLAYS.some(p=>p.id===play))return false;startMedicalPlay(g);g.snapSerial=(g.snapSerial||0)+1;g.play=play;g.phase='live';g.playTime=g.phaseTime=0;g.passResult=null;g.finishContact=null;g.finishAttempted=false;
- if(RUN_PLAYS[play]){const plan=RUN_PLAYS[play];g.runFit={front:g.defensiveFront,readTime:g.defensiveFront%2?1.25:.65,lane:plan.lane};g.carrier=g.offense*TEAM_SIZE+plan.runner;const runner=g.actors[g.carrier];runner.x=(plan.startLane??plan.lane)*.55;runner.z=g.line-direction(g.offense)*(plan.startDepth??(plan.runner===0?5:3.8));runner.juke=play==='qbSneak'?.15:g.difficulty==='rookie'?.65:.35;if(g.multiplayer){g.controls[g.offense]=g.carrier;g.control=g.controls[0];}if(g.offense===0)g.control=g.carrier;g.event=plan.name.toUpperCase()+(plan.runner===0?' · QB KEEPER!':' · HANDOFF!');g.detail=g.offense===0?(play==='counter'?'Start left, then cut right behind your blockers.':play==='qbSneak'?'Quick snap! Follow your center, then cut into a gap.':play==='qbDraw'?'You control the quarterback. Find a lane and run!':'Follow your blockers'+(play==='run'?' through the middle':play==='sweepLeft'?' to the left':' to the right')+'.')+' Shift to sprint · Space to juke.':'Touch the ball carrier and press Space to tackle.';}
- else {const plan=PLAYS.find(p=>p.id===play);g.selected=g.offense*TEAM_SIZE+(plan.target||1);g.event=g.offense===0?(plan.new?plan.name.toUpperCase():'FIND YOUR RECEIVER'):'PLAY DEFENSE';g.detail=g.offense===0?(plan.new?plan.detail+'. ':'')+'1–5 select a receiver · Space to throw · Watch for the rush!':'Touch the ball carrier and press Space to tackle · E switches defender.'}
+ const call=playById(play);if(!call)return false;startMedicalPlay(g);g.snapSerial=(g.snapSerial||0)+1;g.play=play;g.phase='live';g.playTime=g.phaseTime=0;g.passResult=null;g.finishContact=null;g.finishAttempted=false;
+ if(RUN_PLAYS[play]){const plan=RUN_PLAYS[play];g.runFit={front:g.defensiveFront,readTime:g.defensiveFront%2?1.25:.65,lane:plan.lane};g.carrier=g.offense*TEAM_SIZE+plan.runner;const runner=g.actors[g.carrier];runner.x=(plan.startLane??plan.lane)*.55;runner.z=g.line-direction(g.offense)*(plan.startDepth??(plan.runner===0?5:3.8));runner.juke=play==='qbSneak'?.15:g.difficulty==='rookie'?.65:.35;if(g.multiplayer){g.controls[g.offense]=g.carrier;g.control=g.controls[0];}if(g.offense===0)g.control=g.carrier;g.event=plan.name.toUpperCase()+(plan.runner===0?' · QB KEEPER!':' · HANDOFF!');g.detail=g.offense===0?call.detail+'.'+' Shift to sprint · Space to juke.':'Touch the ball carrier and press Space to tackle.';}
+ else {const plan=call;g.selected=g.offense*TEAM_SIZE+(plan.target||1);g.event=g.offense===0?(plan.new?plan.name.toUpperCase():'FIND YOUR RECEIVER'):'PLAY DEFENSE';g.detail=g.offense===0?(plan.new?plan.detail+'. ':'')+'1–5 select a receiver · Space to throw · Watch for the rush!':'Touch the ball carrier and press Space to tackle · E switches defender.'}
  return true;
 }
 // Arcade special teams: automatic catches put the player straight into the return.
@@ -439,7 +440,12 @@ function callCpuOffense(g){
  if(g.down===4){
   if(kickDistance(g.line,direction(g.offense))<=58)beginPlaceKick(g);
   else punt(g);
- }else snap(g,SCRIMMAGE_PLAYS[(g.down+Math.floor(g.clock))%SCRIMMAGE_PLAYS.length].id);
+  return;
+ }
+ if(!g.teamIds){snap(g,SCRIMMAGE_PLAYS[(g.down+Math.floor(g.clock))%SCRIMMAGE_PLAYS.length].id);return;}
+ const qb=g.actors[g.offense*TEAM_SIZE],book=teamPlaybook(g.teamIds[g.offense],qb.traits?.speed);
+ const yards=(g.goal-g.line)*direction(g.offense);
+ snap(g,cpuPlay(book,g.down,yards,g.clock));
 }
 
 export function step(g,input,dt){
