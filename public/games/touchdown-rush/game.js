@@ -12,8 +12,9 @@ import {injuryTraining,isUnavailable} from './injuries.js?v=injuries1';
 import {connectMatch} from '../../multiplayer/client.js?v=football27';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
-import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead,DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defenseForKey,chooseDefense,canHurdle,hurdle,hurdleHeight,hurdleProgress} from './rules.js?v=replaybook1';
-import {OFFENSE_PLAYS,playById,teamPlaybook,recommendedPlays,diagramPaths} from './playbook.js?v=replaybook1';
+import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead,DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defenseForKey,chooseDefense,canHurdle,hurdle,hurdleHeight,hurdleProgress} from './rules.js?v=playdiagram1';
+import {OFFENSE_PLAYS,playById,teamPlaybook,recommendedPlays} from './playbook.js?v=playdiagram1';
+import {drawPlayDiagram} from './play-diagram.js?v=playdiagram1';
 import {makeReplayRecorder,replayAt} from './replay.js?v=replaybook1';
 import {GOALPOST,KICK_CLEARANCE,kickVelocity,kickPosition,goalCrossing,kickIsGood} from './kicking.js?v=seasons1';
 import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=hurdle1';
@@ -430,23 +431,6 @@ function renderCelebration(){
  else{const b=new THREE.Vector3(p.ball.x,Math.max(.13,p.ball.y-.11),p.ball.z).applyAxisAngle(new THREE.Vector3(0,1,0),celebration.yaw);ball.position.set(a.x+b.x,b.y,a.z+b.z);}
  ball.rotation.set(p.ball.rx,celebration.yaw+p.ball.ry,p.ball.rz);
 }
-function drawPlayDiagram(canvas,play){
- const ctx=canvas.getContext('2d');
- if(!ctx)return;
- const paths=diagramPaths(play.id),maxDepth=Math.max(15,...paths.flatMap(path=>path.map(point=>point[1])));
- const x=yard=>75+yard*2.65,y=yard=>53-(yard+8)*46/(maxDepth+8);
- ctx.strokeStyle='#70998966';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(7,y(0));ctx.lineTo(143,y(0));ctx.stroke();ctx.setLineDash([]);
- for(const [i,path] of paths.entries()){
-  const accent=play.kind!=='pass'||i+1===(play.target||1);
-  ctx.strokeStyle=ctx.fillStyle=accent?'#ffc66c':'#9bcbb6';ctx.lineWidth=accent?2.3:1.5;ctx.lineJoin=ctx.lineCap='round';
-  ctx.beginPath();path.forEach(([px,py],j)=>j?ctx.lineTo(x(px),y(py)):ctx.moveTo(x(px),y(py)));ctx.stroke();
-  const [ex,ey]=path.at(-1),[px,py]=path.at(-2),tx=x(ex),ty=y(ey),angle=Math.atan2(ty-y(py),tx-x(px));
-  ctx.beginPath();ctx.moveTo(tx,ty);
-  for(const turn of [-.55,.55])ctx.lineTo(tx-5*Math.cos(angle+turn),ty-5*Math.sin(angle+turn));
-  ctx.closePath();ctx.fill();
-  const [sx,sy]=path[0];ctx.beginPath();ctx.arc(x(sx),y(sy),2.2,0,Math.PI*2);ctx.fill();
- }
-}
 function showTeamPlaybook(yards){
  const speed=game.actors[0].traits?.speed;
  const key=[playerTeam.id,speed,game.down,yards,playSection].join(':');
@@ -467,7 +451,7 @@ function showTeamPlaybook(yards){
   playSection=button.dataset.section;showTeamPlaybook(yards);
   $('playFilters').querySelector('[aria-pressed="true"]').focus({preventScroll:true});
  });
- $('plays').innerHTML=selections[playSection].map(p=>`<button type="button" data-play="${p.id}" data-kind="${p.kind}" aria-label="Call ${p.name}"><span class="playHeading"><b>${p.name}</b>${p.key?`<kbd>${p.key}</kbd>`:''}</span><canvas width="150" height="58" aria-hidden="true"></canvas><small>${p.detail}</small></button>`).join('');
+ $('plays').innerHTML=selections[playSection].map(p=>`<button type="button" data-play="${p.id}" data-kind="${p.kind}" aria-label="Call ${p.name}" aria-description="${p.detail}"><span class="playHeading"><b>${p.name}</b>${p.key?`<kbd>${p.key}</kbd>`:''}</span><canvas width="456" height="252" aria-hidden="true"></canvas><small>${p.detail}</small></button>`).join('');
  $('plays').scrollTop=0;
  for(const button of $('plays').children){
   const play=playById(button.dataset.play);

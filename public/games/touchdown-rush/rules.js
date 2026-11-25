@@ -3,8 +3,8 @@ import {initMedical,startMedicalPlay,completeMedicalPlay,substituteUnit} from '.
 import {teamRoster} from './rosters.js?v=injuries1';
 import {normalizeWeather,rainSpread} from './weather.js?v=seasons1';
 import {specialTeamUnit} from './personnel.js?v=specialists1';
-import {RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playById,teamPlaybook,cpuPlay} from './playbook.js?v=replaybook1';
-export {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey,playById} from './playbook.js?v=replaybook1';
+import {RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playById,teamPlaybook,cpuPlay,OFFENSE_FORMATION} from './playbook.js?v=playdiagram1';
+export {PLAYS,RUN_PLAYS,SCRIMMAGE_PLAYS,routePoint,runLane,playForKey,playById} from './playbook.js?v=playdiagram1';
 import {GOALPOST,KICK_CLEARANCE,KICK_DROP,POINTS_TO_WIN,kickVelocity,kickPosition,goalCrossing,kickIsGood,kickDistance} from './kicking.js?v=placekicks1';
 export {kickDistance} from './kicking.js?v=placekicks1';
 import {DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defensiveAlignment,zoneTarget} from './defense.js?v=defense1';
@@ -53,10 +53,10 @@ function setIdentity(g,a,plan,unit){
  const p=plan.player;Object.assign(a,{role:plan.role,name:p.name,shortName:p.shortName,playerId:p.id,position:plan.specialRole||p.position,depthSlot:plan.depthSlot,specialRole:plan.specialRole||null,unit,jerseyNumber:plan.number,backupFor:plan.backupFor||null,customProfile:p.customProfile||null,traits:g.playerTraits===false?{...NEUTRAL_TRAITS}:(p.customTraits||playerTraits(p.id,p.position))});
 }
 function assignPlayers(g){
- const offenseRoles=['QB','WR','WR','WR','TE','RB','LT','LG','C','RG','RT'],defenseRoles=['DE','DT','DT','DE','LB','LB','LB','CB','CB','S','S'];
+ const defenseRoles=['DE','DT','DT','DE','LB','LB','LB','CB','CB','S','S'];
  g.specialTeams=null;g.personnelVersion=(g.personnelVersion||0)+1;
  for(const team of [0,1]){
-  const unit=team===g.offense?'offense':'defense',plans=g.teamRosters[team][unit].map((p,i)=>({player:p,role:(unit==='offense'?offenseRoles:defenseRoles)[i],depthSlot:p.depthSlot,number:unit==='offense'?(g.offenseNumbers[team]?.[i]??p.number):p.number}));
+  const unit=team===g.offense?'offense':'defense',plans=g.teamRosters[team][unit].map((p,i)=>({player:p,role:(unit==='offense'?OFFENSE_FORMATION[i].role:defenseRoles[i]),depthSlot:p.depthSlot,number:unit==='offense'?(g.offenseNumbers[team]?.[i]??p.number):p.number}));
   substituteUnit(g,team,plans).forEach((plan,i)=>{const a=g.actors[team*TEAM_SIZE+i];setIdentity(g,a,plan,unit);a.stamina=100;a.hurdle=a.juke=a.cooldown=a.moving=a.vx=a.vz=0;a.blocking=a.blockedBy=null;a.blockRemaining=a.blockCooldown=0;a.shedBlock=false;});
  }
 }
@@ -85,12 +85,12 @@ export function chooseDefense(g,play,team=0){
 }
 export function lineup(g){
  const d=direction(g.offense),o=g.offense*TEAM_SIZE;
- const ox=[0,-19,19,-10,10,2,-5.6,-2.8,0,2.8,5.6],oz=[-5,0,0,-.8,0,-7,-.7,-.7,-.7,-.7,-.7],or=['QB','WR','WR','WR','TE','RB','LT','LG','C','RG','RT'];
  // Fronts vary between downs. Wide fronts leave room inside; pinched fronts
  // invite a cut outside. Every defender remains an ordinary, solid player.
  g.defensiveFront=(g.snapSerial||0)%4;
  for(let i=0;i<TEAM_SIZE;i++){
-  const a=g.actors[o+i];a.x=ox[i];a.z=g.line+d*oz[i];a.yaw=d<0?0:Math.PI;a.role=or[i];
+  const a=g.actors[o+i],{x,depth,role}=OFFENSE_FORMATION[i];
+  a.x=x;a.z=g.line+d*depth;a.yaw=d<0?0:Math.PI;a.role=role;
  }
  alignDefense(g);
  assignPlayers(g);g.finishContact=null;g.tacklePose=null;g.finishAttempted=false;g.runFit=null;g.scramble=null;g.returnPlay=null;g.placeKick=null;g.passResult=null;

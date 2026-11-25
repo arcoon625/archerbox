@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {TEAMS} from '../public/games/touchdown-rush/teams.js';
-import {OFFENSE_PLAYS,PLAYS,diagramPaths,recommendedPlays,teamPlaybook} from '../public/games/touchdown-rush/playbook.js';
-import {createGame,snap,step,endPlay,beginPlaceKick,strikePlaceKick} from '../public/games/touchdown-rush/rules.js';
+import {OFFENSE_PLAYS,PLAYS,ROUTES,RUN_PLAYS,recommendedPlays,teamPlaybook} from '../public/games/touchdown-rush/playbook.js';
+import {createGame,direction,lineup,snap,step,endPlay,beginPlaceKick,strikePlaceKick} from '../public/games/touchdown-rush/rules.js';
+import {playDiagram} from '../public/games/touchdown-rush/play-diagram.js';
 import {makeReplayRecorder,replayAt} from '../public/games/touchdown-rush/replay.js';
 import {makeRoom,readyPlayer,tickRoom,event,publicRoom} from '../server/matches.js';
 
@@ -25,7 +26,47 @@ test('all NFL teams have data and 38 available calls, with situational picks',()
   assert(snap(game,play.id));
   for(let i=0;i<120;i++)step(game,{},1/120);
   assert(game.actors.every(actor=>Number.isFinite(actor.x)&&Number.isFinite(actor.z)));
-  assert.equal(diagramPaths(play.id).length,play.kind==='run'?1:5);
+ }
+});
+
+test('full play diagrams match the offense on the field in both directions',()=>{
+ const game=createGame('pro');
+ for(const offense of [0,1]){
+  game.offense=offense;
+  lineup(game);
+  const onField=game.actors.slice(offense*11,(offense+1)*11);
+  for(const play of OFFENSE_PLAYS.filter(p=>p.kind!=='kick')){
+   const {players,actions}=playDiagram(play);
+   assert.equal(players.length,11);
+   players.forEach(({role,x,depth},slot)=>{
+    assert.equal(role,onField[slot].role);
+    assert.equal(x,onField[slot].x);
+    assert(Math.abs(depth-(onField[slot].z-game.line)*direction(offense))<1e-8);
+   });
+   const blockers=actions.filter(a=>a.kind==='block').map(a=>a.slot);
+   assert([6,7,8,9,10].every(slot=>blockers.includes(slot)));
+   const featured=actions.find(a=>a.kind==='ball');
+   const run=RUN_PLAYS[play.id];
+   if(run){
+    assert.equal(featured.slot,run.runner);
+    assert.equal(featured.points.at(-1)[0],run.lane);
+    assert.equal(actions.some(a=>a.kind==='exchange'),run.runner===5);
+    assert.equal(blockers.length,9+(run.runner===0?1:0));
+   }else{
+    const routes=actions.filter(a=>a.kind==='ball'||a.kind==='route');
+    assert.deepEqual(routes.map(a=>a.slot),[1,2,3,4,5]);
+    assert.equal(featured.slot,play.target||1);
+    if(ROUTES[play.id])for(const {slot,points} of routes)assert.deepEqual(points,ROUTES[play.id][slot]);
+   }
+  }
+ }
+ for(const id of ['fieldGoal','punt']){
+  const {players,actions}=playDiagram(OFFENSE_PLAYS.find(p=>p.id===id));
+  assert.equal(players.length,11);
+  assert.equal(players[0].role,id==='punt'?'P':'K');
+  assert.equal(players[8].role,'LS');
+  if(id==='fieldGoal')assert.equal(players[5].role,'H');
+  assert(actions.some(a=>a.slot===8&&a.kind==='exchange'));
  }
 });
 

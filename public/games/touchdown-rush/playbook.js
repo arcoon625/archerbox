@@ -40,7 +40,11 @@ export function runLane(id,time){const run=RUN_PLAYS[id];return run?.startLane==
 
 // Coordinates are yards across the field and yards beyond the line. Shared
 // route sampling drives receivers, pass leads, CPU play and friend matches.
-const receiverStarts=[[-19,0],[19,0],[-10,-.8],[10,0],[2,-7]];
+export const OFFENSE_FORMATION=[
+ ['QB',0,-5],['WR',-19,0],['WR',19,0],['WR',-10,-.8],['TE',10,0],['RB',2,-7],
+ ['LT',-5.6,-.7],['LG',-2.8,-.7],['C',0,-.7],['RG',2.8,-.7],['RT',5.6,-.7]
+].map(([role,x,depth])=>({role,x,depth}));
+const receiverStarts=OFFENSE_FORMATION.slice(1,6).map(({x,depth})=>[x,depth]);
 const routeSet = (...paths)=>Object.fromEntries(paths.map((path,i)=>[i+1,[receiverStarts[i],...path]]));
 const outs = routeSet([[-19,6],[-25,6]],[[19,6],[25,6]],[[-10,6],[-16,6]],[[10,6],[16,6]],[[0,-1],[0,4]]);
 const stretch = routeSet([[-20,24]],[[19,6],[25,9]],[[-10,11],[8,11]],[[10,13],[23,17]],[[8,-3],[19,0]]);
@@ -176,13 +180,4 @@ export function cpuPlay(book,down,yards,clock){
  if(running&&yards<=1)return 'qbSneak';
  const calls=running?book.runCalls:yards<=4?quickCalls:book.passCalls;
  return calls[(gameTick+Math.floor(clock/10))%Math.min(8,calls.length)];
-}
-
-export function diagramPaths(id){
- if(ROUTES[id])return Object.values(ROUTES[id]);
- const run=RUN_PLAYS[id];
- if(run)return [[[run.runner===0?0:2,-7],[(run.startLane??run.lane)*.55,-4],[run.lane,2],[run.lane,13]]];
- if(id==='punt'||id==='fieldGoal')return [[[0,-7],[0,32]]];
- if(id==='slant')return Object.values(routeSet([[-16,3],[7,16]],[[16,3],[-7,16]],[[-8,3],[13,16]],[[8,4],[-4,15]],[[6,-1],[6,4]]));
- return Object.values(routeSet([[-21,40]],[[21,40]],[[-10,31]],[[10,30]],[[0,-1],[-6,14]]));
 }

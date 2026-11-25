@@ -64,13 +64,13 @@
 .teamPlaybookHeader small{color:#b7ceb9;font-size:10px;text-align:right}
 #playFilters button{font-size:11px;min-width:0;white-space:nowrap}
 #playFilters button span{font-variant-numeric:tabular-nums}
-#playbook.teamPlaybook #plays{grid-template-columns:repeat(3,minmax(0,1fr));max-height:min(230px,37dvh);overflow:auto;overscroll-behavior:contain;padding:3px 4px 3px 3px;scrollbar-color:#759684 #253f37}
-#playbook.teamPlaybook #plays button{grid-column:auto;min-height:86px;padding:6px 8px;display:flex;flex-direction:column}
+#playbook.teamPlaybook #plays{grid-template-columns:repeat(3,minmax(0,1fr));max-height:min(315px,43dvh);overflow:auto;overscroll-behavior:contain;padding:3px 4px 3px 3px;scrollbar-color:#759684 #253f37}
+#playbook.teamPlaybook #plays button{grid-column:auto;padding:6px 8px;display:grid;grid-template-areas:'heading' 'diagram' 'detail';grid-template-rows:auto auto 1fr;align-items:start}
 #playbook.teamPlaybook #plays button:focus-visible{outline-offset:-2px}
-#plays .playHeading{display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;font-size:11px;min-height:15px}
+#plays .playHeading{grid-area:heading;display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;font-size:11px;min-height:15px}
 #plays .playHeading kbd{margin:0}
-#plays canvas{display:block;width:100%;height:44px;object-fit:contain;border-radius:4px;background:#233f36;margin-top:4px}
-#playbook.teamPlaybook #plays button small{font-size:9px;margin-top:4px}
+#plays canvas{grid-area:diagram;display:block;width:100%;height:auto;aspect-ratio:228 / 126;border-radius:4px;background:#233f36;margin-top:4px}
+#playbook.teamPlaybook #plays button small{grid-area:detail;font-size:9px;margin-top:4px}
 #playbook.teamPlaybook .playbookHelp{margin:6px 0 0}
 #replayButton,#replayPanel{position:fixed;z-index:12;color:#fff5d9;border:1px solid #819884;background:#142d2cf5;box-shadow:0 7px 20px #0e252577}
 #replayButton{right:23px;top:112px;padding:9px 11px;border-radius:7px;font-size:11px;font-weight:800}
@@ -88,10 +88,10 @@ body:has(#injuryPanel:not([hidden])) #replayButton,body:has(#injuryNotice:not([h
 .replayControls label,.replayControls select,.replayControls button,.replayHeader button{font-size:12px}
 .replayControls button,.replayControls select,.replayHeader button{color:#fff4d9;background:#34574b;border:1px solid #829a81;border-radius:5px;padding:6px 10px}
 .isReplaying #replayButton,.isReplaying #hud,.isReplaying #celebrationPanel,.isReplaying #overlay{visibility:hidden}
-@media(max-width:1050px) and (min-width:801px){#playbook.teamPlaybook{width:calc(100% - 365px)}}
+@media(max-width:1050px) and (min-width:801px){#playbook.teamPlaybook{width:calc(100% - 365px)}#playbook.teamPlaybook #plays{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:800px){
  #playbook.teamPlaybook{width:calc(100% - 24px);max-width:535px;bottom:142px;padding:8px}
- #playbook.teamPlaybook #plays{max-height:min(190px,max(88px,calc(100dvh - 395px)));grid-template-columns:repeat(2,minmax(0,1fr))}
+ #playbook.teamPlaybook #plays{max-height:min(215px,max(110px,calc(100dvh - 395px)));grid-template-columns:repeat(2,minmax(0,1fr))}
  #playbook.teamPlaybook .playbookHelp{display:none}
  #playFilters button{gap:3px;padding:6px 3px;font-size:10px}
  .teamPlaybookHeader h2{font-size:14px}
@@ -99,4 +99,22 @@ body:has(#injuryPanel:not([hidden])) #replayButton,body:has(#injuryNotice:not([h
  #replayButton,body:has(#injuryPanel:not([hidden])) #replayButton,body:has(#injuryNotice:not([hidden])) #replayButton{top:139px;right:12px;padding:6px 8px}
  body:has(#replayButton:not([hidden])) #weatherBadge{max-width:calc(100% - 119px)}
  #replayButton kbd{display:none}
+}
+
+.playDiagramKey{display:flex;align-items:center;flex-wrap:wrap;gap:5px 13px;margin:0 3px 5px;color:#e0edde;font-size:10px;line-height:1.2}
+.playDiagramKey span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.playDiagramKey i{display:block;width:12px;border-top:2px solid}
+.playDiagramKey .read,.playDiagramKey .exchange{color:#ffd376}
+.playDiagramKey .route{color:#a9d7be}
+.playDiagramKey .block{position:relative;color:#8bc8f0}
+.playDiagramKey .block::after{content:'';position:absolute;top:-4px;right:0;height:6px;border-right:2px solid}
+.playDiagramKey .exchange{border-top-style:dashed}
+@media (max-width:800px){
+ .playDiagramKey{font-size:9px;gap:4px 9px}
+ .playDiagramKey i{width:9px}
+}
+@media (max-width:445px){
+ #playbook.teamPlaybook #plays{grid-template-columns:minmax(0,1fr)}
+ #playbook.teamPlaybook #plays button{grid-template-areas:'heading diagram' 'detail diagram';grid-template-columns:minmax(0,1fr) minmax(165px,65%);grid-template-rows:auto 1fr;gap:5px 9px}
+ #plays canvas{margin-top:0}
 }
