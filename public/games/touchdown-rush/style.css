@@ -118,3 +118,8 @@ body:has(#injuryPanel:not([hidden])) #replayButton,body:has(#injuryNotice:not([h
  #playbook.teamPlaybook #plays button{grid-template-areas:'heading diagram' 'detail diagram';grid-template-columns:minmax(0,1fr) minmax(165px,65%);grid-template-rows:auto 1fr;gap:5px 9px}
  #plays canvas{margin-top:0}
 }
+
+#snapStatus{margin:5px 3px 7px;color:#c9decb;font-size:11px;line-height:1.3}
+#snapStatus.hasPlay{color:#ffda8c;font-weight:800}
+#playbook.teamPlaybook #plays button[aria-pressed="true"]{border-color:#ffd376;box-shadow:inset 0 0 0 1px #ffd376;background:#50593c}
+#plays button[aria-pressed="true"] .playHeading{color:#ffda8c}

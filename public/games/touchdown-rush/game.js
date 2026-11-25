@@ -62,7 +62,7 @@ let favoriteCelebration='spike',celebration=null,resumeState='playing';
 let homeSide=0,netHomeId=null,tourView='field';
 const homeTeamIndex=()=>netHomeId?(playerTeam.id===netHomeId?0:1):homeSide;
 const broadcast=setupBroadcast({getGame:()=>game,getTeams:()=>[playerTeam,cpuTeam],getHomeIndex:homeTeamIndex,active:()=>state==='playing'||(state==='celebrating'&&!celebration?.preview)});
-let kickDraft=null,lastKickAimSent=0,playSection='picks',playbookKey='';
+let kickDraft=null,lastKickAimSent=0,playSection='picks',playbookKey='',queuedPlay=null;
 const replayRecorder=makeReplayRecorder();
 let activeReplay=null;
 let renderedPersonnel=-1;
@@ -128,7 +128,7 @@ const CUSTOM_KEY='archerbox-football-customization-v1';
 try{const saved=JSON.parse(localStorage.getItem(CUSTOM_KEY)||'{}');homeSide=saved.homeSide===1?1:0;playerTeam=resolveTeam(saved.team,creations)||playerTeam;cpuTeam=resolveTeam(saved.opponent,creations)||cpuTeam;if(cpuTeam.id===playerTeam.id)cpuTeam=TEAMS.find(t=>t.id!==playerTeam.id);classicHill=playerTeam.id==='miami-dolphins'&&saved.classicHill===true;if(saved.customNumbers){for(const [id,values] of Object.entries(saved.customNumbers))if(resolveTeam(id.split(':')[0],creations))customNumbers[id]=rosterNumbers(values)}else if(saved.numbers)customNumbers[playerTeam.id]=rosterNumbers(saved.numbers);numbers=customNumbers[numberKey()]||selectedRoster().offense.map(p=>p.number)}catch{}
 function saveCustom(){try{localStorage.setItem(CUSTOM_KEY,JSON.stringify({team:playerTeam.id,opponent:cpuTeam.id,homeSide,customNumbers,classicHill}))}catch{}}
 function assignNumbers(){game.offenseNumbers[0]=numbers.slice();if(game.offense===0)game.actors.slice(0,TEAM_SIZE).forEach((a,i)=>a.jerseyNumber=numbers[i])}
-function newMatch(weather={kind:'clear'}){closeReplay(false);replayRecorder.reset();$('replayButton').hidden=true;playSection='picks';playbookKey='';medicalKey='';noticeId=0;noticeUntil=0;$('injuryPanel').hidden=true;$('injuryNotice').hidden=true;$('injuryToggle').setAttribute('aria-expanded','false');game=createGame(difficulty,{teamIds:[playerTeam.id,cpuTeam.id],teamNames:[playerTeam.name,cpuTeam.name],teamRosters:[selectedRoster(),rosterForTeam(cpuTeam,creationData())],offenseNumbers:[numbers.slice(),null],injuries,weather,playerTraits:playerTraitsEnabled})}
+function newMatch(weather={kind:'clear'}){closeReplay(false);replayRecorder.reset();$('replayButton').hidden=true;playSection='picks';playbookKey='';queuedPlay=null;medicalKey='';noticeId=0;noticeUntil=0;$('injuryPanel').hidden=true;$('injuryNotice').hidden=true;$('injuryToggle').setAttribute('aria-expanded','false');game=createGame(difficulty,{teamIds:[playerTeam.id,cpuTeam.id],teamNames:[playerTeam.name,cpuTeam.name],teamRosters:[selectedRoster(),rosterForTeam(cpuTeam,creationData())],offenseNumbers:[numbers.slice(),null],injuries,weather,playerTraits:playerTraitsEnabled})}
 function selectTeam(t){playerTeam=t;if(t.id!=='miami-dolphins')classicHill=false;numbers=customNumbers[numberKey()]?.slice()||selectedRoster().offense.map(p=>p.number);selectedTrait=0;}
 const ball=makeBall();scene.add(ball);
 const ring=new THREE.Mesh(new THREE.TorusGeometry(.82,.075,8,40),new THREE.MeshBasicMaterial({color:0xf7d268}));ring.rotation.x=-Math.PI/2;scene.add(ring);
@@ -199,6 +199,10 @@ function hud(){if(game&&!game.practiceKicks&&!game.injuryTraining&&!game.weather
  $('event').textContent=game.event;$('detail').textContent=game.detail;const result=game.passResult,showResult=result&&game.phase==='dead'&&result.kind!=='complete';$('announcement').dataset.passResult=showResult?(result.kind==='interception'?(result.fromTeam===0?'picked':'interception'):'incomplete'):'';if(showResult&&result.kind==='interception')$('possession').textContent=result.fromTeam===0?(net?'FRIEND BALL NEXT':'CPU BALL NEXT'):'YOUR BALL NEXT';$('playbook').hidden=!calling;
  $('offensivePlaybook').hidden=defending;
  $('playbook').classList.toggle('teamPlaybook',!defending);
+ if(queuedPlay&&(game.phase!=='ready'||defending||!selectedPlay())){
+  queuedPlay=null;
+  updatePlaySelection();
+ }
  if(calling&&!defending)showTeamPlaybook(toGoal);
  $('defensivePlaybook').hidden=!defending;
  if(calling&&defending){
@@ -451,13 +455,14 @@ function showTeamPlaybook(yards){
   playSection=button.dataset.section;showTeamPlaybook(yards);
   $('playFilters').querySelector('[aria-pressed="true"]').focus({preventScroll:true});
  });
- $('plays').innerHTML=selections[playSection].map(p=>`<button type="button" data-play="${p.id}" data-kind="${p.kind}" aria-label="Call ${p.name}" aria-description="${p.detail}"><span class="playHeading"><b>${p.name}</b>${p.key?`<kbd>${p.key}</kbd>`:''}</span><canvas width="456" height="252" aria-hidden="true"></canvas><small>${p.detail}</small></button>`).join('');
+ $('plays').innerHTML=selections[playSection].map(p=>`<button type="button" data-play="${p.id}" data-kind="${p.kind}" aria-label="Select ${p.name}" aria-pressed="false" aria-description="${p.detail}"><span class="playHeading"><b>${p.name}</b>${p.key?`<kbd>${p.key}</kbd>`:''}</span><canvas width="456" height="252" aria-hidden="true"></canvas><small>${p.detail}</small></button>`).join('');
  $('plays').scrollTop=0;
  for(const button of $('plays').children){
   const play=playById(button.dataset.play);
   drawPlayDiagram(button.querySelector('canvas'),play);
-  button.onclick=()=>callPlay(play.id);
+  button.onclick=()=>selectPlay(play.id);
  }
+ updatePlaySelection();
 }
 function buildControls(){
  $('defensivePlays').innerHTML=DEFENSIVE_PLAYS.map(p=>`<button type="button" data-defense="${p.id}" aria-label="Call ${p.name}" aria-pressed="false"><span class="playHeading"><kbd>${p.key}</kbd><b>${p.name}</b></span><small>${p.detail}</small></button>`).join('');
@@ -469,7 +474,29 @@ function callDefense(id){
  if(net)net.event('defense',{play:id});else chooseDefense(game,id);
  hud();
 }
-function callPlay(id){if(state!=='playing'||game.offense!==0||game.phase!=='ready')return;if(id==='fieldGoal'){doFieldGoal();return;}if(id==='punt'){doPunt();return;}if(net)net.event('play',{play:id});else snap(game,id);hud();}
+function selectedPlay(){
+ return queuedPlay&&queuedPlay.personnelVersion===game.personnelVersion?queuedPlay.play:null;
+}
+function updatePlaySelection(){
+ const play=selectedPlay();
+ const cards=$('plays'),old=cards.querySelector('[aria-pressed="true"]');
+ const next=play?cards.querySelector(`[data-play="${play.id}"]`):null;
+ if(old!==next){
+  old?.setAttribute('aria-pressed','false');
+  next?.setAttribute('aria-pressed','true');
+ }
+ const status=$('snapStatus');
+ const message=play?play.name+' selected. Press Space or tap Snap Ball.':'Choose a play, then press Space or tap Snap Ball.';
+ if(status.textContent!==message)status.textContent=message;
+ status.classList.toggle('hasPlay',!!play);
+}
+function selectPlay(id){
+ if(state!=='playing'||game.offense!==0||game.phase!=='ready')return;
+ const play=playById(id);
+ if(!play)return;
+ queuedPlay={play,personnelVersion:game.personnelVersion};
+ updatePlaySelection();
+}
 function cycleCamera(){cameraMode=(cameraMode+1)%3;$('cameraView').textContent=['BROADCAST V','PLAYER CAM V','SIDELINE V'][cameraMode];if(state==='studio')renderStudio(poseTime);else if(state==='stadium')renderStadiumTour();else if(state!=='menu')updateCamera(1,true)}
 function getKickDraft(){const p=game.placeKick;if(!p){kickDraft=null;return;}if(!kickDraft||kickDraft.id!==p.id||game.offense!==0)kickDraft={id:p.id,aim:p.aim,power:p.power};return kickDraft;}
 function setKickAim(aim,power){if(state!=='playing'||game.offense!==0||game.phase!=='placekick-aim')return;const draft=getKickDraft();draft.aim=Math.max(-1,Math.min(1,aim));draft.power=Math.max(.15,Math.min(1,power));aimPlaceKick(game,draft.aim,draft.power);if(net&&performance.now()-lastKickAimSent>120){lastKickAimSent=performance.now();net.event('kickAim',{aim:draft.aim,power:draft.power});}updateKickUI();}
@@ -482,23 +509,33 @@ function updateKickUI(){
  $('kickFeedback').textContent=aiming?(good?'ON TARGET · CLEAR THE CROSSBAR':cross.y<=GOALPOST.crossbar+KICK_CLEARANCE+1e-6?(draft.power>=.99?'TOO FAR · TRY FROM CLOSER':'MORE POWER · THIS KICK IS SHORT'):'AIM BETWEEN THE POSTS'):game.phase==='placekick-flight'?'WATCH THE BALL…':game.event;$('kickFeedback').style.color=good?'#bdf167':'#f2ba72';$('kickConfirm').disabled=!aiming||!own;$('kickConfirm').textContent=aiming?(own?'KICK · SPACE':'OPPONENT IS AIMING'):game.phase==='placekick-flight'?'KICK IN THE AIR':game.event.includes('GOOD!')?'GOOD!':'NO GOOD';
  if(kickGuide.visible){const points=[];for(let i=0;i<36;i++){const point=kickPosition(preview,cross.time*i/35);points.push(new THREE.Vector3(point.x,Math.max(.08,point.y),point.z));}kickGuide.geometry.setFromPoints(points);kickGuide.material.color.setHex(good?0xbdf167:0xf2ba72);}
 }
-function doFieldGoal(){if(state==='playing'&&game.offense===0){if(net)net.event('fieldGoal');else beginPlaceKick(game);hud();updateCamera(1,true);}}
+function doFieldGoal(){if(state==='playing'&&game.offense===0){if(game.phase==='ready'){selectPlay('fieldGoal');return;}if(net)net.event('fieldGoal');else beginPlaceKick(game);hud();updateCamera(1,true);}}
 function doPlaceKick(){if(state!=='playing'||game.offense!==0||game.phase!=='placekick-aim')return;const draft=getKickDraft();if(net)net.event('placeKick',{aim:draft.aim,power:draft.power});else strikePlaceKick(game,draft.aim,draft.power);hud();updateCamera(1,true);}
 $('kickAim').oninput=()=>{const draft=getKickDraft();if(draft)setKickAim(Number($('kickAim').value)/100,draft.power);};$('kickPower').oninput=()=>{const draft=getKickDraft();if(draft)setKickAim(draft.aim,Number($('kickPower').value)/100);};$('kickConfirm').onclick=doPlaceKick;
 $('practiceKick').onclick=()=>{if(net)return;saveSeasonGame();seasonFixtureId=null;$('seasonReturn').hidden=true;clearCelebration();newMatch();practicePlaceKicks(game);state='playing';resetInput();accumulator=0;poseTime=0;lastEvent='';$('menu').hidden=true;$('hud').hidden=false;$('overlay').hidden=true;hud();broadcast.start(game);updateCamera(1,true);updateActors(0);};
 $('cameraView').onclick=cycleCamera;
-function doPunt(){if(state==='playing'&&game.offense===0){if(net)net.event('punt');else punt(game);hud()}}
+function doPunt(){if(state==='playing'&&game.offense===0){if(game.phase==='ready'){selectPlay('punt');return;}if(net)net.event('punt');else punt(game);hud()}}
 function doHurdle(){
  if(state!=='playing'||!canHurdle(game))return;
  if(net)net.event('hurdle');else if(hurdle(game))hud();
 }
 $('hurdle').onclick=doHurdle;
-function doAction(){if(state==='playing'){if(game.phase==='placekick-aim'){doPlaceKick();return;}if(net)net.event('action');else action(game);hud()}}
+function doAction(){
+ if(state!=='playing')return;
+ if(game.phase==='placekick-aim'){doPlaceKick();return;}
+ const play=game.phase==='ready'&&game.offense===0?selectedPlay():null;
+ if(play){
+  if(net)net.event('play',{play:play.id});
+  else snap(game,play.id);
+ }else if(net)net.event('action');
+ else action(game);
+ hud();
+}
  $('start').onclick=()=>start();$('pause').onclick=pause;$('restart').onclick=()=>start();$('resume').onclick=()=>{if(state==='finished'){if(net)net.leave();else if(seasonFixtureId)showSeasonHub();else start();}else{state=resumeState;broadcast.resume(game);resetInput();$('overlay').hidden=true}};$('choose').onclick=()=>{if(net){net.leave();return}saveSeasonGame();seasonFixtureId=null;state='menu';resetInput();$('menu').hidden=false;$('hud').hidden=true;$('overlay').hidden=true;newMatch();actors();menu();camera.position.set(-2.7,2.8,30.5);camera.lookAt(1.3,1.45,35);camera.updateMatrixWorld()};$('action').onclick=doAction;$('fieldGoal').onclick=doFieldGoal;$('punt').onclick=doPunt;$('switch').onclick=()=>{if(state==='playing'){if(net)net.event('switch');else switchDefender(game);}hud()};
  window.addEventListener('keydown',e=>{
   if(activeReplay){if(!e.repeat&&['Escape','KeyI'].includes(e.code)){e.preventDefault();closeReplay();}return;}
   if(e.code==='KeyI'&&replayAvailable()&&!e.repeat){e.preventDefault();openReplay();return;}
-  if(state==='celebrating'){if(/^Digit[12345]$/.test(e.code)&&!e.repeat){e.preventDefault();chooseCelebration(CELEBRATIONS[+e.code.at(-1)-1].id)}if(e.code==='Escape'){e.preventDefault();pause()}return}if(state!=='playing')return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(game.phase==='ready'){const defending=game.offense!==0,play=defending?defenseForKey(e.code):playForKey(e.code);if(play){e.preventDefault();if(defending)callDefense(play.id);else callPlay(play.id);return;}}if(e.code==='Escape')pause();if(e.code==='Space')doAction();if(e.code==='KeyH'){e.preventDefault();doHurdle();}if(e.code==='KeyP')doPunt();if(e.code==='KeyF')doFieldGoal();if(e.code==='KeyE'){if(net)net.event('switch');else switchDefender(game);}if(e.code==='KeyV')cycleCamera();if(game.phase==='placekick-aim')return;if(/^Digit[12345]$/.test(e.code)&&game.offense===0&&game.phase==='live'&&game.carrier===0&&!RUN_PLAYS[game.play]){const n=+e.code.at(-1);if(net)net.event('target',{target:n});else selectReceiver(game,n)}});window.addEventListener('keyup',e=>keys[e.code]=false);window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+  if(state==='celebrating'){if(/^Digit[12345]$/.test(e.code)&&!e.repeat){e.preventDefault();chooseCelebration(CELEBRATIONS[+e.code.at(-1)-1].id)}if(e.code==='Escape'){e.preventDefault();pause()}return}if(state!=='playing')return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(game.phase==='ready'){const defending=game.offense!==0,play=defending?defenseForKey(e.code):playForKey(e.code);if(play){e.preventDefault();if(defending)callDefense(play.id);else selectPlay(play.id);return;}}if(e.code==='Escape')pause();if(e.code==='Space')doAction();if(e.code==='KeyH'){e.preventDefault();doHurdle();}if(e.code==='KeyP')doPunt();if(e.code==='KeyF')doFieldGoal();if(e.code==='KeyE'){if(net)net.event('switch');else switchDefender(game);}if(e.code==='KeyV')cycleCamera();if(game.phase==='placekick-aim')return;if(/^Digit[12345]$/.test(e.code)&&game.offense===0&&game.phase==='live'&&game.carrier===0&&!RUN_PLAYS[game.play]){const n=+e.code.at(-1);if(net)net.event('target',{target:n});else selectReceiver(game,n)}});window.addEventListener('keyup',e=>keys[e.code]=false);window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
  const sprint=$('sprint');sprint.onpointerdown=e=>{e.preventDefault();sprint.setPointerCapture(e.pointerId);touch.sprint=true};sprint.onpointerup=sprint.onpointercancel=()=>touch.sprint=false;
  const stick=$('stick');let stickId=null,origin={x:0,y:0};stick.onpointerdown=e=>{e.preventDefault();stick.setPointerCapture(e.pointerId);stickId=e.pointerId;const r=stick.getBoundingClientRect();origin={x:r.left+r.width/2,y:r.top+r.height/2};moveStick(e)};function moveStick(e){if(e.pointerId!==stickId)return;let x=(e.clientX-origin.x)/32,z=(e.clientY-origin.y)/32,l=Math.max(1,Math.hypot(x,z));touch.x=x/l;touch.z=z/l;$('stickKnob').style.transform=`translate(${touch.x*25}px,${touch.z*25}px)`}stick.onpointermove=moveStick;stick.onpointerup=stick.onpointercancel=()=>{stickId=null;touch.x=touch.z=0;$('stickKnob').style.transform=''};
  creators=setupCreators({getData:()=>{try{creations=readCreations(localStorage);}catch{}return creations;},getTeam:()=>playerTeam,commit(next,options={}){const previousVenue=JSON.stringify([playerTeam,cpuTeam]);let saved;try{saved=saveCreations(localStorage,next);}catch{throw Error('Could not save on this browser. Your previous creations are unchanged.');}creations=saved;remoteCreations=null;renderedTraitKey='';for(const id of Object.keys(customNumbers))if(id.startsWith('club-')||creations.players.some(p=>p.team===id))delete customNumbers[id];playerTeam=resolveTeam(options.team||playerTeam.id,creations)||teamById(DEFAULT_TEAM_ID);cpuTeam=resolveTeam(cpuTeam.id,creations)||teamById(DEFAULT_OPPONENT_ID);if(cpuTeam.id===playerTeam.id)cpuTeam=TEAMS.find(t=>t.id!==playerTeam.id);selectTeam(playerTeam);saveCustom();if(previousVenue===JSON.stringify([playerTeam,cpuTeam])){newMatch();actors();menu();}else load();state='creator';},onSelectTeam(id){if(playerTeam.id===id)return;const t=resolveTeam(id,creations);if(!t)return;selectTeam(t);if(cpuTeam.id===t.id)cpuTeam=teamById(DEFAULT_OPPONENT_ID);if(cpuTeam.id===t.id)cpuTeam=teamById(DEFAULT_TEAM_ID);saveCustom();load();},onOpen(){broadcast.suspend();state='creator';resetInput();},onClose(){if(state==='creator')state='menu';},onSpotlight(id){if(net)return;openStudio();$('studioPlayer').value=id;studioAthlete();}});

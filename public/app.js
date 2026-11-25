@@ -6,7 +6,7 @@ import {createReloadNotice} from './game-errors.js?v=recovery1';
 import {coinButton,initCoinUI} from './economy/ui.js?v=football27';
 import {openFantasy,closeFantasy} from './fantasy/app.js?v=football27';
 import {initFriends,socialApi,syncFriendAvatar} from './friends.js?v=football27';
-import {GAMES,CATEGORIES,findGames} from './catalog.js?v=replaybook1';
+import {GAMES,CATEGORIES,findGames} from './catalog.js?v=snap1';
 const acceptedPlayer=await requirePlayer();
 window.addEventListener('pageshow',event=>{if(event.persisted)void requirePlayer()});
 const $=id=>document.getElementById(id),KEY='archerbox-lobby-v1',COLORS=['#c0f16b','#b9a2fb','#77d9dc','#f4ae81'];
@@ -45,7 +45,7 @@ function closeDialogs(){for(const id of ['details','controlsDialog','friendAvata
 function removeGame(){reloadNotice.reset();clearTimeout(loadingTimer);try{frame?.contentDocument?.exitPointerLock?.()}catch{}if(document.pointerLockElement)document.exitPointerLock?.();if(frame){if(frame.dataset.room){socialApi('room/'+frame.dataset.room,{action:'leave'}).catch(()=>{});}if(frame.dataset.room)document.dispatchEvent(new CustomEvent('archerbox:race-left',{detail:{roomId:frame.dataset.room}}));frame.onload=null;frame.remove();frame=null}$('frameMount').replaceChildren();$('loadError').hidden=true;activeGame=null;}
 function launch(id,{recordHistory=true,roomId=null}={}){charts.close();closeFantasy();
  const g=GAMES.find(g=>g.id===id);if(!g)return false;avatarEditor?.closeEditor();if(activeGame===id&&frame&&frame.dataset.room===(roomId||'')){frame.focus();return true}closeDialogs();removeGame();activeGame=id;recent=[id,...recent.filter(r=>r!==id)].slice(0,5);save();$('lobby').hidden=true;$('player').hidden=false;document.body.classList.add('playing');$('playingName').textContent=g.name;$('playingCategory').textContent=g.category+' · '+(g.format||'3D');$('loadingName').textContent='Launching '+g.name+'…';$('loading').hidden=false;
- frame=document.createElement('iframe');frame.id='gameFrame';frame.title=g.name+' game';frame.allow='fullscreen; autoplay';frame.allowFullscreen=true;frame.dataset.room=roomId||'';frame.src='games/'+g.id+'/index.html'+(roomId?'?room='+encodeURIComponent(roomId)+(g.id==='touchdown-rush'?'&v=playdiagram1':''):g.id==='touchdown-rush'?'?v=playdiagram1':g.id==='jurassic-island'?'?v=feet1':'');frame.onload=()=>{clearTimeout(loadingTimer);$('loading').hidden=true;frame?.focus();try{frame?.contentWindow.focus()}catch{}};$('frameMount').append(frame);
+ frame=document.createElement('iframe');frame.id='gameFrame';frame.title=g.name+' game';frame.allow='fullscreen; autoplay';frame.allowFullscreen=true;frame.dataset.room=roomId||'';frame.src='games/'+g.id+'/index.html'+(roomId?'?room='+encodeURIComponent(roomId)+(g.id==='touchdown-rush'?'&v=snap1':''):g.id==='touchdown-rush'?'?v=snap1':g.id==='jurassic-island'?'?v=feet1':'');frame.onload=()=>{clearTimeout(loadingTimer);$('loading').hidden=true;frame?.focus();try{frame?.contentWindow.focus()}catch{}};$('frameMount').append(frame);
  loadingTimer=setTimeout(()=>{if(!$('loading').hidden){$('loading').hidden=true;$('loadError').hidden=false}},25000);
  if(recordHistory)history.pushState({game:id},'',location.pathname+location.search+'#play/'+id+(roomId?'?room='+encodeURIComponent(roomId):''));document.title=g.name+' · Archerbox';return true;
 }
