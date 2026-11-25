@@ -33,7 +33,7 @@ export function animateStadium(root,time,game,reducedMotion=false){
  updateStadiumBowl(root?.userData.bowl,time,game,reducedMotion);if(!root||!game)return;const d=root.userData;d.downMarker.position.z=Math.max(-50,Math.min(50,game.line));
  if(d.downValue!==game.down){d.downText.material.map.dispose();d.downText.material.dispose();d.downText.material=print(String(game.down),'#ff8a3a','#111c17',128,128);d.downValue=game.down;}
 }
-export {makePlayer,animatePlayer,celebrationJoints,playerEnvironment} from './players.js?v=flex1';
+export {makePlayer,animatePlayer,celebrationJoints,playerEnvironment} from './players.js?v=flex3';
 export function makeBall(){
  const g=new THREE.Group(),leather=new THREE.MeshStandardMaterial({color:0x814323,roughness:.88}),white=new THREE.MeshStandardMaterial({color:0xf3ecdc,roughness:.8}),dark=new THREE.MeshStandardMaterial({color:0x422416,roughness:.95});
  if(typeof document!=='undefined'){const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#888888';ctx.fillRect(0,0,128,128);for(let y=0;y<128;y+=4)for(let x=0;x<128;x+=4){ctx.fillStyle='#bbbbbb';ctx.beginPath();ctx.arc(x+(y%8?2:0),y,1.4,0,Math.PI*2);ctx.fill();}const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.NoColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(3,3);leather.bumpMap=map;leather.bumpScale=.006;}

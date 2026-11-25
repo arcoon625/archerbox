@@ -24,6 +24,7 @@ export function celebrationPose(id,seconds){
  }
  case 'flex':{
   const release=.22,flex=smooth((t-release)/.58);
+  p.fists=t>=release&&t<5.9;
   p.arms=[-1,1].map(side=>[.10+.18*flex,side*.10*flex,side*(.08+1.34*flex)]);
   p.elbows=[-1,1].map(side=>[.25-.13*flex,-side*.08*flex,side*1.35*flex]);
   p.legs=[-1,1].map(side=>[0,0,side*.12*flex]);

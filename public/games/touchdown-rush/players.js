@@ -126,7 +126,7 @@ export function makePlayer(teamColor,number,options={}){
  }:undefined);
  addHelmet(helmetRig,{...options,role,teamColor},{helmet,rubber,white,skin,cage},canvasTexture);
 
- const arms=[],elbows=[],hands=[],legs=[],knees=[],ankles=[];
+ const arms=[],elbows=[],hands=[],handShapes=[],legs=[],knees=[],ankles=[];
  for(const side of [-1,1]){
   const arm=new THREE.Group();arm.position.set(side*.418*bulk,.735,0);upperBody.add(arm);arms.push(arm);
   add(shapedLimb([[.058,.106,.130],[-.04,.143,.165,0,.008],[-.116,.137,.149,0,.006],[-.163,.112*muscle,.123*muscle]],24),sleeve,0,0,0,arm);
@@ -136,11 +136,22 @@ export function makePlayer(teamColor,number,options={}){
   oval(skin,0,.005,0,.081,.087,.086,elbow);
   add(shapedLimb([[0,.082,.085],[-.052,.094*muscle,.099*muscle,0,-.009],[-.103,.092*muscle,.088*muscle,0,-.004],[-.17,.076*muscle,.075*muscle],[-.23,.063,.057],[-.285,.058,.052]],20),skin,0,0,0,elbow);
   add(new THREE.CylinderGeometry(.064,.063,.045,18),white,0,-.282,0,elbow);
-  const hand=new THREE.Group();hand.position.set(0,-.338,-.01);elbow.add(hand);hands.push(hand);
-  oval(leather,0,0,-.008,.066,.076,.034,hand);oval(white,0,.012,.021,.052,.055,.012,hand);
-  for(let f=0;f<4;f++){const x=(f-1.5)*.029,len=f===3?.055:f===0?.068:.076;tube([[x,-.045,-.007],[x,-.077,-.014],[x,-.045-len,-.039],[x,-.04-len,-.061]],.013,leather,hand);band(white,x,-.056,.011,.015,.027,.005,hand);}
-  const thumb=oval(leather,side*.066,-.012,-.029,.022,.044,.023,hand);thumb.rotation.z=-side*.60;
-  band(rubber,0,.068,0,.105,.026,.065,hand);
+  const hand=new THREE.Group(),open=new THREE.Group(),fist=new THREE.Group();
+  hand.position.set(0,-.338,-.01);elbow.add(hand);hand.add(open,fist);
+  hands.push(hand);handShapes.push({open,fist});
+  fist.name='Clenched glove';fist.visible=false;
+  oval(leather,0,0,-.008,.066,.076,.034,open);oval(white,0,.012,.021,.052,.055,.012,open);
+  for(let f=0;f<4;f++){const x=(f-1.5)*.029,len=f===3?.055:f===0?.068:.076;tube([[x,-.045,-.007],[x,-.077,-.014],[x,-.045-len,-.039],[x,-.04-len,-.061]],.013,leather,open);band(white,x,-.056,.011,.015,.027,.005,open);}
+  const thumb=oval(leather,side*.066,-.012,-.029,.022,.044,.023,open);thumb.rotation.z=-side*.60;
+  band(rubber,0,.068,0,.105,.026,.065,open);
+
+  // Round each knuckle and tuck the thumb over the curled fingers.
+  oval(leather,0,-.015,-.012,.067,.079,.040,fist);
+  for(let f=0;f<4;f++){
+   const x=side*(f-1.5)*.029,y=-.050-Math.sin((f+1)*Math.PI/5)*.023;
+   oval(leather,x,y,-.029,.017,.025,.032,fist);
+  }
+  tube([[side*.057,-.006,-.029],[side*.040,-.021,-.055],[side*.010,-.040,-.063]],.017,leather,fist);
 
   const leg=new THREE.Group();leg.position.set(side*.19*bulk,1.025,0);root.add(leg);legs.push(leg);
   add(shapedLimb([[.06,.135*bulk,.157],[-.04,.155*bulk,.165],[-.18,.15*bulk,.16,0,.008],[-.31,.123*bulk,.13,0,-.015],[-.43,.10,.11,0,-.02]],24),pants,0,0,0,leg);
@@ -158,7 +169,7 @@ export function makePlayer(teamColor,number,options={}){
   tube([[side*.15*bulk,-.04,0],[side*.172*bulk,-.17,0],[side*.15*bulk,-.30,0],[side*.10*bulk,-.40,0]],.014,trim,leg);
  }
  const ballGrip=new THREE.Object3D();ballGrip.position.set(-.015,-.015,-.095);hands[1].add(ballGrip);
- root.userData={arms,legs,elbows,knees,ankles,hands,head,upperBody,ballGrip,uniform,helmet,helmetRig,hairRig,skin,appearance,profile,portrait,jerseyNumber:number,role,bulk,modelVersion:'athlete-2026'};
+ root.userData={arms,legs,elbows,knees,ankles,hands,handShapes,head,upperBody,ballGrip,uniform,helmet,helmetRig,hairRig,skin,appearance,profile,portrait,jerseyNumber:number,role,bulk,modelVersion:'athlete-2026'};
  batchParts(root);root.updateMatrixWorld(true);const height=new THREE.Box3().setFromObject(root).max.y,scale=profile.heightYards/height;root.scale.set(scale*.90,scale,scale*.96);
  animatePlayer(root,{moving:0,role},0,{ready:true});return root;
 }
@@ -167,6 +178,8 @@ export function celebrationJoints(root,id,time,pose={}){
  const r=root.userData;r.upperBody.position.y=1.04;r.upperBody.rotation.set(0,0,0);r.head.rotation.set(0,0,0);
  for(let i=0;i<2;i++){
   r.legs[i].position.y=1.025;r.hands[i].rotation.set(0,0,0);
+  const {open,fist}=r.handShapes[i];
+  fist.visible=pose.fists===true;open.visible=!fist.visible;
   r.elbows[i].rotation.set(...(pose.elbows?.[i]??[.25,0,0]));
   r.knees[i].rotation.set(...(pose.knees?.[i]??[id==='backflip'&&time<.7?-.7:0,0,0]));
   r.ankles[i].rotation.set(0,0,0);

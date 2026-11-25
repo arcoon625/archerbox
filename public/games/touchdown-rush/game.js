@@ -14,11 +14,11 @@ let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
 import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead,DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defenseForKey,chooseDefense} from './rules.js?v=defense1';
 import {GOALPOST,KICK_CLEARANCE,kickVelocity,kickPosition,goalCrossing,kickIsGood} from './kicking.js?v=seasons1';
-import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=flex1';
+import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=flex3';
 import {TEAMS,DEFAULT_TEAM_ID,DEFAULT_OPPONENT_ID,findTeams,teamById,rosterNumbers,captainNumber} from './teams.js?v=realism2026';
 import {teamRoster,realNumbers,ROSTER_CHECKED} from './rosters.js?v=injuries1';
 import {SPECIAL_TEAMS_CHECKED} from './special-teams.js?v=specialists1';
-import {CELEBRATIONS,CELEBRATION_DURATION,celebrationById,celebrationPose} from './celebrations.js?v=flex2';
+import {CELEBRATIONS,CELEBRATION_DURATION,celebrationById,celebrationPose} from './celebrations.js?v=flex3';
 import {readCreations,saveCreations,restoreCreations,allTeams,resolveTeam,rosterForTeam} from './creator-data.js?v=accuracy1';
 import {setupCreators} from './creator-ui.js?v=athletes2';
 import {makeOfficials} from './officials.js?v=refs1';
@@ -306,7 +306,10 @@ function beginCelebration(preview){
  celebration={actor,id,preview,elapsed:0,yaw:game.actors[actor].yaw};state='celebrating';resetInput();accumulator=0;
  $('menu').hidden=true;$('overlay').hidden=true;$('hud').hidden=preview;celebrationUI();updateCamera(1,true);sound(660,.18);hud();
 }
-function clearCelebration(){celebration=null;$('celebrationPanel').hidden=true;document.body.classList.remove('isCelebrating');}
+function clearCelebration(){
+ const mesh=views[celebration?.actor]?.mesh;
+ if(mesh)celebrationJoints(mesh,celebration.id,CELEBRATION_DURATION);
+ celebration=null;$('celebrationPanel').hidden=true;document.body.classList.remove('isCelebrating');}
 function endCelebration(){
  if(net&&celebration&&!celebration.preview){net.event('skipCelebration');return}
  const preview=celebration?.preview;clearCelebration();resetInput();accumulator=0;

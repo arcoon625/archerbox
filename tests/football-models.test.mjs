@@ -30,6 +30,11 @@ rig.ballGrip.getWorldPosition(grip);assert(reaching.z<grip.z-.08,'the receiver b
 animatePlayer(runner,{moving:0,role:'WR'},4,{tackle:{time:.62,side:1,role:'carrier'}});
 assert(runner.rotation.x<-1,'the tackle follows through toward the turf');
 runner.rotation.set(0,0,0);runner.position.y=0;
+assert(rig.handShapes.every(({open,fist})=>open.visible&&!fist.visible));
+celebrationJoints(runner,'flex',1,celebrationPose('flex',1));
+assert(rig.handShapes.every(({open,fist})=>!open.visible&&fist.visible),'both gloves are clenched during Flex');
+celebrationJoints(runner,'flex',6);
+assert(rig.handShapes.every(({open,fist})=>open.visible&&!fist.visible),'ending Flex restores the ordinary gloves');
 const game=createGame(),snapshot=JSON.stringify(game);
 for(const celebration of CELEBRATIONS)for(let t=0;t<=6;t+=.15){const p=celebrationPose(celebration.id,t);celebrationJoints(runner,celebration.id,t,p);for(let i=0;i<2;i++){runner.userData.arms[i].rotation.set(...p.arms[i]);runner.userData.legs[i].rotation.set(...p.legs[i]);}runner.updateMatrixWorld(true);runner.userData.ballGrip.getWorldPosition(new Vector3());assert(runner.userData.elbows.every(e=>Number.isFinite(e.rotation.x)));}
 assert.equal(JSON.stringify(game),snapshot);dispose(runner);dispose(lineman);
