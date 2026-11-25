@@ -217,12 +217,10 @@ export function action(g,team=0){const control=g.multiplayer?g.controls[team]:g.
   return;
  }
  const defender=g.actors[control],carrier=g.actors[g.carrier];
- if(defender.cooldown>0)return;
- const touching=distance(defender,carrier)<=BODY_DISTANCE;
- if(!touching||!tackleClear(g,defender,carrier)){
-  const blocked=defender.blockedBy!=null||touching;
-  g.event=blocked?'BLOCKED!':'GET CLOSER';
-  g.detail=blocked?'Get around the blocker, then touch the ball carrier and press Space.':'Touch the ball carrier, then press Space or tap Tackle.';
+ if(defender.cooldown>0||distance(defender,carrier)>BODY_DISTANCE)return;
+ if(!tackleClear(g,defender,carrier)){
+  g.event='BLOCKED!';
+  g.detail='Get around the blocker, then touch the ball carrier and press Space.';
   return;
  }
  if(carrier.juke>0){

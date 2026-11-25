@@ -12,7 +12,7 @@ import {injuryTraining,isUnavailable} from './injuries.js?v=injuries1';
 import {connectMatch} from '../../multiplayer/client.js?v=football27';
 let net=null,remoteStarted=false;
 import * as THREE from '../../vendor/three.module.js';
-import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead,DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defenseForKey,chooseDefense} from './rules.js?v=tackle-contact';
+import {TEAM_SIZE,PASS_TARGETS,DIFFICULTIES,PLAYS,RUN_PLAYS,playForKey,createGame,step,action,snap,punt,beginPlaceKick,aimPlaceKick,strikePlaceKick,practicePlaceKicks,kickDistance,selectReceiver,switchDefender,direction,distance,passRead,DEFENSIVE_PLAYS,CPU_DEFENSE_CALL_SECONDS,defenseForKey,chooseDefense} from './rules.js?v=tackle-contact2';
 import {GOALPOST,KICK_CLEARANCE,kickVelocity,kickPosition,goalCrossing,kickIsGood} from './kicking.js?v=seasons1';
 import {STADIUMS,makeStadium,makePlayer,makeBall,dispose,animateStadium,animatePlayer,celebrationJoints,playerEnvironment} from './scene.js?v=flex3';
 import {TEAMS,DEFAULT_TEAM_ID,DEFAULT_OPPONENT_ID,findTeams,teamById,rosterNumbers,captainNumber} from './teams.js?v=realism2026';

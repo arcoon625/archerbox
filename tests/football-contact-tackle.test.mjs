@@ -16,9 +16,11 @@ function defense(offense=1,multiplayer=false){
 test('the player needs both contact and a tackle press',()=>{
  const {game,defender,defTeam,runner}=defense();
  defender.traits={...defender.traits,tackle:99};
+ const {event,detail}=game;
  action(game,defTeam);
  assert.equal(game.phase,'live');
- assert.equal(game.event,'GET CLOSER');
+ assert.equal(game.event,event,'an early press leaves the current call on screen');
+ assert.equal(game.detail,detail);
  assert.equal(game.stats.tackles,0);
  assert.equal(defender.cooldown,0,'missing at a distance does not block the next press');
  defender.x=runner.x+.8;game.playTime=1;
